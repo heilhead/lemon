@@ -3,5 +3,5 @@
 class LemonEngine
 {
 public:
-    void print();
+    void ListDevices();
 };

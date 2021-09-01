@@ -3,11 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-    LemonEngine hi;
-    hi.print();
+    LemonEngine engine;
+    engine.ListDevices();
 
-    LemonDebug howdy;
-    howdy.print();
-    
     return 0;
 }
