@@ -923,6 +923,36 @@ namespace wgpu {
       case TextureFormat::R8BG8Biplanar420Unorm:
         o << "TextureFormat::R8BG8Biplanar420Unorm";
         break;
+      case TextureFormat::ETC2RGB8Unorm:
+        o << "TextureFormat::ETC2RGB8Unorm";
+        break;
+      case TextureFormat::ETC2RGB8UnormSrgb:
+        o << "TextureFormat::ETC2RGB8UnormSrgb";
+        break;
+      case TextureFormat::ETC2RGB8A1Unorm:
+        o << "TextureFormat::ETC2RGB8A1Unorm";
+        break;
+      case TextureFormat::ETC2RGB8A1UnormSrgb:
+        o << "TextureFormat::ETC2RGB8A1UnormSrgb";
+        break;
+      case TextureFormat::ETC2RGBA8Unorm:
+        o << "TextureFormat::ETC2RGBA8Unorm";
+        break;
+      case TextureFormat::ETC2RGBA8UnormSrgb:
+        o << "TextureFormat::ETC2RGBA8UnormSrgb";
+        break;
+      case TextureFormat::EACR11Unorm:
+        o << "TextureFormat::EACR11Unorm";
+        break;
+      case TextureFormat::EACR11Snorm:
+        o << "TextureFormat::EACR11Snorm";
+        break;
+      case TextureFormat::EACRG11Unorm:
+        o << "TextureFormat::EACRG11Unorm";
+        break;
+      case TextureFormat::EACRG11Snorm:
+        o << "TextureFormat::EACRG11Snorm";
+        break;
           default:
             o << "TextureFormat::" << std::showbase << std::hex << std::setfill('0') << std::setw(4) << static_cast<typename std::underlying_type<TextureFormat>::type>(value);
       }
@@ -1402,21 +1432,21 @@ namespace wgpu {
     o << "CopyDst";
     value &= ~TextureUsage::CopyDst;
   }
-  if (value & TextureUsage::Sampled) {
+  if (value & TextureUsage::TextureBinding) {
     if (!first) {
       o << "|";
     }
     first = false;
-    o << "Sampled";
-    value &= ~TextureUsage::Sampled;
+    o << "TextureBinding";
+    value &= ~TextureUsage::TextureBinding;
   }
-  if (value & TextureUsage::Storage) {
+  if (value & TextureUsage::StorageBinding) {
     if (!first) {
       o << "|";
     }
     first = false;
-    o << "Storage";
-    value &= ~TextureUsage::Storage;
+    o << "StorageBinding";
+    value &= ~TextureUsage::StorageBinding;
   }
   if (value & TextureUsage::RenderAttachment) {
     if (!first) {
@@ -1433,6 +1463,22 @@ namespace wgpu {
     first = false;
     o << "Present";
     value &= ~TextureUsage::Present;
+  }
+  if (value & TextureUsage::Sampled) {
+    if (!first) {
+      o << "|";
+    }
+    first = false;
+    o << "Sampled";
+    value &= ~TextureUsage::Sampled;
+  }
+  if (value & TextureUsage::Storage) {
+    if (!first) {
+      o << "|";
+    }
+    first = false;
+    o << "Storage";
+    value &= ~TextureUsage::Storage;
   }
 
     if (static_cast<bool>(value)) {

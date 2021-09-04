@@ -1,20 +1,32 @@
 project(lemon-core)
 
-add_library(${PROJECT_NAME} src/engine.cpp)
+set(SOURCE_FILES
+        src/engine.cpp
+        src/utils/utils.cpp
+        src/device/Window.cpp)
+
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
 
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
+
 target_include_directories(${PROJECT_NAME}
-        PUBLIC ${PROJECT_SOURCE_DIR}/include
-        PRIVATE ${PROJECT_SOURCE_DIR}/lib/dawn/include)
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/lib/glfw/include
+        ${PROJECT_SOURCE_DIR}/lib/dawn2/include)
 
-set(DAWN_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/dawn/bin/${CMAKE_BUILD_TYPE})
+set(GLFW_BUILD_DOCS false)
+set(GLFW_BUILD_EXAMPLES false)
+set(GLFW_BUILD_TESTS false)
+set(GLFW_INSTALL false)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DAWN_LIB_PATH}/dawn_native.lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DAWN_LIB_PATH}/dawn_platform.lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DAWN_LIB_PATH}/dawn_proc.lib)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/glfw)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn)
 
-file(COPY
-        ${DAWN_LIB_PATH}/dawn_native.dll
-        ${DAWN_LIB_PATH}/dawn_platform.dll
-        ${DAWN_LIB_PATH}/dawn_proc.dll
-        DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw lemon-dawn)

@@ -326,6 +326,16 @@ namespace wgpu {
         BC7RGBAUnorm = 0x00000035,
         BC7RGBAUnormSrgb = 0x00000036,
         R8BG8Biplanar420Unorm = 0x00000037,
+        ETC2RGB8Unorm = 0x00000038,
+        ETC2RGB8UnormSrgb = 0x00000039,
+        ETC2RGB8A1Unorm = 0x0000003A,
+        ETC2RGB8A1UnormSrgb = 0x0000003B,
+        ETC2RGBA8Unorm = 0x0000003C,
+        ETC2RGBA8UnormSrgb = 0x0000003D,
+        EACR11Unorm = 0x0000003E,
+        EACR11Snorm = 0x0000003F,
+        EACRG11Unorm = 0x00000040,
+        EACRG11Snorm = 0x00000041,
     };
 
     enum class TextureSampleType : uint32_t {
@@ -427,10 +437,12 @@ namespace wgpu {
         None = 0x00000000,
         CopySrc = 0x00000001,
         CopyDst = 0x00000002,
-        Sampled = 0x00000004,
-        Storage = 0x00000008,
+        TextureBinding = 0x00000004,
+        StorageBinding = 0x00000008,
         RenderAttachment = 0x00000010,
         Present = 0x00000020,
+        Sampled = 0x00000004,
+        Storage = 0x00000008,
     };
 
 
@@ -559,14 +571,6 @@ namespace wgpu {
     struct FragmentState;
     struct RenderPipelineDescriptor;
 
-    // BlendDescriptor is deprecated.
-    // Use BlendComponent instead.
-    using BlendDescriptor = BlendComponent;
-
-    // BufferCopyView is deprecated.
-    // Use ImageCopyBuffer instead.
-    using BufferCopyView = ImageCopyBuffer;
-
     // InputStepMode is deprecated.
     // Use VertexStepMode instead.
     using InputStepMode = VertexStepMode;
@@ -578,26 +582,6 @@ namespace wgpu {
     // RenderPassDepthStencilAttachmentDescriptor is deprecated.
     // Use RenderPassDepthStencilAttachment instead.
     using RenderPassDepthStencilAttachmentDescriptor = RenderPassDepthStencilAttachment;
-
-    // RenderPipelineDescriptor2 is deprecated.
-    // Use RenderPipelineDescriptor instead.
-    using RenderPipelineDescriptor2 = RenderPipelineDescriptor;
-
-    // StencilStateFaceDescriptor is deprecated.
-    // Use StencilFaceState instead.
-    using StencilStateFaceDescriptor = StencilFaceState;
-
-    // TextureCopyView is deprecated.
-    // Use ImageCopyTexture instead.
-    using TextureCopyView = ImageCopyTexture;
-
-    // VertexAttributeDescriptor is deprecated.
-    // Use VertexAttribute instead.
-    using VertexAttributeDescriptor = VertexAttribute;
-
-    // VertexBufferLayoutDescriptor is deprecated.
-    // Use VertexBufferLayout instead.
-    using VertexBufferLayoutDescriptor = VertexBufferLayout;
 
 
     template<typename Derived, typename CType>
@@ -710,6 +694,7 @@ namespace wgpu {
         void const * GetConstMappedRange(size_t offset = 0, size_t size = 0) const;
         void * GetMappedRange(size_t offset = 0, size_t size = 0) const;
         void MapAsync(MapMode mode, size_t offset, size_t size, BufferMapCallback callback, void * userdata) const;
+        void SetLabel(char const * label) const;
         void Unmap() const;
 
       private:
@@ -741,6 +726,7 @@ namespace wgpu {
         void CopyBufferToTexture(ImageCopyBuffer const * source, ImageCopyTexture const * destination, Extent3D const * copySize) const;
         void CopyTextureToBuffer(ImageCopyTexture const * source, ImageCopyBuffer const * destination, Extent3D const * copySize) const;
         void CopyTextureToTexture(ImageCopyTexture const * source, ImageCopyTexture const * destination, Extent3D const * copySize) const;
+        void CopyTextureToTextureInternal(ImageCopyTexture const * source, ImageCopyTexture const * destination, Extent3D const * copySize) const;
         CommandBuffer Finish(CommandBufferDescriptor const * descriptor = nullptr) const;
         void InjectValidationError(char const * message) const;
         void InsertDebugMarker(char const * markerLabel) const;
@@ -782,6 +768,7 @@ namespace wgpu {
         using ObjectBase::operator=;
 
         BindGroupLayout GetBindGroupLayout(uint32_t groupIndex) const;
+        void SetLabel(char const * label) const;
 
       private:
         friend ObjectBase<ComputePipeline, WGPUComputePipeline>;
@@ -806,7 +793,6 @@ namespace wgpu {
         QuerySet CreateQuerySet(QuerySetDescriptor const * descriptor) const;
         RenderBundleEncoder CreateRenderBundleEncoder(RenderBundleEncoderDescriptor const * descriptor) const;
         RenderPipeline CreateRenderPipeline(RenderPipelineDescriptor const * descriptor) const;
-        RenderPipeline CreateRenderPipeline2(RenderPipelineDescriptor const * descriptor) const;
         void CreateRenderPipelineAsync(RenderPipelineDescriptor const * descriptor, CreateRenderPipelineAsyncCallback callback, void * userdata) const;
         Sampler CreateSampler(SamplerDescriptor const * descriptor = nullptr) const;
         ShaderModule CreateShaderModule(ShaderModuleDescriptor const * descriptor) const;
@@ -971,6 +957,7 @@ namespace wgpu {
         using ObjectBase::operator=;
 
         BindGroupLayout GetBindGroupLayout(uint32_t groupIndex) const;
+        void SetLabel(char const * label) const;
 
       private:
         friend ObjectBase<RenderPipeline, WGPURenderPipeline>;
@@ -996,6 +983,7 @@ namespace wgpu {
         using ObjectBase::operator=;
 
         void GetCompilationInfo(CompilationInfoCallback callback, void * userdata) const;
+        void SetLabel(char const * label) const;
 
       private:
         friend ObjectBase<ShaderModule, WGPUShaderModule>;
@@ -1037,6 +1025,7 @@ namespace wgpu {
 
         TextureView CreateView(TextureViewDescriptor const * descriptor = nullptr) const;
         void Destroy() const;
+        void SetLabel(char const * label) const;
 
       private:
         friend ObjectBase<Texture, WGPUTexture>;
@@ -1152,6 +1141,8 @@ namespace wgpu {
 
     struct DeviceProperties {
         bool textureCompressionBC = false;
+        bool textureCompressionETC2 = false;
+        bool textureCompressionASTC = false;
         bool shaderFloat16 = false;
         bool pipelineStatisticsQuery = false;
         bool timestampQuery = false;

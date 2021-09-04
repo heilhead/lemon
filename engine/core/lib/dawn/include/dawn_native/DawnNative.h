@@ -109,6 +109,10 @@ namespace dawn_native {
         std::vector<const char*> GetSupportedExtensions() const;
         WGPUDeviceProperties GetAdapterProperties() const;
 
+        // Check that the Adapter is able to support importing external images. This is necessary
+        // to implement the swapchain and interop APIs in Chromium.
+        bool SupportsExternalImages() const;
+
         explicit operator bool() const;
 
         // Create a device on this adapter, note that the interface will change to include at least
@@ -243,6 +247,13 @@ namespace dawn_native {
       protected:
         ExternalImageExportInfo(ExternalImageType type);
     };
+
+    DAWN_NATIVE_EXPORT const char* GetObjectLabelForTesting(void* objectHandle);
+
+    DAWN_NATIVE_EXPORT uint64_t GetAllocatedSizeForTesting(WGPUBuffer buffer);
+
+    DAWN_NATIVE_EXPORT bool BindGroupLayoutBindingsEqualForTesting(WGPUBindGroupLayout a,
+                                                                   WGPUBindGroupLayout b);
 
 }  // namespace dawn_native
 
