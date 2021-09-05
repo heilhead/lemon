@@ -2,8 +2,8 @@
 
 int main(int argc, char *argv[])
 {
-    LemonEngine engine;
-    engine.listDevices();
-
+    auto* engine = lemon::Engine::get();
+    engine->init();
+    engine->shutdown();
     return 0;
 }

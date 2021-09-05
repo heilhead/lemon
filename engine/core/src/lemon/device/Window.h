@@ -31,11 +31,17 @@ namespace lemon {
 	protected:
 		HWND hWnd;
 		GLFWwindow* window;
+        uint32_t width;
+        uint32_t height;
 
 	public:
 		[[nodiscard]] HWND getContextHandle() const {
 			return hWnd;
 		}
+
+        [[nodiscard]] std::pair<uint32_t, uint32_t> getSize() const {
+            return std::make_pair(width, height);
+        }
 
 		void loop(const std::function<LoopControl(float)>& callback) const;
 	};

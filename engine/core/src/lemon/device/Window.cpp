@@ -4,7 +4,7 @@
 
 #include <chrono>
 #include <GLFW/glfw3native.h>
-#include "../utils/utils.h"
+#include "lemon/utils/utils.h"
 
 using namespace lemon;
 
@@ -22,6 +22,8 @@ Window::Window(WindowDescriptor& desc)
 	}
 
 	hWnd = glfwGetWin32Window(window);
+    width = desc.width;
+    height = desc.height;
 }
 
 Window::~Window() {
