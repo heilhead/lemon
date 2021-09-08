@@ -1,0 +1,11 @@
+{
+  "name": "lemon",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "catch2",
+    "folly",
+    "glm",
+    "glfw3",
+    "nlohmann-json"
+  ]
+}

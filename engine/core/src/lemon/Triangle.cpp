@@ -1,6 +1,6 @@
 #include "Triangle.h"
 #include <cassert>
-#include "lemon/utils/utils.h"
+#include "lemon/prelude.h"
 
 using namespace lemon;
 

@@ -4,9 +4,9 @@
 //#include <cstdint>
 //#include <memory>
 #include <cassert>
+#include "lemon/prelude.h"
 #include "lemon/device/Window.h"
 #include "lemon/Triangle.h"
-#include "lemon/utils/utils.h"
 
 using namespace lemon;
 

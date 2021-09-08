@@ -1,9 +1,12 @@
 .cpm-cache/
 .vs/
+.vscode/
 /bin/
 /build/
 cmake-build-*/
 /out/
+/lib/boost_1_77_0/
+/vcpkg_installed/
 
 # Prerequisites
 *.d
