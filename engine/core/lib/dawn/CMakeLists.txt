@@ -6,7 +6,9 @@ add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::dawn ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
+
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 # @TODO Release version apparently compiled without d3d12/vulkan support - no adapters can be discovered
 set(DAWN_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/x64/Debug)

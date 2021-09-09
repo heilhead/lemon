@@ -1,16 +1,15 @@
-#include "prelude.h"
-
 #include <iostream>
 #include <variant>
 #include <vector>
 #include <cassert>
+
+#include "lemon/Scheduler.h"
 
 #include <folly/experimental/coro/Generator.h>
 #include <folly/experimental/coro/Task.h>
 #include <folly/experimental/coro/BlockingWait.h>
 
 //#include "lemon/engine.h"
-//#include "lemon/Scheduler.h"
 
 folly::coro::Task<int> task42() {
     co_return 42;

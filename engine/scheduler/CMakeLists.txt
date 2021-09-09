@@ -15,4 +15,4 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/src)
 
 find_package(folly CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Folly::folly)
+target_link_libraries(${PROJECT_NAME} PUBLIC Folly::folly)

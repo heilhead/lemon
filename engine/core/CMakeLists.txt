@@ -27,12 +27,13 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
+#find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
-        lemon-dawn
         lemon-shared
-        glfw
         glm::glm
-        nlohmann_json::nlohmann_json)
+        # nlohmann_json::nlohmann_json
+        PRIVATE
+        lemon-dawn
+        glfw)

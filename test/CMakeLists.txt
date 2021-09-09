@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
 find_package(Catch2 CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
-        Catch2
+        PRIVATE
+        Catch2::Catch2
         lemon::core
         lemon::shared)
