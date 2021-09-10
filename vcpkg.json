@@ -6,6 +6,8 @@
     "folly",
     "glm",
     "glfw3",
-    "nlohmann-json"
+    "nlohmann-json",
+    "range-v3",
+    "tl-expected"
   ]
 }

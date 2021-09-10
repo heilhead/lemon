@@ -1,7 +1,7 @@
 project(lemon-scheduler)
 
 set(SOURCE_FILES
-        src/lemon/Scheduler.cpp)
+        src/lemon/scheduler/Scheduler.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::scheduler ALIAS ${PROJECT_NAME})
@@ -15,4 +15,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/src)
 
 find_package(folly CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC Folly::folly)
+find_package(range-v3 CONFIG REQUIRED)
+find_package(tl-expected CONFIG REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Folly::folly range-v3 tl::expected)

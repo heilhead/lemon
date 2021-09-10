@@ -4,6 +4,7 @@ set(SOURCE_FILES
         src/lemon/engine.cpp
         src/lemon/utils/utils.cpp
         src/lemon/device/Window.cpp
+        src/lemon/resource/Resource.cpp
         src/lemon/Triangle.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
