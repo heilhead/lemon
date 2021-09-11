@@ -5,16 +5,25 @@
 #include <cstdint>
 #include <fstream>
 #include <variant>
+#include <string>
 #include <tl/expected.hpp>
-#include "lemon/shared/DataBuffer.h"
+#include <lemon/shared/DataBuffer.h>
 
 namespace lemon::io {
     enum class Error {
-        ReadFailed = 1,
-        WriteFailed = 2,
-        InvalidReadSize = 3,
-        InvalidFileSize = 4,
+        // Failed to create IO stream.
+        OpenFailed = 1,
+
+        // Failed to read input stream.
+        ReadFailed = 2,
+
+        // Failed to write output stream.
+        WriteFailed = 3,
+
+        // Input stream is empty.
+        NoData = 4,
     };
 
-    tl::expected<HeapBuffer, Error> readFile(const std::filesystem::path& filePath);
+    tl::expected<lemon::HeapBuffer, Error> readBinaryFile(const std::filesystem::path& filePath);
+    tl::expected<std::string, Error> readTextFile(const std::filesystem::path& filePath);
 }

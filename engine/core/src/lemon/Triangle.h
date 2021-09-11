@@ -1,10 +1,10 @@
 #pragma once
 
 #include <array>
-#include "dawn/webgpu_cpp.h"
-#include "dawn/dawn_proc.h"
-#include "dawn_native/D3D12Backend.h"
-#include "lemon/device/Window.h"
+#include <dawn/webgpu_cpp.h>
+#include <dawn/dawn_proc.h>
+#include <dawn_native/D3D12Backend.h>
+#include <lemon/device/Window.h>
 
 struct BindingLayoutEntryInitializationHelper : wgpu::BindGroupLayoutEntry {
     BindingLayoutEntryInitializationHelper(uint32_t entryBinding,

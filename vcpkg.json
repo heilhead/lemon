@@ -3,10 +3,10 @@
   "version-string": "0.1.0",
   "dependencies": [
     "catch2",
+    "cereal",
     "folly",
     "glm",
     "glfw3",
-    "nlohmann-json",
     "range-v3",
     "tl-expected"
   ]

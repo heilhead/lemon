@@ -1,12 +1,12 @@
-#include "lemon/engine.h"
+#include <lemon/engine.h>
 
 //#include <vector>
 //#include <cstdint>
 //#include <memory>
 #include <cassert>
-#include "lemon/prelude.h"
-#include "lemon/device/Window.h"
-#include "lemon/Triangle.h"
+#include <lemon/prelude.h>
+#include <lemon/device/Window.h>
+#include <lemon/Triangle.h>
 
 using namespace lemon;
 

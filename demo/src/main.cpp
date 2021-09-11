@@ -1,19 +1,25 @@
 #include <iostream>
-#include <variant>
-#include <vector>
-#include <cassert>
-#include <chrono>
-#include <cstdint>
+//#include <variant>
+//#include <vector>
+//#include <cassert>
+//#include <chrono>
+//#include <cstdint>
 #include <mutex>
-#include <string>
+//#include <string>
 
-#include "lemon/scheduler.h"
+#include <lemon/scheduler.h>
+//#include <folly/experimental/coro/BlockingWait.h>
+//#include <folly/experimental/coro/Collect.h>
 
-#include <folly/experimental/coro/BlockingWait.h>
-#include <folly/experimental/coro/Collect.h>
+#include <lemon/shared.h>
+#include <lemon/shared/filesystem.h>
+#include <lemon/resource/ResourceManager.h>
 
-#include "lemon/shared.h"
-#include "lemon/shared/filesystem.h"
+#include <cereal/archives/xml.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <fstream>
 
 std::mutex mut;
 
@@ -53,76 +59,152 @@ void print(Args&& ...args) {
 //    }
 //}
 
-uint64_t fib(uint64_t n) {
-    uint64_t a = 0, b = 1, c, i;
-    if (n == 0)
-        return a;
-    for (i = 2; i <= n; i++) {
-        c = a + b;
-        a = b;
-        b = c;
-    }
-    return b;
-}
-
 using namespace lemon::scheduler;
+using namespace lemon::res;
 
-uint64_t measureFib(uint64_t n, int p) {
-    typedef std::chrono::steady_clock clock;
-    typedef std::chrono::duration<float> duration;
+enum class ResourceType {
+    Unknown,
+    Level,
+    Model,
+    Material,
+    Texture,
+    Mesh,
+};
 
-    auto tStart = clock::now();
-    auto result = fib(n);
-    auto tStop = clock::now();
+struct RawResourceReference {
+    std::string location;
+    ResourceType type;
 
-    duration dt = tStop - tStart;
+    template<class Archive>
+    void serialize(Archive& ar) {
+        ar(CEREAL_NVP(location));
+        ar(CEREAL_NVP(type));
+    }
+};
 
-    print("fib(", n, "): ", result, " (took ", dt, "s) (priority ", p, ")");
+struct CommonResourceMetadata {
+    std::vector<RawResourceReference> references;
 
-    return result;
-}
+    template<class Archive>
+    void serialize(Archive& ar) {
+        ar(CEREAL_NVP(references));
+    }
+};
 
-Task<uint64_t> fibTask(int p) {
-    co_return measureFib(1200000000, p);
-}
+struct ResourceMetadataBase {
+    virtual ~ResourceMetadataBase() {}
+};
 
-Task<int> multiFibTask(int conc) {
-    std::vector<TaskFuture<uint64_t, int>> tasks;
+struct MaterialResourceMetadata : ResourceMetadataBase {
+    CommonResourceMetadata common;
+    std::unordered_map<std::string, int> shaderConfig;
+    std::unordered_map<std::string, std::string> textures;
 
-    for (int i = 0; i < conc; i++) {
-        tasks.push_back(runCPUTask(fibTask(0), Priority::Low));
+    template<class Archive>
+    void serialize(Archive& ar) {
+        ar(CEREAL_NVP(common));
+        ar(CEREAL_NVP(shaderConfig));
+        ar(CEREAL_NVP(textures));
+    }
+};
+
+struct ResourceMetadata {
+    ResourceType type;
+    std::unique_ptr<ResourceMetadataBase> data;
+
+    ResourceMetadata(ResourceType inType, std::unique_ptr<ResourceMetadataBase>&& inData) {
+        type = inType;
+        data = std::move(inData);
     }
 
-    co_await folly::collectAll(tasks.begin(), tasks.end());
-    co_return 3;
+    template<typename T>
+    [[nodiscard]] T* get() const {
+        return dynamic_cast<T*>(data.get());
+    }
+};
+
+enum class ResourceLoadingError {
+    Unknown,
+};
+
+template<typename Loader>
+tl::expected<ResourceMetadata, ResourceLoadingError>
+loadMetadata(std::string& path) {
+    auto location = ResourceLocation(path);
+    auto fullPath = ResourceManager::get()->locateFile(location);
+    fullPath += ".meta";
+
+    return lemon::io::readTextFile(fullPath)
+        .map_error([](auto&& err) {
+            return ResourceLoadingError::Unknown;
+        })
+        .map([](auto&& str) {
+            std::istringstream is(str);
+            cereal::XMLInputArchive archive(is);
+            ResourceMetadata meta(Loader::getType(), Loader::loadMetadata(archive));
+            return meta;
+        });
 }
 
-Task<lemon::HeapBuffer, lemon::io::Error> readBinaryFile(std::filesystem::path& path) {
-    co_return lemon::io::readFile(path);
-}
+struct MaterialLoader {
+    static constexpr ResourceType getType() {
+        return ResourceType::Material;
+    }
 
-Task<std::string, lemon::io::Error> readTextFile(std::filesystem::path&& path) {
-    // Run the blocking IO task on the designated IO thread pool.
-    auto binary = co_await runIOTask(readBinaryFile(path));
+    template<typename Archive>
+    static std::unique_ptr<ResourceMetadataBase> loadMetadata(Archive& ar) {
+        std::unique_ptr<MaterialResourceMetadata> data = std::make_unique<MaterialResourceMetadata>();
+        ar(cereal::make_nvp("material", *data));
+        return data;
+    }
 
-    co_return binary.map([](auto& buffer) {
-        return std::string(buffer.get<char>(), buffer.size());
-    });
-}
+    template<typename Archive>
+    static void saveMetadata(Archive& ar, const ResourceMetadata& data) {
+        auto* matData = data.get<MaterialResourceMetadata>();
+        ar(cereal::make_nvp("material", *matData));
+    }
+};
 
 int main(int argc, char* argv[]) {
-    std::unique_ptr<Scheduler> sched = std::make_unique<Scheduler>();
+    std::unique_ptr<lemon::res::ResourceManager> resMan = std::make_unique<lemon::res::ResourceManager>(
+        R"(C:\git\lemon\resources)");
 
-    auto result = folly::coro::blockingWait(
-        // The main/decoding task runs on the CPU thread pool, while the inner IO task will run on a different thead pool.
-        runCPUTask(readTextFile("C:\\git\\lemon\\engine\\core\\include\\lemon\\engine.h"))
-    );
+    std::string path = "basketball.mat";
+    auto meta = loadMetadata<MaterialLoader>(path);
 
-    if (result) {
-        std::cout << "result ok: " << *result << std::endl;
+    if (meta) {
+        auto* matData = (*meta).get<MaterialResourceMetadata>();
+        print("load metadata: success");
     } else {
-        std::cout << "result error: " << (int)result.error() << std::endl;
+        print("load metadata: error");
     }
+
+//    {
+//        std::ofstream os("C:\\git\\lemon\\resources\\basketball.mat.meta", std::ios::binary);
+//        cereal::XMLOutputArchive archive(os);
+//
+//        auto material = std::make_unique<MaterialResourceMetadata>();
+//        material->common.references.push_back(RawResourceReference {
+//            .location = "basketball.png",
+//            .type = ResourceType::Texture
+//        });
+//        material->shaderConfig.insert({ "ENABLE_SKINNING", 0 });
+//        material->textures.insert({ "albedo", "basketball.png" });
+//        ResourceMetadata meta(MaterialLoader::getType(), std::move(material));
+//        MaterialLoader::saveMetadata(archive, meta);
+//    }
+
+//    std::unique_ptr<Scheduler> sched = std::make_unique<Scheduler>();
+//
+//    auto result = folly::coro::blockingWait(
+//        IOTask(readTextFile("C:\\git\\lemon\\engine\\core\\include\\lemon\\engine.h"))
+//    );
+//
+//    if (result) {
+//        std::cout << "result ok: " << *result << std::endl;
+//    } else {
+//        std::cout << "result error: " << (int)result.error() << std::endl;
+//    }
 
     return 0;
 }

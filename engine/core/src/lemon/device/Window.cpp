@@ -4,7 +4,7 @@
 
 #include <chrono>
 #include <GLFW/glfw3native.h>
-#include "lemon/prelude.h"
+#include <lemon/prelude.h>
 
 using namespace lemon;
 

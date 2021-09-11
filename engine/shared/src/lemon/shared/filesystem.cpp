@@ -1,26 +1,50 @@
-#include "lemon/shared/filesystem.h"
+#include <lemon/shared/filesystem.h>
+#include <fstream>
+#include <string>
+#include <cstdint>
 
-tl::expected<lemon::HeapBuffer, lemon::io::Error> lemon::io::readFile(const std::filesystem::path& filePath) {
-    std::error_code sizeError;
-    auto fileSize = std::filesystem::file_size(filePath, sizeError);
-    if (sizeError) {
-        return tl::make_unexpected(Error::InvalidFileSize);
+using namespace lemon;
+using namespace lemon::io;
+
+template<typename T>
+using FileReadCallback = tl::expected<T, Error>(*)(std::ifstream& is, size_t size);
+
+template<typename T>
+tl::expected<T, Error>
+readFile(const std::filesystem::path& filePath, FileReadCallback<T> callback) {
+    if (std::ifstream is { filePath, std::ios::binary | std::ios::ate }) {
+        auto size = is.tellg();
+        if (size > 0) {
+            is.seekg(0);
+            return callback(is, size);
+        } else {
+            return tl::make_unexpected(Error::NoData);
+        }
+    } else {
+        return tl::make_unexpected(Error::OpenFailed);
     }
+}
 
-    auto filePathStr = filePath.string();
-    std::FILE* handle;
-    auto openError = fopen_s(&handle, filePathStr.c_str(), "rb");
-    if (openError) {
-        return tl::make_unexpected(Error::ReadFailed);
-    }
+tl::expected<HeapBuffer, Error> lemon::io::readBinaryFile(const std::filesystem::path& filePath) {
+    return readFile<HeapBuffer>(filePath, [](auto& is, auto size) -> tl::expected<HeapBuffer, Error> {
+        HeapBuffer buffer(size);
 
-    lemon::HeapBuffer buffer(fileSize);
-    auto readBytes = std::fread(*buffer, 1, fileSize, handle);
-    fclose(handle);
+        if (is.read(buffer.get<char>(), size)) {
+            return buffer;
+        } else {
+            return tl::make_unexpected(Error::ReadFailed);
+        }
+    });
+}
 
-    if (readBytes != fileSize) {
-        return tl::make_unexpected(Error::InvalidReadSize);
-    }
+tl::expected<std::string, Error> lemon::io::readTextFile(const std::filesystem::path& filePath) {
+    return readFile<std::string>(filePath, [](auto& is, auto size) -> tl::expected<std::string, Error> {
+        std::string buffer(size, '\0');
 
-    return buffer;
+        if (is.read(&buffer[0], size)) {
+            return buffer;
+        } else {
+            return tl::make_unexpected(Error::ReadFailed);
+        }
+    });
 }

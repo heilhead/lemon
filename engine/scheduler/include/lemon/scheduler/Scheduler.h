@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lemon/scheduler/prelude.h"
+#include <lemon/scheduler/prelude.h>
 #include <folly/executors/IOThreadPoolExecutor.h>
 #include <folly/executors/CPUThreadPoolExecutor.h>
 #include <folly/experimental/coro/Task.h>
@@ -41,12 +41,12 @@ namespace lemon::scheduler {
     };
 
     template<typename T, typename U>
-    TaskFuture<T, U> runIOTask(Task<T, U>&& task) {
+    TaskFuture<T, U> IOTask(Task<T, U>&& task) {
         return std::move(task).semi().via(Scheduler::get()->getIOExecutor()->weakRef());
     }
 
     template<typename T, typename U>
-    TaskFuture<T, U> runCPUTask(Task<T, U>&& task, Priority priority = Priority::Medium) {
+    TaskFuture<T, U> CPUTask(Task<T, U>&& task, Priority priority = Priority::Medium) {
         return std::move(task).semi()
                               .via(Scheduler::get()->getCPUExecutor()->weakRef(), static_cast<int8_t>(priority));
     }

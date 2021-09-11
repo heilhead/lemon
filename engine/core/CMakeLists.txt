@@ -5,7 +5,8 @@ set(SOURCE_FILES
         src/lemon/utils/utils.cpp
         src/lemon/device/Window.cpp
         src/lemon/resource/Resource.cpp
-        src/lemon/Triangle.cpp)
+        src/lemon/Triangle.cpp
+        src/lemon/resource/ResourceManager.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -28,13 +29,12 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-#find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon-shared
+        lemon-scheduler
         glm::glm
-        # nlohmann_json::nlohmann_json
         PRIVATE
         lemon-dawn
         glfw)
