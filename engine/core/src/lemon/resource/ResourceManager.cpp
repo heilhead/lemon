@@ -5,6 +5,7 @@ using namespace lemon::res;
 
 static ResourceManager* gInstance;
 
+// @TODO ID should not include subobject, as they'll be stored inside the main resource object
 ResourceID lemon::res::getResourceID(std::string& file, std::optional<std::string>& object) {
     auto hash = folly::hash::fnva64(file);
     if (object) {

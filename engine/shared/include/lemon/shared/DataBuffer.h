@@ -11,7 +11,7 @@ namespace lemon {
 		}
 
 		static void release(const uint8_t* ptr) {
-			delete ptr;
+			delete[] ptr;
 		}
 	};
 
