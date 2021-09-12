@@ -1,12 +1,16 @@
 project(lemon-core)
 
 set(SOURCE_FILES
-        src/lemon/engine.cpp
-        src/lemon/utils/utils.cpp
-        src/lemon/device/Window.cpp
-        src/lemon/resource/Resource.cpp
         src/lemon/Triangle.cpp
-        src/lemon/resource/ResourceManager.cpp)
+        src/lemon/engine.cpp
+        src/lemon/device/Window.cpp
+        src/lemon/resource/ResourceInstance.cpp
+        src/lemon/resource/ResourceManager.cpp
+        src/lemon/resource/ResourceStore.cpp
+        src/lemon/resource/ResourceContract.cpp
+        src/lemon/resource/ResourceLocation.cpp
+        src/lemon/resource/types/MaterialResource.cpp
+        src/lemon/resource/common.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

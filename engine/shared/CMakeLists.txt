@@ -3,6 +3,7 @@ project(lemon-shared)
 set(SOURCE_FILES
         src/lemon/shared/Vector.cpp
         src/lemon/shared/filesystem.cpp
+        src/lemon/utils/utils.cpp
         )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
