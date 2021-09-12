@@ -8,13 +8,11 @@ namespace lemon::res {
     static const char* kLocationObjectDelimiter = ":";
 
     struct ResourceLocation {
-        ResourceID id;
+        ResourceHandle handle;
         std::filesystem::path file;
         std::optional<std::string> object;
 
-        explicit ResourceLocation(std::string& inLocation);
-        ResourceLocation(std::string& inLocation, std::string&& inObject);
-
-        // @TODO `ResourceState getState();`
+        explicit ResourceLocation(const std::string& inLocation);
+        ResourceLocation(const std::string& inLocation, std::string&& inObject);
     };
 }

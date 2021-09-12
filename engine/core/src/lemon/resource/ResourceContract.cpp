@@ -2,17 +2,24 @@
 #include <lemon/resource/ResourceInstance.h>
 
 using namespace lemon::res;
+using namespace lemon::scheduler;
 
-ResourceContract::ResourceContract(ResourceLifetime lifetime)
-    :contract {
-    std::move(folly::makePromiseContract<void*>(lemon::scheduler::Scheduler::get()->getCPUExecutor()->weakRef()))
-} { }
+ResourceContract::ResourceContract(ResourceLifetime lifetime) {
+    auto exec = Scheduler::get()->getCPUExecutor()->weakRef();
+    auto[tmpPromise, tmpFuture] = folly::makePromiseContract<ResolutionType<void>>(exec);
+    promise = std::move(tmpPromise);
+    future = std::move(tmpFuture);
+}
 
 ResourceContract::~ResourceContract() {
     // Assume that if this destructor is called, the resource is either fully loaded, or failed to load. Either way,
     // we can destroy the data we have.
-    if (contract.first.isFulfilled()) {
-        auto* data = reinterpret_cast<ResourceInstance*>(contract.second.value());
-        delete data;
+    if (promise.isFulfilled()) {
+        auto& resolution = future.value();
+        if (resolution) {
+            // The resource is fully initialized, so we should destroy it.
+            auto* data = reinterpret_cast<ResourceInstance*>(resolution.value());
+            delete data;
+        }
     }
 }

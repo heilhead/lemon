@@ -1,8 +1,19 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
 
 namespace lemon::utils {
+    namespace {
+        std::mutex printMut;
+    }
+
+    template<typename ...Args>
+    void tprint(Args&& ...args) {
+        std::lock_guard lg(printMut);
+        (std::cout << ... << args) << std::endl;
+    }
+
     template<typename ...Args>
     void print(Args&& ...args) {
         (std::cout << ... << args) << std::endl;

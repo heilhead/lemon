@@ -3,10 +3,6 @@
 	<material>
 		<common>
 			<references size="dynamic">
-				<value0>
-					<location>basketball.png</location>
-					<type>4</type>
-				</value0>
 			</references>
 		</common>
 		<shaderConfig size="dynamic">

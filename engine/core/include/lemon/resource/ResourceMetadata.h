@@ -28,6 +28,8 @@ namespace lemon::res {
     };
 
     struct ResourceMetadataBase {
+        CommonResourceMetadata common;
+
         virtual ~ResourceMetadataBase() = default;
     };
 
@@ -43,6 +45,11 @@ namespace lemon::res {
         template<typename T>
         [[nodiscard]] T* get() const {
             return dynamic_cast<T*>(data.get());
+        }
+
+        inline const std::vector<RawResourceReference>& getReferences() const {
+            assert(data != nullptr);
+            return get<ResourceMetadataBase>()->common.references;
         }
     };
 }
