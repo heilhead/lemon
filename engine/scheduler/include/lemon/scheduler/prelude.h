@@ -4,7 +4,7 @@
 #include <tl/expected.hpp>
 
 #pragma warning(push)
-#pragma warning(disable: 4005)
+#pragma warning(disable : 4005)
 #include <folly/Portability.h>
 #pragma warning(pop)
 

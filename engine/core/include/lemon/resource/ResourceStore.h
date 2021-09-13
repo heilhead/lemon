@@ -9,16 +9,18 @@ namespace lemon::res {
 
     class ResourceStore {
     public:
-        explicit ResourceStore(size_t size)
-            :map { size } { }
+        explicit ResourceStore(size_t size) : map{size} {}
         ~ResourceStore();
 
     private:
         folly::AtomicHashMap<uint64_t, folly::PackedSyncPtr<ResourceContract>> map;
 
     public:
-        ResourceContract* find(ResourceHandle id);
-        std::pair<ResourceContract*, bool> findOrInsert(ResourceHandle id);
-        void remove(ResourceHandle id);
+        ResourceContract*
+        find(ResourceHandle id);
+        std::pair<ResourceContract*, bool>
+        findOrInsert(ResourceHandle id);
+        void
+        remove(ResourceHandle id);
     };
-};
+}; // namespace lemon::res

@@ -4,7 +4,8 @@
 
 using namespace lemon;
 
-void printDeviceError(WGPUErrorType errorType, const char* message, void*) {
+void
+printDeviceError(WGPUErrorType errorType, const char* message, void*) {
     const char* errorTypeName = "";
     switch (errorType) {
     case WGPUErrorType_Validation:
@@ -27,7 +28,8 @@ void printDeviceError(WGPUErrorType errorType, const char* message, void*) {
     utils::printErr("WebGPU device error: ", errorTypeName, ": ", message);
 }
 
-wgpu::TextureDataLayout CreateTextureDataLayout(uint64_t offset, uint32_t bytesPerRow, uint32_t rowsPerImage) {
+wgpu::TextureDataLayout
+CreateTextureDataLayout(uint64_t offset, uint32_t bytesPerRow, uint32_t rowsPerImage) {
     wgpu::TextureDataLayout textureDataLayout;
     textureDataLayout.offset = offset;
     textureDataLayout.bytesPerRow = bytesPerRow;
@@ -47,7 +49,8 @@ CreateBufferFromData(const wgpu::Device& device, const void* data, uint64_t size
     return buffer;
 }
 
-wgpu::ImageCopyBuffer CreateImageCopyBuffer(wgpu::Buffer buffer, uint64_t offset, uint32_t bytesPerRow) {
+wgpu::ImageCopyBuffer
+CreateImageCopyBuffer(wgpu::Buffer buffer, uint64_t offset, uint32_t bytesPerRow) {
     uint32_t rowsPerImage = wgpu::kCopyStrideUndefined;
 
     wgpu::ImageCopyBuffer imageCopyBuffer = {};
@@ -57,7 +60,8 @@ wgpu::ImageCopyBuffer CreateImageCopyBuffer(wgpu::Buffer buffer, uint64_t offset
     return imageCopyBuffer;
 }
 
-wgpu::ImageCopyTexture CreateImageCopyTexture(wgpu::Texture texture, uint32_t mipLevel, wgpu::Origin3D origin) {
+wgpu::ImageCopyTexture
+CreateImageCopyTexture(wgpu::Texture texture, uint32_t mipLevel, wgpu::Origin3D origin) {
     wgpu::TextureAspect aspect = wgpu::TextureAspect::All;
 
     wgpu::ImageCopyTexture imageCopyTexture;
@@ -69,7 +73,8 @@ wgpu::ImageCopyTexture CreateImageCopyTexture(wgpu::Texture texture, uint32_t mi
     return imageCopyTexture;
 }
 
-wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device, const wgpu::BindGroupLayout* bindGroupLayout) {
+wgpu::PipelineLayout
+MakeBasicPipelineLayout(const wgpu::Device& device, const wgpu::BindGroupLayout* bindGroupLayout) {
     wgpu::PipelineLayoutDescriptor descriptor;
     if (bindGroupLayout != nullptr) {
         descriptor.bindGroupLayoutCount = 1;
@@ -81,7 +86,8 @@ wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device, const w
     return device.CreatePipelineLayout(&descriptor);
 }
 
-wgpu::TextureView CreateDefaultDepthStencilView(const wgpu::Device& device, uint32_t width, uint32_t height) {
+wgpu::TextureView
+CreateDefaultDepthStencilView(const wgpu::Device& device, uint32_t width, uint32_t height) {
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = width;
@@ -95,7 +101,8 @@ wgpu::TextureView CreateDefaultDepthStencilView(const wgpu::Device& device, uint
     return depthStencilTexture.CreateView();
 }
 
-wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* source) {
+wgpu::ShaderModule
+CreateShaderModule(const wgpu::Device& device, const char* source) {
     wgpu::ShaderModuleWGSLDescriptor wgslDesc;
     wgslDesc.source = source;
     wgpu::ShaderModuleDescriptor descriptor;
@@ -103,9 +110,9 @@ wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* so
     return device.CreateShaderModule(&descriptor);
 }
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
-    wgpu::ShaderStage entryVisibility, wgpu::BufferBindingType bufferType, bool bufferHasDynamicOffset,
-    uint64_t bufferMinBindingSize) {
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    uint32_t entryBinding, wgpu::ShaderStage entryVisibility, wgpu::BufferBindingType bufferType,
+    bool bufferHasDynamicOffset, uint64_t bufferMinBindingSize) {
     binding = entryBinding;
     visibility = entryVisibility;
     buffer.type = bufferType;
@@ -113,15 +120,15 @@ BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(u
     buffer.minBindingSize = bufferMinBindingSize;
 }
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
-    wgpu::ShaderStage entryVisibility, wgpu::SamplerBindingType samplerType) {
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    uint32_t entryBinding, wgpu::ShaderStage entryVisibility, wgpu::SamplerBindingType samplerType) {
     binding = entryBinding;
     visibility = entryVisibility;
     sampler.type = samplerType;
 }
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
-    wgpu::ShaderStage entryVisibility, wgpu::TextureSampleType textureSampleType,
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    uint32_t entryBinding, wgpu::ShaderStage entryVisibility, wgpu::TextureSampleType textureSampleType,
     wgpu::TextureViewDimension textureViewDimension, bool textureMultisampled) {
     binding = entryBinding;
     visibility = entryVisibility;
@@ -130,9 +137,9 @@ BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(u
     texture.multisampled = textureMultisampled;
 }
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
-    wgpu::ShaderStage entryVisibility, wgpu::StorageTextureAccess storageTextureAccess, wgpu::TextureFormat format,
-    wgpu::TextureViewDimension textureViewDimension) {
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    uint32_t entryBinding, wgpu::ShaderStage entryVisibility, wgpu::StorageTextureAccess storageTextureAccess,
+    wgpu::TextureFormat format, wgpu::TextureViewDimension textureViewDimension) {
     binding = entryBinding;
     visibility = entryVisibility;
     storageTexture.access = storageTextureAccess;
@@ -144,36 +151,37 @@ BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(u
 // of declaring a new one every time it's needed.
 wgpu::ExternalTextureBindingLayout kExternalTextureBindingLayout = {};
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
-    wgpu::ShaderStage entryVisibility, wgpu::ExternalTextureBindingLayout* bindingLayout) {
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    uint32_t entryBinding, wgpu::ShaderStage entryVisibility,
+    wgpu::ExternalTextureBindingLayout* bindingLayout) {
     binding = entryBinding;
     visibility = entryVisibility;
     nextInChain = bindingLayout;
 }
 
-BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(const wgpu::BindGroupLayoutEntry& entry)
-    :wgpu::BindGroupLayoutEntry(entry) {
-}
+BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+    const wgpu::BindGroupLayoutEntry& entry)
+    : wgpu::BindGroupLayoutEntry(entry) {}
 
 BindingInitializationHelper::BindingInitializationHelper(uint32_t binding, const wgpu::Sampler& sampler)
-    :binding(binding), sampler(sampler) {
-}
+    : binding(binding), sampler(sampler) {}
 
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding, const wgpu::TextureView& textureView)
-    :binding(binding), textureView(textureView) {
-}
+BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
+                                                         const wgpu::TextureView& textureView)
+    : binding(binding), textureView(textureView) {}
 
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding, const wgpu::ExternalTexture& externalTexture)
-    :binding(binding) {
+BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
+                                                         const wgpu::ExternalTexture& externalTexture)
+    : binding(binding) {
     externalTextureBindingEntry.externalTexture = externalTexture;
 }
 
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding, const wgpu::Buffer& buffer, uint64_t offset,
-    uint64_t size)
-    :binding(binding), buffer(buffer), offset(offset), size(size) {
-}
+BindingInitializationHelper::BindingInitializationHelper(uint32_t binding, const wgpu::Buffer& buffer,
+                                                         uint64_t offset, uint64_t size)
+    : binding(binding), buffer(buffer), offset(offset), size(size) {}
 
-wgpu::BindGroupEntry BindingInitializationHelper::GetAsBinding() const {
+wgpu::BindGroupEntry
+BindingInitializationHelper::GetAsBinding() const {
     wgpu::BindGroupEntry result;
 
     result.binding = binding;
@@ -189,10 +197,11 @@ wgpu::BindGroupEntry BindingInitializationHelper::GetAsBinding() const {
     return result;
 }
 
-wgpu::BindGroupLayout MakeBindGroupLayout(const wgpu::Device& device,
-    std::initializer_list<BindingLayoutEntryInitializationHelper> entriesInitializer) {
+wgpu::BindGroupLayout
+MakeBindGroupLayout(const wgpu::Device& device,
+                    std::initializer_list<BindingLayoutEntryInitializationHelper> entriesInitializer) {
     std::vector<wgpu::BindGroupLayoutEntry> entries;
-    for (const BindingLayoutEntryInitializationHelper& entry: entriesInitializer) {
+    for (const BindingLayoutEntryInitializationHelper& entry : entriesInitializer) {
         entries.push_back(entry);
     }
 
@@ -202,10 +211,11 @@ wgpu::BindGroupLayout MakeBindGroupLayout(const wgpu::Device& device,
     return device.CreateBindGroupLayout(&descriptor);
 }
 
-wgpu::BindGroup MakeBindGroup(const wgpu::Device& device, const wgpu::BindGroupLayout& layout,
-    std::initializer_list<BindingInitializationHelper> entriesInitializer) {
+wgpu::BindGroup
+MakeBindGroup(const wgpu::Device& device, const wgpu::BindGroupLayout& layout,
+              std::initializer_list<BindingInitializationHelper> entriesInitializer) {
     std::vector<wgpu::BindGroupEntry> entries;
-    for (const BindingInitializationHelper& helper: entriesInitializer) {
+    for (const BindingInitializationHelper& helper : entriesInitializer) {
         entries.push_back(helper.GetAsBinding());
     }
 
@@ -309,18 +319,19 @@ ComboRenderPipelineDescriptor::ComboRenderPipelineDescriptor() {
     }
 }
 
-wgpu::DepthStencilState* ComboRenderPipelineDescriptor::EnableDepthStencil(wgpu::TextureFormat format) {
+wgpu::DepthStencilState*
+ComboRenderPipelineDescriptor::EnableDepthStencil(wgpu::TextureFormat format) {
     this->depthStencil = &cDepthStencil;
     cDepthStencil.format = format;
     return &cDepthStencil;
 }
 
-ComboRenderPassDescriptor::ComboRenderPassDescriptor(std::initializer_list<wgpu::TextureView> colorAttachmentInfo,
-    wgpu::TextureView depthStencil) {
+ComboRenderPassDescriptor::ComboRenderPassDescriptor(
+    std::initializer_list<wgpu::TextureView> colorAttachmentInfo, wgpu::TextureView depthStencil) {
     for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
         cColorAttachments[i].loadOp = wgpu::LoadOp::Clear;
         cColorAttachments[i].storeOp = wgpu::StoreOp::Store;
-        cColorAttachments[i].clearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+        cColorAttachments[i].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
     }
 
     cDepthStencilAttachmentInfo.clearDepth = 1.0f;
@@ -332,7 +343,7 @@ ComboRenderPassDescriptor::ComboRenderPassDescriptor(std::initializer_list<wgpu:
 
     colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.size());
     uint32_t colorAttachmentIndex = 0;
-    for (const wgpu::TextureView& colorAttachment: colorAttachmentInfo) {
+    for (const wgpu::TextureView& colorAttachment : colorAttachmentInfo) {
         if (colorAttachment.Get() != nullptr) {
             cColorAttachments[colorAttachmentIndex].view = colorAttachment;
         }
@@ -352,8 +363,8 @@ ComboRenderPassDescriptor::ComboRenderPassDescriptor(const ComboRenderPassDescri
     *this = other;
 }
 
-ComboRenderPassDescriptor& ComboRenderPassDescriptor::operator=(
-    const ComboRenderPassDescriptor& otherRenderPass) {
+ComboRenderPassDescriptor&
+ComboRenderPassDescriptor::operator=(const ComboRenderPassDescriptor& otherRenderPass) {
     cDepthStencilAttachmentInfo = otherRenderPass.cDepthStencilAttachmentInfo;
     cColorAttachments = otherRenderPass.cColorAttachments;
     colorAttachmentCount = otherRenderPass.colorAttachmentCount;
@@ -381,7 +392,7 @@ Triangle::Triangle(const lemon::Window& window) {
         utils::print("discovering adapters...");
 
         auto adapters = instance->GetAdapters();
-        for (dawn_native::Adapter& adapter: adapters) {
+        for (dawn_native::Adapter& adapter : adapters) {
             wgpu::AdapterProperties properties;
             adapter.GetProperties(&properties);
 
@@ -408,14 +419,15 @@ Triangle::Triangle(const lemon::Window& window) {
 
     queue = device.GetQueue();
 
-    auto swapChainImpl = dawn_native::d3d12::CreateNativeSwapChainImpl(backendDevice, window.getContextHandle());
-    auto[wndWidth, wndHeight] = window.getSize();
+    auto swapChainImpl =
+        dawn_native::d3d12::CreateNativeSwapChainImpl(backendDevice, window.getContextHandle());
+    auto [wndWidth, wndHeight] = window.getSize();
 
     wgpu::SwapChainDescriptor swapChainDesc;
     swapChainDesc.implementation = reinterpret_cast<uint64_t>(&swapChainImpl);
     swapChain = device.CreateSwapChain(nullptr, &swapChainDesc);
-    auto textureFormat = static_cast<wgpu::TextureFormat>(dawn_native::d3d12::GetNativeSwapChainPreferredFormat(
-        &swapChainImpl));
+    auto textureFormat = static_cast<wgpu::TextureFormat>(
+        dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&swapChainImpl));
     swapChain.Configure(textureFormat, wgpu::TextureUsage::RenderAttachment, wndWidth, wndHeight);
 
     // stage 3
@@ -440,11 +452,11 @@ Triangle::Triangle(const lemon::Window& window) {
             return textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0, 480.0));
         })");
 
-    auto bgl = MakeBindGroupLayout(
-        device, {
-            { 0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering },
-            { 1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float },
-        });
+    auto bgl =
+        MakeBindGroupLayout(device, {
+                                        {0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering},
+                                        {1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float},
+                                    });
 
     wgpu::PipelineLayout pl = MakeBasicPipelineLayout(device, &bgl);
 
@@ -459,19 +471,19 @@ Triangle::Triangle(const lemon::Window& window) {
     descriptor.cBuffers[0].attributeCount = 1;
     descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     descriptor.cFragment.module = fsModule;
-    descriptor.cTargets[0]
-        .format = static_cast<wgpu::TextureFormat>(dawn_native::d3d12::GetNativeSwapChainPreferredFormat(
-        &swapChainImpl));
+    descriptor.cTargets[0].format = static_cast<wgpu::TextureFormat>(
+        dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&swapChainImpl));
     descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
 
     pipeline = device.CreateRenderPipeline((const wgpu::RenderPipelineDescriptor*)&descriptor);
 
     wgpu::TextureView view = texture.CreateView();
 
-    bindGroup = MakeBindGroup(device, bgl, {{ 0, sampler }, { 1, view }});
+    bindGroup = MakeBindGroup(device, bgl, {{0, sampler}, {1, view}});
 }
 
-void Triangle::initBuffers() {
+void
+Triangle::initBuffers() {
     static const uint32_t indexData[3] = {
         0,
         1,
@@ -487,7 +499,8 @@ void Triangle::initBuffers() {
     vertexBuffer = CreateBufferFromData(device, vertexData, sizeof(vertexData), wgpu::BufferUsage::Vertex);
 }
 
-void Triangle::initTextures() {
+void
+Triangle::initTextures() {
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = 1024;
@@ -507,11 +520,11 @@ void Triangle::initTextures() {
         data[i] = static_cast<uint8_t>(i % 253);
     }
 
-    wgpu::Buffer stagingBuffer = CreateBufferFromData(
-        device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
+    wgpu::Buffer stagingBuffer = CreateBufferFromData(device, data.data(), static_cast<uint32_t>(data.size()),
+                                                      wgpu::BufferUsage::CopySrc);
     wgpu::ImageCopyBuffer imageCopyBuffer = CreateImageCopyBuffer(stagingBuffer, 0, 4 * 1024);
-    wgpu::ImageCopyTexture imageCopyTexture = CreateImageCopyTexture(texture, 0, { 0, 0, 0 });
-    wgpu::Extent3D copySize = { 1024, 1024, 1 };
+    wgpu::ImageCopyTexture imageCopyTexture = CreateImageCopyTexture(texture, 0, {0, 0, 0});
+    wgpu::Extent3D copySize = {1024, 1024, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
@@ -520,9 +533,10 @@ void Triangle::initTextures() {
     queue.Submit(1, &copy);
 }
 
-void Triangle::render() {
+void
+Triangle::render() {
     wgpu::TextureView backbufferView = swapChain.GetCurrentTextureView();
-    ComboRenderPassDescriptor renderPass({ backbufferView }, depthStencilView);
+    ComboRenderPassDescriptor renderPass({backbufferView}, depthStencilView);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {

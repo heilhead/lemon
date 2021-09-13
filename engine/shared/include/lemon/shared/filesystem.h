@@ -24,6 +24,9 @@ namespace lemon::io {
         NoData = 4,
     };
 
-    tl::expected<lemon::HeapBuffer, Error> readBinaryFile(const std::filesystem::path& filePath);
-    tl::expected<std::string, Error> readTextFile(const std::filesystem::path& filePath);
-}
+    tl::expected<lemon::HeapBuffer, Error>
+    readBinaryFile(const std::filesystem::path& filePath);
+
+    tl::expected<std::string, Error>
+    readTextFile(const std::filesystem::path& filePath);
+} // namespace lemon::io

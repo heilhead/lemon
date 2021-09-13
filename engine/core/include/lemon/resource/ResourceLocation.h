@@ -15,4 +15,4 @@ namespace lemon::res {
         explicit ResourceLocation(const std::string& inLocation);
         ResourceLocation(const std::string& inLocation, std::string&& inObject);
     };
-}
+} // namespace lemon::res

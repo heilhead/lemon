@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+NamespaceIndentation: All
+ColumnLimit: 110
+DerivePointerAlignment: false
+PointerAlignment: Left
+SpaceAfterTemplateKeyword: False
+BreakBeforeConceptDeclarations: True
+AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakAfterReturnType: All
+BraceWrapping:
+  AfterEnum: true
+AllowShortFunctionsOnASingleLine: Empty
+IndentAccessModifiers: False
+AccessModifierOffset: -4
+SortIncludes: Never

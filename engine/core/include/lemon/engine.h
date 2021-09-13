@@ -11,13 +11,16 @@ namespace lemon {
     public:
         Engine();
 
-        void init();
-        void shutdown();
+        void
+        init();
 
-        static Engine* get();
+        void
+        shutdown();
+
+        static Engine*
+        get();
 
     private:
         EngineState state = EngineState::None;
     };
-}
-
+} // namespace lemon

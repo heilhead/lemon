@@ -1,14 +1,15 @@
-#include <lemon/resource/ResourceManager.h>
 #include <cassert>
+#include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
+#include <lemon/resource/types/TextureResource.h>
+#include <lemon/resource/types/BundleResource.h>
 
 using namespace lemon::res;
 
 static ResourceManager* gInstance;
 static constexpr size_t kDefaultStoreSize = 1024;
 
-ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
-    :store { kDefaultStoreSize } {
+ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefaultStoreSize} {
     assert(gInstance == nullptr);
     gInstance = this;
     root = rootPath;
@@ -18,19 +19,23 @@ ResourceManager::~ResourceManager() {
     gInstance = nullptr;
 }
 
-ResourceManager* ResourceManager::get() {
+ResourceManager*
+ResourceManager::get() {
     return gInstance;
 }
 
-std::filesystem::path ResourceManager::resolvePath(const ResourceLocation& location) {
+std::filesystem::path
+ResourceManager::resolvePath(const ResourceLocation& location) {
     return std::filesystem::path(root) / location.file;
 }
 
-ResourceContract* ResourceManager::getContract(ResourceHandle handle) {
+ResourceContract*
+ResourceManager::getContract(ResourceHandle handle) {
     return store.find(handle);
 }
 
-ResourceState ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object) {
+ResourceState
+ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object) {
     ResourceContract* pContract = getContract(handle);
     if (pContract == nullptr) {
         return ResourceState::NotLoaded;
@@ -57,16 +62,26 @@ ResourceState ResourceManager::getResourceState(ResourceHandle handle, ResourceO
     return ResourceState::Ready;
 }
 
+#define LEMON_RESOURCE_FACTORY(name)                                                                         \
+    (co_await loadImpl<##name>(manager, location, lifetime)).map([](auto* v) {                               \
+        return reinterpret_cast<ResourceInstance*>(v);                                                       \
+    })
+
 lemon::res::detail::FactoryResultType
-lemon::res::detail::resourceFactory(ResourceManager& manager, ResourceType type, ResourceLocation location) {
-    // @TODO std::move location or pass string reference and construct it here
+lemon::res::detail::resourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
+                                    ResourceLifetime lifetime) {
+    ResourceLocation location(ref);
+
     tprint("resourceFactory: type=", (int)type, " location.file=", location.file);
 
     // @TODO is there a cleaner way to implement this factory?
     switch (type) {
     case ResourceType::Material:
-        co_return (co_await loadImpl<MaterialResource>(manager, location))
-            .map([](auto* v) { return reinterpret_cast<ResourceInstance*>(v); });
+        co_return LEMON_RESOURCE_FACTORY(MaterialResource);
+    case ResourceType::Texture:
+        co_return LEMON_RESOURCE_FACTORY(TextureResource);
+    case ResourceType::Bundle:
+        co_return LEMON_RESOURCE_FACTORY(BundleResource);
     }
 
     assert(false);

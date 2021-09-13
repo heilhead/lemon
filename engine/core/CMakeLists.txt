@@ -10,6 +10,8 @@ set(SOURCE_FILES
         src/lemon/resource/ResourceContract.cpp
         src/lemon/resource/ResourceLocation.cpp
         src/lemon/resource/types/MaterialResource.cpp
+        src/lemon/resource/types/TextureResource.cpp
+        src/lemon/resource/types/BundleResource.cpp
         src/lemon/resource/common.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
@@ -38,7 +40,7 @@ target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon-shared
         lemon-scheduler
+        lemon-dawn
         glm::glm
         PRIVATE
-        lemon-dawn
         glfw)

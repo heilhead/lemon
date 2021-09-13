@@ -5,16 +5,17 @@ using namespace lemon::res;
 ResourceInstance::~ResourceInstance() {
     lemon::utils::tprint("ResourceInstance::~ResourceInstance()");
 
-    for (ResourceObject* pObj: objects) {
+    for (ResourceObject* pObj : objects) {
         delete pObj;
     }
 
-    for (ResourceInstance* pResource: dependencies) {
+    for (ResourceInstance* pResource : dependencies) {
         pResource->removeDependant(/*this*/);
     }
 }
 
-void ResourceInstance::addDependency(ResourceInstance* pResource) {
+void
+ResourceInstance::addDependency(ResourceInstance* pResource) {
     dependencies.push_back(pResource);
     pResource->addDependant(/*this*/);
 }

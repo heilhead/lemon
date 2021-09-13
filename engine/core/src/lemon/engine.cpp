@@ -4,31 +4,33 @@
 //#include <cstdint>
 //#include <memory>
 #include <cassert>
-#include <lemon/prelude.h>
-#include <lemon/device/Window.h>
 #include <lemon/Triangle.h>
+#include <lemon/device/Window.h>
+#include <lemon/prelude.h>
 
 using namespace lemon;
 
 std::unique_ptr<Engine> gEngine = nullptr;
 
-void printGLFWError(int code, const char* message) {
-	utils::printErr("GLFW error: ", code, " - ", message);
+void
+printGLFWError(int code, const char* message) {
+    utils::printErr("GLFW error: ", code, " - ", message);
 }
 
 Engine::Engine() {
     assert(gEngine == nullptr);
 }
 
-void Engine::init() {
-//    assert(state != EngineState::Running);
-//    state = EngineState::Idle;
+void
+Engine::init() {
+    //    assert(state != EngineState::Running);
+    //    state = EngineState::Idle;
 
-	glfwSetErrorCallback(printGLFWError);
+    glfwSetErrorCallback(printGLFWError);
 
-	if (!glfwInit()) {
-		utils::halt("GLFW init failed");
-	}
+    if (!glfwInit()) {
+        utils::halt("GLFW init failed");
+    }
 
     {
         WindowDescriptor wndDesc;
@@ -44,14 +46,16 @@ void Engine::init() {
     }
 }
 
-void Engine::shutdown() {
-//    assert(state == EngineState::Running);
-//    state = EngineState::Idle;
+void
+Engine::shutdown() {
+    //    assert(state == EngineState::Running);
+    //    state = EngineState::Idle;
 
     glfwTerminate();
 }
 
-Engine* Engine::get() {
+Engine*
+Engine::get() {
     if (gEngine == nullptr) {
         gEngine = std::make_unique<Engine>();
     }

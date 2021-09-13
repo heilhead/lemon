@@ -7,7 +7,7 @@
 #include <lemon/scheduler.h>
 
 namespace lemon::res {
-    class MaterialResource : public ResourceInstance {
+    class BundleResource : public ResourceInstance {
     public:
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource interface
@@ -15,13 +15,10 @@ namespace lemon::res {
 
         static constexpr ResourceType
         getType() {
-            return ResourceType::Material;
+            return ResourceType::Bundle;
         }
 
         struct Metadata : ResourceMetadataBase {
-            std::unordered_map<std::string, int> shaderConfig;
-            std::unordered_map<std::string, std::string> textures;
-
             template<class Archive>
             void
             serialize(Archive& ar);
@@ -40,12 +37,12 @@ namespace lemon::res {
         /////////////////////////////////////////////////////////////////////////////////////
 
     public:
-        MaterialResource();
-        ~MaterialResource() override;
+        BundleResource();
+        ~BundleResource() override;
 
         VoidTask<ResourceLoadingError>
         load(ResourceMetadata& meta) override;
     };
 } // namespace lemon::res
 
-#include <lemon/resource/types/MaterialResource.inl>
+#include <lemon/resource/types/BundleResource.inl>

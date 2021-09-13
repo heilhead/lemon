@@ -9,20 +9,20 @@ template<size_t N>
 class Arena {
     static const size_t alignment = 4;
 
-    alignas(alignment) uint8_t buffer[N] {};
+    alignas(alignment) uint8_t buffer[N]{};
     uint8_t* ptr = nullptr;
 
 public:
-    Arena()
-        :ptr { buffer } { }
-//    Arena(const Arena&) = delete;
-//    Arena& operator=(const Arena&) = delete;
+    Arena() : ptr{buffer} {}
+    //    Arena(const Arena&) = delete;
+    //    Arena& operator=(const Arena&) = delete;
 
     ~Arena() {
         ptr = nullptr;
     }
 
-    uint8_t* allocate(size_t n) {
+    uint8_t*
+    allocate(size_t n) {
         assert(ptr != nullptr);
         n = align(n);
         if (buffer + N - ptr >= n) {
@@ -34,7 +34,8 @@ public:
         }
     }
 
-    void deallocate(uint8_t* p, size_t n) {
+    void
+    deallocate(uint8_t* p, size_t n) {
         assert(ptr != nullptr);
         if (contains(p)) {
             n = align(n);
@@ -47,13 +48,13 @@ public:
     }
 
 private:
-    inline bool contains(const uint8_t* p) {
+    inline bool
+    contains(const uint8_t* p) {
         return buffer <= p && p <= (buffer + N);
     }
 
-    inline size_t align(size_t n) {
+    inline size_t
+    align(size_t n) {
         return (n + (alignment - 1)) & ~(alignment - 1);
     }
 };
-
-

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <lemon/scheduler.h>
+#include <folly/experimental/coro/Collect.h>
+#include <folly/small_vector.h>
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceLocation.h>
-#include <folly/small_vector.h>
+#include <lemon/scheduler.h>
+#include <lemon/scheduler/utils.h>
 #include <lemon/utils/utils.h>
-#include <folly/experimental/coro/Collect.h>
 
 using namespace lemon::scheduler;
 using namespace lemon::utils;
@@ -15,22 +16,21 @@ namespace lemon::res {
         using FactoryResultType = folly::coro::Task<ResourceContract::ResolutionType<ResourceInstance>>;
 
         FactoryResultType
-        resourceFactory(ResourceManager& manager, ResourceType type, ResourceLocation location);
+        resourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
+                        ResourceLifetime lifetime);
 
         template<class TResource>
-        Task<TResource*, ResourceLoadingError> loadImpl(ResourceManager& manager, ResourceLocation& location) {
-            tprint("loading resource: ", location.file);
+        Task<TResource*, ResourceLoadingError>
+        loadImpl(ResourceManager& manager, const ResourceLocation& location, ResourceLifetime lifetime) {
+            coLog("loading resource: ", location.file);
             assert(location.file != "");
 
-            // @TODO add 'file exists' validation?
-            auto[pContract, bCreated] = manager.getStore().findOrInsert(location.handle);
+            auto [pContract, bCreated] = manager.getStore().findOrInsert(location.handle);
             if (bCreated) {
-                tprint("created resource: ", location.file);
+                coLog("created resource: ", location.file);
 
-                // 1. load leaf dependencies @TODO circular dependencies?
-                // 3. resolve dependencies for `ResourceInstance`
+                pContract->setLifetime(lifetime);
 
-                // @TODO missing metadata doesn't generate error?
                 auto metadataRes = manager.loadMetadata<TResource>(location);
                 if (!metadataRes) {
                     co_return tl::make_unexpected(metadataRes.error());
@@ -40,26 +40,32 @@ namespace lemon::res {
                 auto& refs = metadata.getReferences();
                 std::vector<FactoryResultType> futRefs;
 
-                for (const RawResourceReference& ref: refs) {
-                    futRefs.emplace_back(resourceFactory(manager, ref.type, ResourceLocation(ref.location)));
+                // @TODO circular dependencies?
+                for (const RawResourceReference& ref : refs) {
+                    futRefs.emplace_back(
+                        resourceFactory(manager, ref.type, ref.location, ResourceLifetime::None));
                 }
 
                 std::vector<ResourceContract::ResolutionType<ResourceInstance>> resolvedDeps =
                     co_await folly::coro::collectAllRange(futRefs | ranges::views::move);
-                tprint("dependencies finished: ", resolvedDeps.size());
+                coLog("dependencies finished: ", resolvedDeps.size());
 
+                auto* pRes = new TResource();
                 for (auto& dep : resolvedDeps) {
-                    if (dep) {
-                        tprint("dependency error: ", (int)dep.error());
+                    if (!dep) {
+                        coLog("dependency error: ", (int)dep.error());
+                        delete pRes;
+                        co_return tl::make_unexpected(ResourceLoadingError::DependencyError);
                     } else {
-                        tprint("dependency loaded: ", (uintptr_t)*dep);
+                        pRes->addDependency(*dep);
                     }
                 }
 
-                auto* pRes = new TResource();
-                if (!pRes->init(metadata)) {
+                std::optional<ResourceLoadingError> loadErr = co_await pRes->load(metadata);
+                if (loadErr) {
+                    coLog("resource load error: ", (int)*loadErr);
                     delete pRes;
-                    co_return tl::make_unexpected(ResourceLoadingError::InitializationError);
+                    co_return tl::make_unexpected(*loadErr);
                 }
 
                 // Initialization successful!
@@ -69,30 +75,34 @@ namespace lemon::res {
                 pContract->getBaton().post();
                 co_return pRes;
             } else {
-                tprint("found existing resource: ", location.file);
+                coLog("found existing resource: ", location.file);
 
                 // Wait for another thread to finish initializing the data.
                 co_await pContract->getBaton();
-                auto& future = pContract->getFuture<TResource>();
-                co_return future.value();
+
+                co_return pContract->getFuture<TResource>().value();
             }
         }
-    }
+    } // namespace detail
 
     template<typename TResource>
     tl::expected<ResourceMetadata, ResourceLoadingError>
-    ResourceManager::loadMetadata(ResourceLocation& location) {
+    ResourceManager::loadMetadata(const ResourceLocation& location) {
         auto fullPath = resolvePath(location);
         fullPath += ".meta";
 
         return lemon::io::readTextFile(fullPath)
-            .map_error([](auto&& err) {
-                return ResourceLoadingError::MetadataMissing;
-            })
-            .map([](auto&& str) {
+            .map_error([](auto&& err) { return ResourceLoadingError::MetadataMissing; })
+            .map([&](auto&& str) {
                 std::istringstream is(str);
                 cereal::XMLInputArchive archive(is);
-                return ResourceMetadata(TResource::getType(), TResource::loadMetadata(archive));
+
+                ResourceMetadataDescriptor desc{.type = TResource::getType(),
+                                                .data = TResource::loadMetadata(archive),
+                                                .fullPath = std::move(fullPath),
+                                                .name = location.file};
+
+                return ResourceMetadata(std::move(desc));
             });
     }
 
@@ -120,9 +130,9 @@ namespace lemon::res {
 
     template<class TResource>
     ResourceContract::FutureType<TResource>
-    ResourceManager::loadResource(ResourceLocation& location, ResourceLifetime lifetime) {
+    ResourceManager::loadResource(const ResourceLocation& location, ResourceLifetime lifetime) {
         static_assert(std::is_base_of_v<ResourceInstance, TResource>,
-            "TResource must be a subclass of ResourceInstance");
-        return CPUTask(detail::template loadImpl<TResource>(*this, location));
+                      "TResource must be a subclass of ResourceInstance");
+        return CPUTask(detail::template loadImpl<TResource>(*this, location, lifetime));
     }
-}
+} // namespace lemon::res

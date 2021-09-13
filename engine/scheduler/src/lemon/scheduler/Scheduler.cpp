@@ -1,4 +1,5 @@
 #include <lemon/scheduler/Scheduler.h>
+#include <folly/system/ThreadName.h>
 
 using namespace lemon::scheduler;
 
@@ -16,6 +17,17 @@ Scheduler::~Scheduler() {
     gInstance = nullptr;
 }
 
-Scheduler* Scheduler::get() {
+Scheduler*
+Scheduler::get() {
     return gInstance;
+}
+
+std::optional<std::string>
+Scheduler::getCurrentThreadName() {
+    auto name = folly::getCurrentThreadName();
+    if (name) {
+        return *name;
+    } else {
+        return std::nullopt;
+    }
 }
