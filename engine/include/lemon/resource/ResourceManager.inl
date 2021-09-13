@@ -16,12 +16,32 @@ namespace lemon::res {
         using FactoryResultType = folly::coro::Task<ResourceContract::ResolutionType<ResourceInstance>>;
 
         FactoryResultType
-        resourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
-                        ResourceLifetime lifetime);
+        coResourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
+                          ResourceLifetime lifetime);
+
+        template<typename TResource>
+        Task<ResourceMetadata, ResourceLoadingError>
+        coReadMetadata(const std::filesystem::path& fullPath, const std::filesystem::path& name) {
+            auto result = co_await IOTask(lemon::io::coReadTextFile(fullPath));
+
+            co_return result.map_error([](auto&& err) { return ResourceLoadingError::MetadataMissing; })
+                .map([&](auto&& str) {
+                    std::istringstream is(str);
+                    cereal::XMLInputArchive archive(is);
+
+                    ResourceMetadataDescriptor desc{.type = TResource::getType(),
+                                                    .data = TResource::loadMetadata(archive),
+                                                    .fullPath = std::move(fullPath),
+                                                    .name = name};
+
+                    return ResourceMetadata(std::move(desc));
+                });
+        }
 
         template<class TResource>
         Task<TResource*, ResourceLoadingError>
-        loadImpl(ResourceManager& manager, const ResourceLocation& location, ResourceLifetime lifetime) {
+        coLoadResourceImpl(ResourceManager& manager, const ResourceLocation& location,
+                           ResourceLifetime lifetime) {
             coLog("loading resource: ", location.file);
             assert(location.file != "");
 
@@ -31,7 +51,10 @@ namespace lemon::res {
 
                 pContract->setLifetime(lifetime);
 
-                auto metadataRes = manager.loadMetadata<TResource>(location);
+                auto metadataPath = manager.resolvePath(location);
+                metadataPath += ".meta";
+
+                auto metadataRes = co_await coReadMetadata<TResource>(metadataPath, location.file);
                 if (!metadataRes) {
                     co_return tl::make_unexpected(metadataRes.error());
                 }
@@ -43,7 +66,7 @@ namespace lemon::res {
                 // @TODO circular dependencies?
                 for (const RawResourceReference& ref : refs) {
                     futRefs.emplace_back(
-                        resourceFactory(manager, ref.type, ref.location, ResourceLifetime::None));
+                        coResourceFactory(manager, ref.type, ref.location, ResourceLifetime::None));
                 }
 
                 std::vector<ResourceContract::ResolutionType<ResourceInstance>> resolvedDeps =
@@ -86,27 +109,6 @@ namespace lemon::res {
     } // namespace detail
 
     template<typename TResource>
-    tl::expected<ResourceMetadata, ResourceLoadingError>
-    ResourceManager::loadMetadata(const ResourceLocation& location) {
-        auto fullPath = resolvePath(location);
-        fullPath += ".meta";
-
-        return lemon::io::readTextFile(fullPath)
-            .map_error([](auto&& err) { return ResourceLoadingError::MetadataMissing; })
-            .map([&](auto&& str) {
-                std::istringstream is(str);
-                cereal::XMLInputArchive archive(is);
-
-                ResourceMetadataDescriptor desc{.type = TResource::getType(),
-                                                .data = TResource::loadMetadata(archive),
-                                                .fullPath = std::move(fullPath),
-                                                .name = location.file};
-
-                return ResourceMetadata(std::move(desc));
-            });
-    }
-
-    template<typename TResource>
     TResource*
     ResourceManager::getResource(ResourceHandle handle) {
         ResourceContract* pContract = getContract(handle);
@@ -133,6 +135,6 @@ namespace lemon::res {
     ResourceManager::loadResource(const ResourceLocation& location, ResourceLifetime lifetime) {
         static_assert(std::is_base_of_v<ResourceInstance, TResource>,
                       "TResource must be a subclass of ResourceInstance");
-        return CPUTask(detail::template loadImpl<TResource>(*this, location, lifetime));
+        return CPUTask(detail::template coLoadResourceImpl<TResource>(*this, location, lifetime));
     }
 } // namespace lemon::res

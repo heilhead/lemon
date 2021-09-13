@@ -5,6 +5,7 @@
 
 using namespace lemon;
 using namespace lemon::io;
+using namespace lemon::scheduler;
 
 template<typename T>
 using FileReadCallback = tl::expected<T, Error> (*)(std::ifstream& is, size_t size);
@@ -49,4 +50,14 @@ lemon::io::readTextFile(const std::filesystem::path& filePath) {
             return tl::make_unexpected(Error::ReadFailed);
         }
     });
+}
+
+Task<HeapBuffer, Error>
+lemon::io::coReadBinaryFile(const std::filesystem::path& filePath) {
+    co_return readBinaryFile(filePath);
+}
+
+Task<std::string, Error>
+lemon::io::coReadTextFile(const std::filesystem::path& filePath) {
+    co_return readTextFile(filePath);
 }

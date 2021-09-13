@@ -54,14 +54,13 @@ run() {
 
     tprint("resource state 3: ", (int)location.handle.getState());
 
-    auto meta = resMan->loadMetadata<MaterialResource>(location);
-
-    if (meta) {
-        auto* matData = (*meta).get<MaterialResource::Metadata>();
-        tprint("load metadata: success");
-    } else {
-        tprint("load metadata: error");
-    }
+    // auto meta = resMan->loadMetadata<MaterialResource>(location);
+    // if (meta) {
+    //     auto* matData = (*meta).get<MaterialResource::Metadata>();
+    //     tprint("load metadata: success");
+    // } else {
+    //     tprint("load metadata: error");
+    // }
 }
 
 int

@@ -63,13 +63,13 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
 }
 
 #define LEMON_RESOURCE_FACTORY(name)                                                                         \
-    (co_await loadImpl<##name>(manager, location, lifetime)).map([](auto* v) {                               \
+    (co_await coLoadResourceImpl<##name>(manager, location, lifetime)).map([](auto* v) {                     \
         return reinterpret_cast<ResourceInstance*>(v);                                                       \
     })
 
 lemon::res::detail::FactoryResultType
-lemon::res::detail::resourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
-                                    ResourceLifetime lifetime) {
+lemon::res::detail::coResourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
+                                      ResourceLifetime lifetime) {
     ResourceLocation location(ref);
 
     tprint("resourceFactory: type=", (int)type, " location.file=", location.file);

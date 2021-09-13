@@ -37,10 +37,6 @@ namespace lemon::res {
             return store;
         }
 
-        template<typename TResource>
-        tl::expected<ResourceMetadata, ResourceLoadingError>
-        loadMetadata(const ResourceLocation& location);
-
         ResourceContract*
         getContract(ResourceHandle handle);
 
