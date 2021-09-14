@@ -1,14 +1,9 @@
 #include <iostream>
 
 #include <lemon/shared.h>
-#include <lemon/serialization.h>
 #include <lemon/shared/filesystem.h>
 
-#include <lemon/resource/ResourceContract.h>
-#include <lemon/resource/ResourceLocation.h>
-#include <lemon/resource/types/MaterialResource.h>
-#include <lemon/resource/types/TextureResource.h>
-#include <lemon/resource/types/BundleResource.h>
+#include <lemon/resources.h>
 
 #include <dawn/webgpu_cpp.h>
 
@@ -47,7 +42,7 @@ saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path
     std::ofstream os(fullPath.c_str(), std::ios::binary);
     cereal::XMLOutputArchive ar(os);
     ResourceMetadataDescriptor desc{
-        .type = T::getType(), .data = std::move(data), .fullPath = "", .name = ""};
+        .type = ResourceManager::getClassID<T>(), .data = std::move(data), .fullPath = "", .name = ""};
     ResourceMetadata md(std::move(desc));
     T::saveMetadata(ar, md);
 }
@@ -86,7 +81,7 @@ createMetadata() {
 
                 mat->common.references.push_back(RawResourceReference{
                     .location = texPath.string(),
-                    .type = TextureResource::getType(),
+                    .type = ResourceManager::getClassID<TextureResource>(),
                 });
                 mat->textures.insert({textureTypes[k], texPath.string()});
             }
@@ -96,7 +91,7 @@ createMetadata() {
 
             bun->common.references.push_back(RawResourceReference{
                 .location = matPath.string(),
-                .type = MaterialResource::getType(),
+                .type = ResourceManager::getClassID<MaterialResource>(),
             });
 
             saveMetadata<MaterialResource>(std::move(mat), matPath);
@@ -111,11 +106,11 @@ createMetadata() {
         auto bun = createBundle();
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_AB",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_BC",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         path bunPath = "RB_ABC";
         saveMetadata<BundleResource>(std::move(bun), bunPath);
@@ -125,11 +120,11 @@ createMetadata() {
         auto bun = createBundle();
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_A",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_B",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         path bunPath = "RB_AB";
         saveMetadata<BundleResource>(std::move(bun), bunPath);
@@ -139,11 +134,11 @@ createMetadata() {
         auto bun = createBundle();
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_B",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         bun->common.references.push_back(RawResourceReference{
             .location = "RB_C",
-            .type = BundleResource::getType(),
+            .type = ResourceManager::getClassID<BundleResource>(),
         });
         path bunPath = "RB_BC";
         saveMetadata<BundleResource>(std::move(bun), bunPath);

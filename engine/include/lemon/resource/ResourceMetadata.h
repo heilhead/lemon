@@ -7,7 +7,7 @@
 namespace lemon::res {
     struct RawResourceReference {
         std::string location;
-        ResourceType type;
+        ResourceClassID type;
 
         template<class Archive>
         void
@@ -34,20 +34,20 @@ namespace lemon::res {
     };
 
     struct ResourceMetadataDescriptor {
-        ResourceType type;
+        ResourceClassID type;
         std::unique_ptr<ResourceMetadataBase> data;
         std::filesystem::path fullPath;
         std::filesystem::path name;
     };
 
     struct ResourceMetadata {
-        ResourceType type;
+        ResourceClassID type;
         std::unique_ptr<ResourceMetadataBase> data;
         std::filesystem::path fullPath;
         std::filesystem::path name;
 
         ResourceMetadata(ResourceMetadataDescriptor&& desc) {
-            type = desc.type;
+            type = std::move(desc.type);
             data = std::move(desc.data);
             fullPath = std::move(desc.fullPath);
             name = std::move(desc.name);

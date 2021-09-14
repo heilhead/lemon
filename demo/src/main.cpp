@@ -23,15 +23,6 @@
 #include "metadata.h"
 #include "bundles.h"
 
-std::mutex mut;
-
-template<typename... Args>
-void
-mprint(Args&&... args) {
-    std::lock_guard lg(mut);
-    (std::cout << ... << args) << std::endl;
-}
-
 using namespace lemon::scheduler;
 using namespace lemon::res;
 

@@ -9,10 +9,14 @@ using namespace lemon::res;
 static ResourceManager* gInstance;
 static constexpr size_t kDefaultStoreSize = 1024;
 
-ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefaultStoreSize} {
+ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefaultStoreSize}, factories{} {
     assert(gInstance == nullptr);
     gInstance = this;
     root = rootPath;
+
+    registerClass<TextureResource>();
+    registerClass<MaterialResource>();
+    registerClass<BundleResource>();
 }
 
 ResourceManager::~ResourceManager() {
@@ -62,27 +66,23 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
     return ResourceState::Ready;
 }
 
-#define LEMON_RESOURCE_FACTORY(name)                                                                         \
-    (co_await coLoadResourceImpl<##name>(manager, location, lifetime)).map([](auto* v) {                     \
-        return reinterpret_cast<ResourceInstance*>(v);                                                       \
-    })
+std::optional<ResourceFactoryFn>
+ResourceManager::getFactoryFn(ResourceClassID id) {
+    auto result = factories.find(id);
+    if (result != factories.end()) {
+        return result->second;
+    } else {
+        return std::nullopt;
+    }
+}
 
-lemon::res::detail::FactoryResultType
-lemon::res::detail::coResourceFactory(ResourceManager& manager, ResourceType type, const std::string& ref,
+FactoryResultType
+lemon::res::detail::coResourceFactory(ResourceClassID refType, const std::string& refLocation,
                                       ResourceLifetime lifetime) {
-    ResourceLocation location(ref);
-
-    lemon::utils::print("resourceFactory: type=", (int)type, " location.file=", location.file);
-
-    // @TODO is there a cleaner way to implement this factory?
-    switch (type) {
-    case ResourceType::Material:
-        co_return LEMON_RESOURCE_FACTORY(MaterialResource);
-    case ResourceType::Texture:
-        co_return LEMON_RESOURCE_FACTORY(TextureResource);
-    case ResourceType::Bundle:
-        co_return LEMON_RESOURCE_FACTORY(BundleResource);
+    auto factory = ResourceManager::get()->getFactoryFn(refType);
+    if (!factory) {
+        co_return tl::make_unexpected(ResourceLoadingError::FactoryMissing);
     }
 
-    assert(false);
+    co_return co_await (*factory)(refLocation, lifetime);
 }

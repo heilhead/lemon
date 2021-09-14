@@ -5,11 +5,11 @@
 			<references size="dynamic">
 				<value0>
 					<location>RB_B</location>
-					<value0>Bundle</value0>
+					<type>2347930800</type>
 				</value0>
 				<value1>
 					<location>RB_C</location>
-					<value0>Bundle</value0>
+					<type>2347930800</type>
 				</value1>
 			</references>
 		</common>

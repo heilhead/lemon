@@ -17,11 +17,6 @@ namespace lemon::res {
         // BEGIN Resource interface
         /////////////////////////////////////////////////////////////////////////////////////
 
-        static constexpr ResourceType
-        getType() {
-            return ResourceType::Texture;
-        }
-
         struct Metadata : ResourceMetadataBase {
             Decoder decoder;
             wgpu::TextureFormat format;

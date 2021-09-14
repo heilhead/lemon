@@ -5,15 +5,15 @@
 			<references size="dynamic">
 				<value0>
 					<location>c\M_A</location>
-					<value0>Material</value0>
+					<type>1905326887</type>
 				</value0>
 				<value1>
 					<location>c\M_B</location>
-					<value0>Material</value0>
+					<type>1905326887</type>
 				</value1>
 				<value2>
 					<location>c\M_C</location>
-					<value0>Material</value0>
+					<type>1905326887</type>
 				</value2>
 			</references>
 		</common>

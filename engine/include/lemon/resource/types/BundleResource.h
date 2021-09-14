@@ -13,11 +13,6 @@ namespace lemon::res {
         // BEGIN Resource interface
         /////////////////////////////////////////////////////////////////////////////////////
 
-        static constexpr ResourceType
-        getType() {
-            return ResourceType::Bundle;
-        }
-
         struct Metadata : ResourceMetadataBase {
             template<class Archive>
             void

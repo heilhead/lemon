@@ -16,6 +16,9 @@ namespace lemon::res {
         ResourceLifetime lifetime;
     };
 
+    using FactoryResultType = folly::coro::Task<ResourceContract::ResolutionType<ResourceInstance>>;
+    using ResourceFactoryFn = FactoryResultType (*)(const std::string& ref, ResourceLifetime lifetime);
+
     class ResourceManager {
     public:
         explicit ResourceManager(std::filesystem::path&& rootPath);
@@ -27,6 +30,7 @@ namespace lemon::res {
     private:
         ResourceStore store;
         std::filesystem::path root;
+        std::unordered_map<ResourceClassID, ResourceFactoryFn> factories;
 
     public:
         std::filesystem::path
@@ -54,6 +58,21 @@ namespace lemon::res {
         template<typename TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
         loadMetadata(const ResourceLocation& location);
+
+        template<typename TResource>
+        static ResourceClassID
+        getClassID() {
+            static std::string_view strName{typeid(TResource).name()};
+            static auto hash = folly::hash::fnv32_buf(strName.data(), strName.size());
+            return hash;
+        }
+
+        template<typename TResource>
+        void
+        registerClass();
+
+        std::optional<ResourceFactoryFn>
+        getFactoryFn(ResourceClassID id);
     };
 } // namespace lemon::res
 

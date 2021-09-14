@@ -13,11 +13,6 @@ namespace lemon::res {
         // BEGIN Resource interface
         /////////////////////////////////////////////////////////////////////////////////////
 
-        static constexpr ResourceType
-        getType() {
-            return ResourceType::Material;
-        }
-
         struct Metadata : ResourceMetadataBase {
             std::unordered_map<std::string, int> shaderConfig;
             std::unordered_map<std::string, std::string> textures;

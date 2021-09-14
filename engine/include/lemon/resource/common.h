@@ -6,15 +6,7 @@
 #include <string>
 
 namespace lemon::res {
-    enum class ResourceType {
-        Unknown,
-        Level,
-        Bundle,
-        Model,
-        Material,
-        Texture,
-        Mesh,
-    };
+    using ResourceClassID = uint64_t;
 
     enum class ResourceState {
         NotLoaded,
@@ -31,6 +23,7 @@ namespace lemon::res {
         DataMissing,
         DependencyError,
         DependencyMissing,
+        FactoryMissing,
     };
 
     struct ResourceObjectHandle {
@@ -68,6 +61,7 @@ namespace lemon::res {
         ResourceHandle() : ResourceObjectHandle(InvalidHandle) {}
         ResourceHandle(uint64_t hash) : ResourceObjectHandle(hash) {}
         ResourceHandle(const std::string& file) : ResourceObjectHandle(file) {}
+
         ResourceState
         getState(ResourceObjectHandle object = ResourceObjectHandle());
     };
