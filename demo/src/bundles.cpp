@@ -10,8 +10,11 @@ using namespace lemon::res;
 /*
 
 @TODO:
-- resource unloading, including dependencies
 - print resource manager stats (i.e. live object count etc.)
+- finalize resource manager api
+    - decide whether to use location or handles
+    - decide if there's need in `ResourceLocation` and subobject handles
+- tests?
 
 */
 
@@ -28,5 +31,13 @@ testBundleLoading() {
         lemon::utils::print("bundle successfully loaded: ", location.file);
     } else {
         lemon::utils::print("bundle failed to load: ", location.file, " error: ", (int)result.error());
+    }
+
+    auto bUnloaded = resMan->unloadResource(location);
+
+    if (bUnloaded) {
+        lemon::utils::print("bundle successfully unloaded: ", location.file);
+    } else {
+        lemon::utils::print("bundle failed to unload");
     }
 }

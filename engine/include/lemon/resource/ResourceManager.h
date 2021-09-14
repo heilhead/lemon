@@ -55,6 +55,9 @@ namespace lemon::res {
         ResourceContract::FutureType<T>
         loadResource(const ResourceLocation& location, ResourceLifetime lifetime = ResourceLifetime::Short);
 
+        bool
+        unloadResource(const ResourceLocation& location);
+
         template<typename TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
         loadMetadata(const ResourceLocation& location);

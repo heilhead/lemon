@@ -52,11 +52,7 @@ namespace lemon::res {
     private:
         folly::small_vector<ResourceObject*, kObjectCapacity> objects;
         folly::small_vector<ResourceInstance*, kDependencyCapacity> dependencies;
-
-    protected:
         ResourceHandle handle{ResourceHandle::InvalidHandle};
-
-    private:
         std::atomic<uint32_t> dependants{0};
 
     public:
@@ -100,6 +96,9 @@ namespace lemon::res {
         removeDependant(/*ResourceInstance* pResource*/) {
             dependants--;
         }
+
+        void
+        detachDependencies(std::vector<ResourceHandle>* unusedDeps);
     };
 } // namespace lemon::res
 

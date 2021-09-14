@@ -43,18 +43,18 @@ namespace lemon::res {
         template<class TResource>
         Task<TResource*, ResourceLoadingError>
         coLoadResourceImpl(const ResourceLocation& location, ResourceLifetime lifetime) {
-            auto& manager = *ResourceManager::get();
+            auto* manager = ResourceManager::get();
 
             lemon::utils::print("loading resource: ", location.file);
             assert(location.file != "");
 
-            auto [pContract, bCreated] = manager.getStore().findOrInsert(location.handle);
+            auto [pContract, bCreated] = manager->getStore().findOrInsert(location.handle);
             if (bCreated) {
                 lemon::utils::print("created resource: ", location.file);
 
                 pContract->setLifetime(lifetime);
 
-                auto metadataPath = manager.resolvePath(location);
+                auto metadataPath = manager->resolvePath(location);
                 metadataPath += ".meta";
 
                 auto metadataRes = co_await coReadMetadata<TResource>(std::move(metadataPath), location.file);
@@ -76,6 +76,8 @@ namespace lemon::res {
                 lemon::utils::print("dependencies finished: ", resolvedDeps.size());
 
                 auto* pRes = new TResource();
+                pRes->setHandle(location.handle);
+
                 for (auto& dep : resolvedDeps) {
                     if (!dep) {
                         lemon::utils::print("dependency error: ", (int)dep.error());

@@ -66,6 +66,36 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
     return ResourceState::Ready;
 }
 
+bool
+ResourceManager::unloadResource(const ResourceLocation& location) {
+    auto state = getResourceState(location.handle);
+    if (state != ResourceState::Ready) {
+        // Resource is not available for unloading.
+        return false;
+    }
+
+    auto* pContract = getContract(location.handle);
+    auto* pResource = *pContract->getFuture<ResourceInstance>().value();
+
+    if (pResource->getDependantCount() != 0) {
+        // Other resources depend on it.
+        return false;
+    }
+
+    // Okay to unload.
+    std::vector<ResourceHandle> unusedResources;
+    unusedResources.push_back(pResource->getHandle());
+
+    // Traverse dependency tree and mark unused resources for unloading.
+    pResource->detachDependencies(&unusedResources);
+
+    for (auto& handle : unusedResources) {
+        store.remove(handle);
+    }
+
+    return true;
+}
+
 std::optional<ResourceFactoryFn>
 ResourceManager::getFactoryFn(ResourceClassID id) {
     auto result = factories.find(id);
