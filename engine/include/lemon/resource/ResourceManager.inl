@@ -155,7 +155,7 @@ namespace lemon::res {
         auto type = getClassID<TResource>();
         auto factory = [](const std::string& ref, ResourceLifetime lifetime) -> FactoryResultType {
             ResourceLocation location(ref);
-            lemon::utils::print("resourceFactory: type=", ResourceManager::getClassID<TResource>(),
+            lemon::utils::print("resourceFactory: classID=", ResourceManager::getClassID<TResource>(),
                                 " location.file=", location.file);
             co_return(co_await lemon::res::detail::coLoadResourceImpl<TResource>(location, lifetime))
                 .map([](TResource* v) { return reinterpret_cast<ResourceInstance*>(v); });
