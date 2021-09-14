@@ -3,8 +3,6 @@
 using namespace lemon::res;
 
 ResourceInstance::~ResourceInstance() {
-    lemon::utils::tprint("ResourceInstance::~ResourceInstance()");
-
     for (ResourceObject* pObj : objects) {
         delete pObj;
     }

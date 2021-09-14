@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cereal/archives/xml.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/unordered_map.hpp>
-#include <cereal/types/vector.hpp>
+#include <lemon/serialization.h>
 #include <lemon/resource/common.h>
 #include <filesystem>
 
@@ -15,8 +12,8 @@ namespace lemon::res {
         template<class Archive>
         void
         serialize(Archive& ar) {
-            ar(CEREAL_NVP(location));
-            ar(CEREAL_NVP(type));
+            LEMON_SERIALIZE(ar, location);
+            LEMON_SERIALIZE(ar, type);
         }
     };
 
@@ -26,7 +23,7 @@ namespace lemon::res {
         template<class Archive>
         void
         serialize(Archive& ar) {
-            ar(CEREAL_NVP(references));
+            LEMON_SERIALIZE(ar, references);
         }
     };
 

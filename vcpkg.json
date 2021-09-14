@@ -7,6 +7,7 @@
     "folly",
     "glm",
     "glfw3",
+    "magic-enum",
     "range-v3",
     "tl-expected"
   ]

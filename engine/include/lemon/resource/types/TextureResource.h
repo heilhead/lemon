@@ -11,6 +11,8 @@ namespace lemon::res {
 
     class TextureResource : public ResourceInstance {
     public:
+        enum class Decoder { PNG, DDS };
+
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource interface
         /////////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +23,10 @@ namespace lemon::res {
         }
 
         struct Metadata : ResourceMetadataBase {
+            Decoder decoder;
             wgpu::TextureFormat format;
+            uint32_t width;
+            uint32_t height;
 
             template<class Archive>
             void

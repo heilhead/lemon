@@ -1,8 +1,0 @@
-{
-  "$refs": [
-    {
-      "type": "material",
-      "path": "basketball.mat"
-    }
-  ]
-}

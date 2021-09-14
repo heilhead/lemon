@@ -11,17 +11,17 @@ loadTexture(TextureResource& mat, ResourceMetadata& meta) {
 }
 
 TextureResource::TextureResource() {
-    tprint("TextureResource::TextureResource()");
+    lemon::utils::print("TextureResource::TextureResource()");
 }
 
 TextureResource::~TextureResource() {
-    tprint("TextureResource::~TextureResource()");
+    lemon::utils::print("TextureResource::~TextureResource()");
 }
 
 VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata& meta) {
     auto* pMetadata = meta.get<Metadata>();
-    tprint("TextureResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
-           " name: ", meta.name);
+    lemon::utils::print("TextureResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
+                        " name: ", meta.name);
     return loadTexture(*this, meta);
 }

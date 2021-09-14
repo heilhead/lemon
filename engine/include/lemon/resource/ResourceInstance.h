@@ -45,9 +45,7 @@ namespace lemon::res {
         static constexpr size_t kObjectCapacity = 8;
         static constexpr size_t kDependencyCapacity = 8;
 
-        ResourceInstance() {
-            lemon::utils::tprint("ResourceInstance::ResourceInstance()");
-        }
+        ResourceInstance() {}
 
         virtual ~ResourceInstance();
 

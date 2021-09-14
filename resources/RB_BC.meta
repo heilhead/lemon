@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<bundle>
+		<common>
+			<references size="dynamic">
+				<value0>
+					<location>RB_B</location>
+					<value0>Bundle</value0>
+				</value0>
+				<value1>
+					<location>RB_C</location>
+					<value0>Bundle</value0>
+				</value1>
+			</references>
+		</common>
+	</bundle>
+</cereal>
+

@@ -4,16 +4,16 @@ namespace lemon::res {
     template<class Archive>
     void
     MaterialResource::Metadata::serialize(Archive& ar) {
-        ar(CEREAL_NVP(common));
-        ar(CEREAL_NVP(shaderConfig));
-        ar(CEREAL_NVP(textures));
+        LEMON_SERIALIZE(ar, common);
+        LEMON_SERIALIZE(ar, shaderConfig);
+        LEMON_SERIALIZE(ar, textures);
     }
 
     template<typename Archive>
     std::unique_ptr<ResourceMetadataBase>
     MaterialResource::loadMetadata(Archive& ar) {
         std::unique_ptr<MaterialResource::Metadata> meta = std::make_unique<MaterialResource::Metadata>();
-        ar(cereal::make_nvp("material", *meta));
+        LEMON_SERIALIZE_NVP(ar, "material", *meta);
         return meta;
     }
 
@@ -21,6 +21,6 @@ namespace lemon::res {
     void
     MaterialResource::saveMetadata(Archive& ar, const ResourceMetadata& data) {
         auto* meta = data.get<MaterialResource::Metadata>();
-        ar(cereal::make_nvp("material", *meta));
+        LEMON_SERIALIZE_NVP(ar, "material", *meta);
     }
 } // namespace lemon::res

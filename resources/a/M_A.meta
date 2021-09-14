@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<material>
+		<common>
+			<references size="dynamic">
+				<value0>
+					<location>a\a\T_A.png</location>
+					<value0>Texture</value0>
+				</value0>
+				<value1>
+					<location>a\a\T_B.png</location>
+					<value0>Texture</value0>
+				</value1>
+				<value2>
+					<location>a\a\T_C.png</location>
+					<value0>Texture</value0>
+				</value2>
+			</references>
+		</common>
+		<shaderConfig size="dynamic">
+			<value0>
+				<key>ENABLE_SKINNING</key>
+				<value>0</value>
+			</value0>
+		</shaderConfig>
+		<textures size="dynamic">
+			<value0>
+				<key>albedo</key>
+				<value>a\a\T_A.png</value>
+			</value0>
+			<value1>
+				<key>normal</key>
+				<value>a\a\T_B.png</value>
+			</value1>
+			<value2>
+				<key>roughness</key>
+				<value>a\a\T_C.png</value>
+			</value2>
+		</textures>
+	</material>
+</cereal>
+

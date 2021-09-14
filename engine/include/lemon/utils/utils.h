@@ -4,29 +4,27 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <sstream>
 
 namespace lemon::utils {
     namespace {
-        std::mutex printMut;
-    }
-
-    template<typename... Args>
-    void
-    tprint(Args&&... args) {
-        std::lock_guard lg(printMut);
-        (std::cout << ... << args) << std::endl;
+        static std::mutex printMut;
     }
 
     template<typename... Args>
     void
     print(Args&&... args) {
-        (std::cout << ... << args) << std::endl;
+        std::stringstream stream;
+        (stream << ... << args) << std::endl;
+        std::cout << stream.str();
     }
 
     template<typename... Args>
     void
     printErr(Args&&... args) {
-        (std::cerr << ... << args) << std::endl;
+        std::stringstream stream;
+        (stream << ... << args) << std::endl;
+        std::cerr << stream.str();
     }
 
     void

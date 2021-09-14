@@ -45,6 +45,7 @@ find_package(folly CONFIG REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
@@ -53,6 +54,7 @@ target_link_libraries(${PROJECT_NAME}
         Folly::folly
         tl::expected
         cereal
+        magic_enum::magic_enum
         PRIVATE
         range-v3
         glfw)

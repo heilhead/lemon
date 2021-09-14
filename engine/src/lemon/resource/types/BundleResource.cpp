@@ -11,17 +11,17 @@ loadBundle(BundleResource& mat, ResourceMetadata& meta) {
 }
 
 BundleResource::BundleResource() {
-    tprint("BundleResource::BundleResource()");
+    lemon::utils::print("BundleResource::BundleResource()");
 }
 
 BundleResource::~BundleResource() {
-    tprint("BundleResource::~BundleResource()");
+    lemon::utils::print("BundleResource::~BundleResource()");
 }
 
 VoidTask<ResourceLoadingError>
 BundleResource::load(ResourceMetadata& meta) {
     auto* pMetadata = meta.get<Metadata>();
-    tprint("BundleResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
-           " name: ", meta.name);
+    lemon::utils::print("BundleResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
+                        " name: ", meta.name);
     return loadBundle(*this, meta);
 }

@@ -72,7 +72,7 @@ lemon::res::detail::coResourceFactory(ResourceManager& manager, ResourceType typ
                                       ResourceLifetime lifetime) {
     ResourceLocation location(ref);
 
-    tprint("resourceFactory: type=", (int)type, " location.file=", location.file);
+    lemon::utils::print("resourceFactory: type=", (int)type, " location.file=", location.file);
 
     // @TODO is there a cleaner way to implement this factory?
     switch (type) {
