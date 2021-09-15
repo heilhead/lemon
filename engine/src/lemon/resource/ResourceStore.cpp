@@ -1,6 +1,7 @@
 #include <lemon/resource/ResourceContract.h>
 #include <lemon/resource/ResourceStore.h>
 #include <utility>
+#include <lemon/utils/utils.h>
 
 using namespace lemon::res;
 using namespace lemon::scheduler;
@@ -51,7 +52,7 @@ void
 ResourceStore::remove(ResourceHandle handle) {
     auto it = map.find(handle);
     if (it == map.end()) {
-        // @TODO Log error?
+        lemon::utils::printErr("failed to remove resource: handle ", handle.get(), " not found");
         return;
     }
 

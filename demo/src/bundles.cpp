@@ -7,17 +7,6 @@
 
 using namespace lemon::res;
 
-/*
-
-@TODO:
-- print resource manager stats (i.e. live object count etc.)
-- finalize resource manager api
-    - decide whether to use location or handles
-    - decide if there's need in `ResourceLocation` and subobject handles
-- tests?
-
-*/
-
 void
 testBundleLoading() {
     std::unique_ptr<ResourceManager> resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");

@@ -12,7 +12,7 @@ using namespace lemon::utils;
 
 namespace lemon::res {
     namespace detail {
-        template<typename TResource>
+        template<class TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
         parseMetadata(tl::expected<std::string, lemon::io::Error>&& data,
                       const std::filesystem::path&& fullPath, const std::filesystem::path& name) {
@@ -31,9 +31,9 @@ namespace lemon::res {
         }
 
         FactoryResultType
-        coResourceFactory(ResourceClassID refType, const std::string& refLocation, ResourceLifetime lifetime);
+        coResourceFactory(ResourceClassID classID, const std::string refLocation, ResourceLifetime lifetime);
 
-        template<typename TResource>
+        template<class TResource>
         Task<ResourceMetadata, ResourceLoadingError>
         coReadMetadata(const std::filesystem::path&& fullPath, const std::filesystem::path& name) {
             auto result = co_await IOTask(lemon::io::coReadTextFile(fullPath));
@@ -80,7 +80,7 @@ namespace lemon::res {
 
                 for (auto& dep : resolvedDeps) {
                     if (!dep) {
-                        lemon::utils::print("dependency error: ", (int)dep.error());
+                        lemon::utils::printErr("dependency error: ", (int)dep.error());
                         delete pRes;
                         co_return tl::make_unexpected(ResourceLoadingError::DependencyError);
                     } else {
@@ -90,7 +90,7 @@ namespace lemon::res {
 
                 std::optional<ResourceLoadingError> loadErr = co_await pRes->load(metadata);
                 if (loadErr) {
-                    lemon::utils::print("resource load error: ", (int)*loadErr);
+                    lemon::utils::printErr("resource load error: ", (int)*loadErr);
                     delete pRes;
                     co_return tl::make_unexpected(*loadErr);
                 }
@@ -112,7 +112,7 @@ namespace lemon::res {
         }
     } // namespace detail
 
-    template<typename TResource>
+    template<class TResource>
     TResource*
     ResourceManager::getResource(ResourceHandle handle) {
         ResourceContract* pContract = getContract(handle);
@@ -142,7 +142,7 @@ namespace lemon::res {
         return CPUTask(detail::template coLoadResourceImpl<TResource>(location, lifetime));
     }
 
-    template<typename TResource>
+    template<class TResource>
     tl::expected<ResourceMetadata, ResourceLoadingError>
     ResourceManager::loadMetadata(const ResourceLocation& location) {
         auto fullPath = resolvePath(location);
@@ -151,10 +151,10 @@ namespace lemon::res {
                                                 location.file);
     }
 
-    template<typename TResource>
+    template<class TResource>
     void
     ResourceManager::registerClass() {
-        auto type = getClassID<TResource>();
+        auto classID = getClassID<TResource>();
         auto factory = [](const std::string& ref, ResourceLifetime lifetime) -> FactoryResultType {
             ResourceLocation location(ref);
             lemon::utils::print("resourceFactory: classID=", ResourceManager::getClassID<TResource>(),
@@ -163,6 +163,8 @@ namespace lemon::res {
                 .map([](TResource* v) { return reinterpret_cast<ResourceInstance*>(v); });
         };
 
-        factories.insert({type, factory});
+        assert(factories.find(classID) == factories.end());
+
+        factories.insert({classID, factory});
     }
 } // namespace lemon::res
