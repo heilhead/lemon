@@ -47,6 +47,18 @@ find_package(tl-expected CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
+CPMAddPackage(
+	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"
+	GIT_TAG 0.13.0
+	OPTIONS
+	"ozz_build_tools OFF"
+	"ozz_build_fbx OFF"
+	"ozz_build_gltf OFF"
+	"ozz_build_samples OFF"
+	"ozz_build_howtos OFF"
+	"ozz_build_tests OFF"
+	"ozz_build_msvc_rt_dll OFF")
+
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon-dawn
@@ -55,6 +67,7 @@ target_link_libraries(${PROJECT_NAME}
         tl::expected
         cereal
         magic_enum::magic_enum
+        ozz_animation
         PRIVATE
         range-v3
         glfw)
