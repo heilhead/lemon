@@ -2,6 +2,7 @@
   "name": "lemon",
   "version-string": "0.1.0",
   "dependencies": [
+    "assimp",
     "catch2",
     "cereal",
     "folly",
