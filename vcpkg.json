@@ -5,9 +5,11 @@
     "assimp",
     "catch2",
     "cereal",
+    "cxxopts",
     "folly",
     "glm",
     "glfw3",
+    "lodepng",
     "magic-enum",
     "range-v3",
     "tl-expected"

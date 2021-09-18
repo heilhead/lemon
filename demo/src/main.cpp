@@ -22,6 +22,7 @@
 
 #include "metadata.h"
 #include "bundles.h"
+#include "mesh.h"
 
 using namespace lemon::scheduler;
 using namespace lemon::res;
@@ -58,7 +59,8 @@ main(int argc, char* argv[]) {
     std::unique_ptr<Scheduler> schedMan = std::make_unique<Scheduler>(24, 24);
 
     // createMetadata();
-    testBundleLoading();
+    // testBundleLoading();
+    testMeshLoading();
 
     return 0;
 }

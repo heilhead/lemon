@@ -46,6 +46,7 @@ find_package(range-v3 CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
+find_package(lodepng CONFIG REQUIRED)
 
 CPMAddPackage(
 	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"
@@ -68,6 +69,7 @@ target_link_libraries(${PROJECT_NAME}
         cereal
         magic_enum::magic_enum
         ozz_animation
+        lodepng
         PRIVATE
         range-v3
         glfw)

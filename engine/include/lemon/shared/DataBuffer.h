@@ -77,7 +77,7 @@ namespace lemon {
         }
 
         size_t
-        size() {
+        size() const {
             return length;
         }
 
@@ -102,7 +102,7 @@ namespace lemon {
 
         template<typename U>
         U*
-        get() {
+        get() const {
             return (U*)data;
         }
     };
