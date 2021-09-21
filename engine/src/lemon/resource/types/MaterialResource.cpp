@@ -11,17 +11,17 @@ loadMaterial(MaterialResource& mat, ResourceMetadata& meta) {
 }
 
 MaterialResource::MaterialResource() {
-    lemon::utils::print("MaterialResource::MaterialResource()");
+    lemon::utils::log("MaterialResource::MaterialResource()");
 }
 
 MaterialResource::~MaterialResource() {
-    lemon::utils::print("MaterialResource::~MaterialResource()");
+    lemon::utils::log("MaterialResource::~MaterialResource()");
 }
 
 VoidTask<ResourceLoadingError>
 MaterialResource::load(ResourceMetadata& meta) {
     auto* pMetadata = meta.get<Metadata>();
-    lemon::utils::print("MaterialResource::Metadata ptr: ", (uintptr_t)pMetadata,
-                        " fullPath: ", meta.fullPath, " name: ", meta.name);
+    lemon::utils::log("MaterialResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
+                      " name: ", meta.name);
     return loadMaterial(*this, meta);
 }

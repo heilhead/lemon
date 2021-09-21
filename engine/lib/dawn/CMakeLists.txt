@@ -1,6 +1,6 @@
 project(lemon-dawn)
 
-set(SOURCE_FILES src/webgpu_cpp.cpp)
+set(SOURCE_FILES src/dawn/webgpu_cpp.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::dawn ALIAS ${PROJECT_NAME})

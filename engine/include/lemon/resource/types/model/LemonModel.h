@@ -32,27 +32,27 @@ namespace lemon::res::model {
         getSize(MeshComponents components) {
             size_t size = 0;
 
-            if (enum_integer(components & MeshComponents::Position)) {
+            if ((bool)(components & MeshComponents::Position)) {
                 size += sizeof(position);
             }
 
-            if (enum_integer(components & MeshComponents::Normal)) {
+            if ((bool)(components & MeshComponents::Normal)) {
                 size += sizeof(normal);
             }
 
-            if (enum_integer(components & MeshComponents::Tangent)) {
+            if ((bool)(components & MeshComponents::Tangent)) {
                 size += sizeof(tangent);
             }
 
-            if (enum_integer(components & MeshComponents::UV0)) {
+            if ((bool)(components & MeshComponents::UV0)) {
                 size += sizeof(uv0);
             }
 
-            if (enum_integer(components & MeshComponents::UV1)) {
+            if ((bool)(components & MeshComponents::UV1)) {
                 size += sizeof(uv1);
             }
 
-            if (enum_integer(components & MeshComponents::JointInfluence)) {
+            if ((bool)(components & MeshComponents::JointInfluence)) {
                 size += sizeof(jointIndex);
                 size += sizeof(jointWeight);
             }
@@ -63,27 +63,27 @@ namespace lemon::res::model {
         template<class Archive>
         inline void
         serialize(Archive& ar, MeshComponents components) const {
-            if (enum_integer(components & MeshComponents::Position)) {
+            if ((bool)(components & MeshComponents::Position)) {
                 LEMON_SERIALIZE(ar, position);
             }
 
-            if (enum_integer(components & MeshComponents::Normal)) {
+            if ((bool)(components & MeshComponents::Normal)) {
                 LEMON_SERIALIZE(ar, normal);
             }
 
-            if (enum_integer(components & MeshComponents::Tangent)) {
+            if ((bool)(components & MeshComponents::Tangent)) {
                 LEMON_SERIALIZE(ar, tangent);
             }
 
-            if (enum_integer(components & MeshComponents::UV0)) {
+            if ((bool)(components & MeshComponents::UV0)) {
                 LEMON_SERIALIZE(ar, uv0);
             }
 
-            if (enum_integer(components & MeshComponents::UV1)) {
+            if ((bool)(components & MeshComponents::UV1)) {
                 LEMON_SERIALIZE(ar, uv1);
             }
 
-            if (enum_integer(components & MeshComponents::JointInfluence)) {
+            if ((bool)(components & MeshComponents::JointInfluence)) {
                 LEMON_SERIALIZE(ar, jointIndex);
                 LEMON_SERIALIZE(ar, jointWeight);
             }
@@ -91,18 +91,21 @@ namespace lemon::res::model {
     };
 
     struct ModelMesh {
+        uint8_t material;
+
         MeshComponents components;
         MeshIndexFormat indexFormat;
 
         HeapBuffer vertexBuffer;
         HeapBuffer indexBuffer;
 
-        std::optional<std::vector<glm::mat4>> joints;
+        std::optional<std::vector<glm::mat4>> joints{};
 
         template<class Archive>
         inline void
         serialize(Archive& ar) {
-            LEMON_SERIALIZE(ar, components);
+            LEMON_SERIALIZE(ar, material);
+            LEMON_SERIALIZE_FLAGS(ar, components);
             LEMON_SERIALIZE(ar, indexFormat);
             LEMON_SERIALIZE(ar, vertexBuffer);
             LEMON_SERIALIZE(ar, indexBuffer);
@@ -127,6 +130,14 @@ namespace lemon::res::model {
     struct LemonModel {
         std::vector<ModelMesh> meshes;
         std::vector<ModelNode> nodes;
+
+        LemonModel() {
+            lemon::utils::log(__FUNCTION__);
+        }
+
+        ~LemonModel() {
+            lemon::utils::log(__FUNCTION__);
+        }
 
         template<class Archive>
         inline void

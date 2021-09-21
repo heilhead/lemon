@@ -10,6 +10,10 @@ namespace wgpu {
     // TODO(crbug.com/520): Remove kStrideUndefined in favor of kCopyStrideUndefined.
     static constexpr uint32_t kStrideUndefined = WGPU_STRIDE_UNDEFINED;
     static constexpr uint32_t kCopyStrideUndefined = WGPU_COPY_STRIDE_UNDEFINED;
+    static constexpr uint32_t kLimitU32Undefined = WGPU_LIMIT_U32_UNDEFINED;
+    static constexpr uint64_t kLimitU64Undefined = WGPU_LIMIT_U64_UNDEFINED;
+    static constexpr uint32_t kArrayLayerCountUndefined = WGPU_ARRAY_LAYER_COUNT_UNDEFINED;
+    static constexpr uint32_t kMipLevelCountUndefined = WGPU_MIP_LEVEL_COUNT_UNDEFINED;
 
     enum class AdapterType : uint32_t {
         DiscreteGPU = 0x00000000,
@@ -32,12 +36,13 @@ namespace wgpu {
 
     enum class BackendType : uint32_t {
         Null = 0x00000000,
-        D3D11 = 0x00000001,
-        D3D12 = 0x00000002,
-        Metal = 0x00000003,
-        Vulkan = 0x00000004,
-        OpenGL = 0x00000005,
-        OpenGLES = 0x00000006,
+        WebGPU = 0x00000001,
+        D3D11 = 0x00000002,
+        D3D12 = 0x00000003,
+        Metal = 0x00000004,
+        Vulkan = 0x00000005,
+        OpenGL = 0x00000006,
+        OpenGLES = 0x00000007,
     };
 
     enum class BlendFactor : uint32_t {
@@ -54,12 +59,6 @@ namespace wgpu {
         SrcAlphaSaturated = 0x0000000A,
         Constant = 0x0000000B,
         OneMinusConstant = 0x0000000C,
-        SrcColor = 0x00000066,
-        OneMinusSrcColor = 0x00000067,
-        DstColor = 0x0000006A,
-        OneMinusDstColor = 0x0000006B,
-        BlendColor = 0x0000006F,
-        OneMinusBlendColor = 0x00000070,
     };
 
     enum class BlendOperation : uint32_t {
@@ -123,6 +122,11 @@ namespace wgpu {
         None = 0x00000000,
         Front = 0x00000001,
         Back = 0x00000002,
+    };
+
+    enum class DeviceLostReason : uint32_t {
+        Undefined = 0x00000000,
+        Destroyed = 0x00000001,
     };
 
     enum class ErrorFilter : uint32_t {
@@ -202,6 +206,12 @@ namespace wgpu {
         DeviceLost = 0x00000003,
     };
 
+    enum class RequestDeviceStatus : uint32_t {
+        Success = 0x00000000,
+        Error = 0x00000001,
+        Unknown = 0x00000002,
+    };
+
     enum class SType : uint32_t {
         Invalid = 0x00000000,
         SurfaceDescriptorFromMetalLayer = 0x00000001,
@@ -238,14 +248,12 @@ namespace wgpu {
 
     enum class StorageTextureAccess : uint32_t {
         Undefined = 0x00000000,
-        ReadOnly = 0x00000001,
-        WriteOnly = 0x00000002,
+        WriteOnly = 0x00000001,
     };
 
     enum class StoreOp : uint32_t {
         Store = 0x00000000,
         Discard = 0x00000001,
-        Clear = 0x00000002,
     };
 
     enum class TextureAspect : uint32_t {
@@ -307,25 +315,25 @@ namespace wgpu {
         RGBA32Float = 0x00000022,
         RGBA32Uint = 0x00000023,
         RGBA32Sint = 0x00000024,
-        Depth32Float = 0x00000025,
-        Depth24Plus = 0x00000026,
-        Stencil8 = 0x00000027,
+        Stencil8 = 0x00000025,
+        Depth16Unorm = 0x00000026,
+        Depth24Plus = 0x00000027,
         Depth24PlusStencil8 = 0x00000028,
-        BC1RGBAUnorm = 0x00000029,
-        BC1RGBAUnormSrgb = 0x0000002A,
-        BC2RGBAUnorm = 0x0000002B,
-        BC2RGBAUnormSrgb = 0x0000002C,
-        BC3RGBAUnorm = 0x0000002D,
-        BC3RGBAUnormSrgb = 0x0000002E,
-        BC4RUnorm = 0x0000002F,
-        BC4RSnorm = 0x00000030,
-        BC5RGUnorm = 0x00000031,
-        BC5RGSnorm = 0x00000032,
-        BC6HRGBUfloat = 0x00000033,
-        BC6HRGBFloat = 0x00000034,
-        BC7RGBAUnorm = 0x00000035,
-        BC7RGBAUnormSrgb = 0x00000036,
-        R8BG8Biplanar420Unorm = 0x00000037,
+        Depth32Float = 0x00000029,
+        BC1RGBAUnorm = 0x0000002A,
+        BC1RGBAUnormSrgb = 0x0000002B,
+        BC2RGBAUnorm = 0x0000002C,
+        BC2RGBAUnormSrgb = 0x0000002D,
+        BC3RGBAUnorm = 0x0000002E,
+        BC3RGBAUnormSrgb = 0x0000002F,
+        BC4RUnorm = 0x00000030,
+        BC4RSnorm = 0x00000031,
+        BC5RGUnorm = 0x00000032,
+        BC5RGSnorm = 0x00000033,
+        BC6HRGBUfloat = 0x00000034,
+        BC6HRGBFloat = 0x00000035,
+        BC7RGBAUnorm = 0x00000036,
+        BC7RGBAUnormSrgb = 0x00000037,
         ETC2RGB8Unorm = 0x00000038,
         ETC2RGB8UnormSrgb = 0x00000039,
         ETC2RGB8A1Unorm = 0x0000003A,
@@ -336,6 +344,35 @@ namespace wgpu {
         EACR11Snorm = 0x0000003F,
         EACRG11Unorm = 0x00000040,
         EACRG11Snorm = 0x00000041,
+        ASTC4x4Unorm = 0x00000042,
+        ASTC4x4UnormSrgb = 0x00000043,
+        ASTC5x4Unorm = 0x00000044,
+        ASTC5x4UnormSrgb = 0x00000045,
+        ASTC5x5Unorm = 0x00000046,
+        ASTC5x5UnormSrgb = 0x00000047,
+        ASTC6x5Unorm = 0x00000048,
+        ASTC6x5UnormSrgb = 0x00000049,
+        ASTC6x6Unorm = 0x0000004A,
+        ASTC6x6UnormSrgb = 0x0000004B,
+        ASTC8x5Unorm = 0x0000004C,
+        ASTC8x5UnormSrgb = 0x0000004D,
+        ASTC8x6Unorm = 0x0000004E,
+        ASTC8x6UnormSrgb = 0x0000004F,
+        ASTC8x8Unorm = 0x00000050,
+        ASTC8x8UnormSrgb = 0x00000051,
+        ASTC10x5Unorm = 0x00000052,
+        ASTC10x5UnormSrgb = 0x00000053,
+        ASTC10x6Unorm = 0x00000054,
+        ASTC10x6UnormSrgb = 0x00000055,
+        ASTC10x8Unorm = 0x00000056,
+        ASTC10x8UnormSrgb = 0x00000057,
+        ASTC10x10Unorm = 0x00000058,
+        ASTC10x10UnormSrgb = 0x00000059,
+        ASTC12x10Unorm = 0x0000005A,
+        ASTC12x10UnormSrgb = 0x0000005B,
+        ASTC12x12Unorm = 0x0000005C,
+        ASTC12x12UnormSrgb = 0x0000005D,
+        R8BG8Biplanar420Unorm = 0x0000005E,
     };
 
     enum class TextureSampleType : uint32_t {
@@ -441,8 +478,6 @@ namespace wgpu {
         StorageBinding = 0x00000008,
         RenderAttachment = 0x00000010,
         Present = 0x00000020,
-        Sampled = 0x00000004,
-        Storage = 0x00000008,
     };
 
 
@@ -481,6 +516,7 @@ namespace wgpu {
     using ErrorCallback = WGPUErrorCallback;
     using LoggingCallback = WGPULoggingCallback;
     using QueueWorkDoneCallback = WGPUQueueWorkDoneCallback;
+    using RequestDeviceCallback = WGPURequestDeviceCallback;
 
     class BindGroup;
     class BindGroupLayout;
@@ -518,12 +554,12 @@ namespace wgpu {
     struct ComputePassDescriptor;
     struct CopyTextureForBrowserOptions;
     struct DawnTextureInternalUsageDescriptor;
-    struct DeviceProperties;
     struct Extent3D;
     struct ExternalTextureBindingEntry;
     struct ExternalTextureBindingLayout;
     struct ExternalTextureDescriptor;
     struct InstanceDescriptor;
+    struct Limits;
     struct MultisampleState;
     struct Origin3D;
     struct PipelineLayoutDescriptor;
@@ -562,27 +598,17 @@ namespace wgpu {
     struct ImageCopyBuffer;
     struct ImageCopyTexture;
     struct RenderPassColorAttachment;
+    struct RequiredLimits;
+    struct SupportedLimits;
     struct TextureDescriptor;
     struct VertexBufferLayout;
     struct BindGroupLayoutDescriptor;
     struct ColorTargetState;
+    struct DeviceProperties;
     struct RenderPassDescriptor;
     struct VertexState;
     struct FragmentState;
     struct RenderPipelineDescriptor;
-
-    // InputStepMode is deprecated.
-    // Use VertexStepMode instead.
-    using InputStepMode = VertexStepMode;
-
-    // RenderPassColorAttachmentDescriptor is deprecated.
-    // Use RenderPassColorAttachment instead.
-    using RenderPassColorAttachmentDescriptor = RenderPassColorAttachment;
-
-    // RenderPassDepthStencilAttachmentDescriptor is deprecated.
-    // Use RenderPassDepthStencilAttachment instead.
-    using RenderPassDepthStencilAttachmentDescriptor = RenderPassDepthStencilAttachment;
-
 
     template<typename Derived, typename CType>
     class ObjectBase {
@@ -798,6 +824,7 @@ namespace wgpu {
         ShaderModule CreateShaderModule(ShaderModuleDescriptor const * descriptor) const;
         SwapChain CreateSwapChain(Surface const& surface, SwapChainDescriptor const * descriptor) const;
         Texture CreateTexture(TextureDescriptor const * descriptor) const;
+        bool GetLimits(SupportedLimits * limits) const;
         Queue GetQueue() const;
         void InjectError(ErrorType type, char const * message) const;
         void LoseForTesting() const;
@@ -935,7 +962,6 @@ namespace wgpu {
         void PopDebugGroup() const;
         void PushDebugGroup(char const * groupLabel) const;
         void SetBindGroup(uint32_t groupIndex, BindGroup const& group, uint32_t dynamicOffsetCount = 0, uint32_t const * dynamicOffsets = nullptr) const;
-        void SetBlendColor(Color const * color) const;
         void SetBlendConstant(Color const * color) const;
         void SetIndexBuffer(Buffer const& buffer, IndexFormat format, uint64_t offset = 0, uint64_t size = 0) const;
         void SetPipeline(RenderPipeline const& pipeline) const;
@@ -1054,10 +1080,15 @@ namespace wgpu {
         SType sType = SType::Invalid;
     };
 
+    struct ChainedStructOut {
+        ChainedStruct * nextInChain = nullptr;
+        SType sType = SType::Invalid;
+    };
+
     struct AdapterProperties {
-        ChainedStruct const * nextInChain = nullptr;
-        uint32_t deviceID;
+        ChainedStructOut  * nextInChain = nullptr;
         uint32_t vendorID;
+        uint32_t deviceID;
         char const * name;
         char const * driverDescription;
         AdapterType adapterType;
@@ -1139,19 +1170,6 @@ namespace wgpu {
         alignas(ChainedStruct) TextureUsage internalUsage = TextureUsage::None;
     };
 
-    struct DeviceProperties {
-        bool textureCompressionBC = false;
-        bool textureCompressionETC2 = false;
-        bool textureCompressionASTC = false;
-        bool shaderFloat16 = false;
-        bool pipelineStatisticsQuery = false;
-        bool timestampQuery = false;
-        bool multiPlanarFormats = false;
-        bool depthClamping = false;
-        bool invalidExtension = false;
-        bool dawnInternalUsages = false;
-    };
-
     struct Extent3D {
         uint32_t width;
         uint32_t height = 1;
@@ -1179,6 +1197,35 @@ namespace wgpu {
 
     struct InstanceDescriptor {
         ChainedStruct const * nextInChain = nullptr;
+    };
+
+    struct Limits {
+        uint32_t maxTextureDimension1D = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxTextureDimension2D = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxTextureDimension3D = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxTextureArrayLayers = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxBindGroups = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxDynamicUniformBuffersPerPipelineLayout = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxDynamicStorageBuffersPerPipelineLayout = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxSampledTexturesPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxSamplersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxStorageBuffersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxStorageTexturesPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxUniformBuffersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
+        uint64_t maxUniformBufferBindingSize = WGPU_LIMIT_U64_UNDEFINED;
+        uint64_t maxStorageBufferBindingSize = WGPU_LIMIT_U64_UNDEFINED;
+        uint32_t minUniformBufferOffsetAlignment = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t minStorageBufferOffsetAlignment = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxVertexBuffers = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxVertexAttributes = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxVertexBufferArrayStride = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxInterStageShaderComponents = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeWorkgroupStorageSize = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeInvocationsPerWorkgroup = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeWorkgroupSizeX = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeWorkgroupSizeY = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeWorkgroupSizeZ = WGPU_LIMIT_U32_UNDEFINED;
+        uint32_t maxComputeWorkgroupsPerDimension = WGPU_LIMIT_U32_UNDEFINED;
     };
 
     struct MultisampleState {
@@ -1246,7 +1293,7 @@ namespace wgpu {
     };
 
     struct RenderPassDepthStencilAttachment {
-        TextureView view = nullptr;
+        TextureView view;
         LoadOp depthLoadOp;
         StoreOp depthStoreOp;
         float clearDepth;
@@ -1255,7 +1302,6 @@ namespace wgpu {
         StoreOp stencilStoreOp;
         uint32_t clearStencil = 0;
         bool stencilReadOnly = false;
-        TextureView attachment = nullptr;
     };
 
     struct SamplerBindingLayout {
@@ -1392,9 +1438,9 @@ namespace wgpu {
         TextureFormat format = TextureFormat::Undefined;
         TextureViewDimension dimension = TextureViewDimension::Undefined;
         uint32_t baseMipLevel = 0;
-        uint32_t mipLevelCount = 0;
+        uint32_t mipLevelCount = WGPU_MIP_LEVEL_COUNT_UNDEFINED;
         uint32_t baseArrayLayer = 0;
-        uint32_t arrayLayerCount = 0;
+        uint32_t arrayLayerCount = WGPU_ARRAY_LAYER_COUNT_UNDEFINED;
         TextureAspect aspect = TextureAspect::All;
     };
 
@@ -1437,7 +1483,6 @@ namespace wgpu {
         char const * label = nullptr;
         PipelineLayout layout = nullptr;
         ProgrammableStageDescriptor compute;
-        ProgrammableStageDescriptor computeStage;
     };
 
     struct DepthStencilState {
@@ -1469,12 +1514,21 @@ namespace wgpu {
     };
 
     struct RenderPassColorAttachment {
-        TextureView view = nullptr;
+        TextureView view;
         TextureView resolveTarget = nullptr;
         LoadOp loadOp;
         StoreOp storeOp;
         Color clearColor;
-        TextureView attachment = nullptr;
+    };
+
+    struct RequiredLimits {
+        ChainedStruct const * nextInChain = nullptr;
+        Limits limits;
+    };
+
+    struct SupportedLimits {
+        ChainedStructOut  * nextInChain = nullptr;
+        Limits limits;
     };
 
     struct TextureDescriptor {
@@ -1507,6 +1561,22 @@ namespace wgpu {
         TextureFormat format;
         BlendState const * blend = nullptr;
         ColorWriteMask writeMask = ColorWriteMask::All;
+    };
+
+    struct DeviceProperties {
+        uint32_t deviceID;
+        uint32_t vendorID;
+        bool textureCompressionBC = false;
+        bool textureCompressionETC2 = false;
+        bool textureCompressionASTC = false;
+        bool shaderFloat16 = false;
+        bool pipelineStatisticsQuery = false;
+        bool timestampQuery = false;
+        bool multiPlanarFormats = false;
+        bool depthClamping = false;
+        bool invalidExtension = false;
+        bool dawnInternalUsages = false;
+        SupportedLimits limits;
     };
 
     struct RenderPassDescriptor {
@@ -1544,7 +1614,6 @@ namespace wgpu {
         MultisampleState multisample;
         FragmentState const * fragment = nullptr;
     };
-
 
 }  // namespace wgpu
 

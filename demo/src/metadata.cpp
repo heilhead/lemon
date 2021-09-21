@@ -25,6 +25,11 @@ createBundle() {
     return std::make_unique<BundleResource::Metadata>();
 }
 
+auto
+createModel() {
+    return std::make_unique<ModelResource::Metadata>();
+}
+
 void
 addDependencies(ResourceMetadataBase* data, std::initializer_list<RawResourceReference> refs) {
     data->common.references = refs;
@@ -76,6 +81,8 @@ createMetadata() {
                 auto tex = createTexture();
                 tex->decoder = TextureResource::Decoder::PNG;
                 tex->format = wgpu::TextureFormat::RGBA8UnormSrgb;
+                tex->width = 512;
+                tex->height = 512;
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
 
@@ -142,5 +149,11 @@ createMetadata() {
         });
         path bunPath = "RB_BC";
         saveMetadata<BundleResource>(std::move(bun), bunPath);
+    }
+
+    {
+        auto model = createModel();
+        path outPath = R"(ozz-sample\MannequinSkeleton.lem)";
+        saveMetadata<ModelResource>(std::move(model), outPath);
     }
 }

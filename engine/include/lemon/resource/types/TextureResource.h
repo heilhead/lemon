@@ -23,18 +23,18 @@ namespace lemon::res {
             uint32_t width;
             uint32_t height;
 
-            template<class Archive>
+            template<class TArchive>
             void
-            serialize(Archive& ar);
+            serialize(TArchive& ar) {
+                ResourceMetadataBase::serialize(ar);
+
+                LEMON_SERIALIZE(ar, format);
+                LEMON_SERIALIZE(ar, width);
+                LEMON_SERIALIZE(ar, height);
+            }
         };
 
-        template<typename Archive>
-        static std::unique_ptr<ResourceMetadataBase>
-        loadMetadata(Archive& ar);
-
-        template<typename Archive>
-        static void
-        saveMetadata(Archive& ar, const ResourceMetadata& data);
+        LEMON_RESOURCE_TRAITS(TextureResource);
 
         /////////////////////////////////////////////////////////////////////////////////////
         // END Resource traits
@@ -48,5 +48,3 @@ namespace lemon::res {
         load(ResourceMetadata& meta) override;
     };
 } // namespace lemon::res
-
-#include <lemon/resource/types/TextureResource.inl>

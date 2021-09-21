@@ -78,6 +78,7 @@ typedef struct DawnProcTable {
     WGPUProcDeviceCreateShaderModule deviceCreateShaderModule;
     WGPUProcDeviceCreateSwapChain deviceCreateSwapChain;
     WGPUProcDeviceCreateTexture deviceCreateTexture;
+    WGPUProcDeviceGetLimits deviceGetLimits;
     WGPUProcDeviceGetQueue deviceGetQueue;
     WGPUProcDeviceInjectError deviceInjectError;
     WGPUProcDeviceLoseForTesting deviceLoseForTesting;
@@ -143,7 +144,6 @@ typedef struct DawnProcTable {
     WGPUProcRenderPassEncoderPopDebugGroup renderPassEncoderPopDebugGroup;
     WGPUProcRenderPassEncoderPushDebugGroup renderPassEncoderPushDebugGroup;
     WGPUProcRenderPassEncoderSetBindGroup renderPassEncoderSetBindGroup;
-    WGPUProcRenderPassEncoderSetBlendColor renderPassEncoderSetBlendColor;
     WGPUProcRenderPassEncoderSetBlendConstant renderPassEncoderSetBlendConstant;
     WGPUProcRenderPassEncoderSetIndexBuffer renderPassEncoderSetIndexBuffer;
     WGPUProcRenderPassEncoderSetPipeline renderPassEncoderSetPipeline;

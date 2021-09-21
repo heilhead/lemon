@@ -14,18 +14,14 @@ namespace lemon::res {
         /////////////////////////////////////////////////////////////////////////////////////
 
         struct Metadata : ResourceMetadataBase {
-            template<class Archive>
+            template<class TArchive>
             void
-            serialize(Archive& ar);
+            serialize(TArchive& ar) {
+                ResourceMetadataBase::serialize(ar);
+            }
         };
 
-        template<typename Archive>
-        static std::unique_ptr<ResourceMetadataBase>
-        loadMetadata(Archive& ar);
-
-        template<typename Archive>
-        static void
-        saveMetadata(Archive& ar, const ResourceMetadata& data);
+        LEMON_RESOURCE_TRAITS(BundleResource);
 
         /////////////////////////////////////////////////////////////////////////////////////
         // END Resource traits
@@ -39,5 +35,3 @@ namespace lemon::res {
         load(ResourceMetadata& meta) override;
     };
 } // namespace lemon::res
-
-#include <lemon/resource/types/BundleResource.inl>

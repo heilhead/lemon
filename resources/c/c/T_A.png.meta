@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<texture>
+	<TextureResource>
 		<common>
 			<references size="dynamic"/>
 		</common>
 		<value0>RGBA8UnormSrgb</value0>
-	</texture>
+		<width>512</width>
+		<height>512</height>
+	</TextureResource>
 </cereal>
 

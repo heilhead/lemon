@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<material>
+	<MaterialResource>
 		<common>
 			<references size="dynamic">
 				<value0>
@@ -37,6 +37,6 @@
 				<value>c\c\T_C.png</value>
 			</value2>
 		</textures>
-	</material>
+	</MaterialResource>
 </cereal>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<bundle>
+	<BundleResource>
 		<common>
 			<references size="dynamic">
 				<value0>
@@ -17,6 +17,6 @@
 				</value2>
 			</references>
 		</common>
-	</bundle>
+	</BundleResource>
 </cereal>
 

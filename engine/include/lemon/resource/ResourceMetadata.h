@@ -31,6 +31,12 @@ namespace lemon::res {
         CommonResourceMetadata common;
 
         virtual ~ResourceMetadataBase() = default;
+
+        template<class TArchive>
+        void
+        serialize(TArchive& ar) {
+            LEMON_SERIALIZE(ar, common);
+        }
     };
 
     struct ResourceMetadataDescriptor {

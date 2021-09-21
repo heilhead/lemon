@@ -1,4 +1,4 @@
-#include "Window.h"
+#include <lemon/device/Window.h>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 
@@ -8,7 +8,7 @@
 
 using namespace lemon;
 
-Window::Window(WindowDescriptor& desc) {
+Window::Window(WindowDescriptor desc) {
     if (!glfwInit()) {
         utils::halt("GLFW init failed");
     }

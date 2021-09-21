@@ -23,6 +23,7 @@ namespace lemon::res {
         DataMissing,
         DependencyError,
         DependencyMissing,
+        ObjectMissing,
         FactoryMissing,
     };
 
@@ -34,8 +35,8 @@ namespace lemon::res {
 
         ResourceObjectHandle(uint64_t hash) : inner{hash} {}
 
-        ResourceObjectHandle(const std::string& file) {
-            inner = folly::hash::fnva64(file);
+        ResourceObjectHandle(const std::string& name) {
+            inner = folly::hash::fnva64(name);
         }
 
     private:

@@ -4,7 +4,7 @@
 //#include <cstdint>
 //#include <memory>
 #include <cassert>
-#include <lemon/Triangle.h>
+//#include <lemon/Triangle.h>
 #include <lemon/device/Window.h>
 #include <lemon/prelude.h>
 
@@ -14,7 +14,7 @@ std::unique_ptr<Engine> gEngine = nullptr;
 
 void
 printGLFWError(int code, const char* message) {
-    utils::printErr("GLFW error: ", code, " - ", message);
+    utils::logErr("GLFW error: ", code, " - ", message);
 }
 
 Engine::Engine() {
@@ -22,35 +22,31 @@ Engine::Engine() {
 }
 
 void
-Engine::init() {
-    //    assert(state != EngineState::Running);
-    //    state = EngineState::Idle;
-
+Engine::init(std::string& assetPath) {
     glfwSetErrorCallback(printGLFWError);
 
     if (!glfwInit()) {
         utils::halt("GLFW init failed");
     }
 
-    {
-        WindowDescriptor wndDesc;
-        Window wnd(wndDesc);
-        Triangle triangle(wnd);
+    schedMan = std::make_unique<scheduler::Scheduler>();
+    resMan = std::make_unique<res::ResourceManager>(assetPath);
+    wnd = std::make_unique<Window>(WindowDescriptor{});
 
-        utils::print("initialization complete!");
+    utils::log("initialization complete!");
+}
 
-        wnd.loop([&](auto) {
-            triangle.render();
-            return LoopControl::Continue;
-        });
-    }
+void
+Engine::loop(const std::function<LoopControl(float)>& callback) {
+    utils::log("entering event loop");
+
+    wnd->loop([&](float dt) { return callback(dt); });
+
+    utils::log("exiting event loop");
 }
 
 void
 Engine::shutdown() {
-    //    assert(state == EngineState::Running);
-    //    state = EngineState::Idle;
-
     glfwTerminate();
 }
 

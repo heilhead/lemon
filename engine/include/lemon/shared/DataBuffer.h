@@ -35,7 +35,9 @@ namespace lemon {
             other.length = 0;
         }
 
-        DataBuffer(const DataBuffer& other) = delete;
+        DataBuffer(const DataBuffer& other) : data{nullptr}, length{0} {
+            *this = other;
+        }
 
         ~DataBuffer() {
             if (data != nullptr) {
@@ -62,6 +64,8 @@ namespace lemon {
             allocate(other.length);
             auto err = memcpy_s(data, length, other.data, length);
             assert(!err);
+
+            return *this;
         }
 
         DataBuffer&
@@ -74,6 +78,8 @@ namespace lemon {
             length = other.length;
             other.data = nullptr;
             other.length = 0;
+
+            return *this;
         }
 
         size_t

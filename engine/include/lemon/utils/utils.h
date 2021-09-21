@@ -9,22 +9,32 @@
 namespace lemon::utils {
     namespace {
         static std::mutex printMut;
+
+        inline std::ostream&
+        getDefaultLogStream() {
+            return std::cout;
+        }
+
+        inline std::ostream&
+        getErrorLogStream() {
+            return std::cerr;
+        }
+    } // namespace
+
+    template<typename... Args>
+    void
+    log(Args&&... args) {
+        std::stringstream stream;
+        (stream << ... << args) << std::endl;
+        getDefaultLogStream() << stream.str();
     }
 
     template<typename... Args>
     void
-    print(Args&&... args) {
+    logErr(Args&&... args) {
         std::stringstream stream;
         (stream << ... << args) << std::endl;
-        std::cout << stream.str();
-    }
-
-    template<typename... Args>
-    void
-    printErr(Args&&... args) {
-        std::stringstream stream;
-        (stream << ... << args) << std::endl;
-        std::cerr << stream.str();
+        getErrorLogStream() << stream.str();
     }
 
     void

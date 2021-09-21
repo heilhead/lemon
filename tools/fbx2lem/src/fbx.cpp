@@ -86,27 +86,27 @@ struct BuildVertexData {
     pack(MeshComponents components) const {
         MeshPackedVertex v;
 
-        if (enum_integer(components & MeshComponents::Position)) {
+        if ((bool)(components & MeshComponents::Position)) {
             v.position = position;
         }
 
-        if (enum_integer(components & MeshComponents::Normal)) {
+        if ((bool)(components & MeshComponents::Normal)) {
             v.normal = fpack<int8_t>(normal);
         }
 
-        if (enum_integer(components & MeshComponents::Tangent)) {
+        if ((bool)(components & MeshComponents::Tangent)) {
             v.tangent = fpack<int8_t>(tangent);
         }
 
-        if (enum_integer(components & MeshComponents::UV0)) {
+        if ((bool)(components & MeshComponents::UV0)) {
             v.uv0 = fpack<uint16_t>(texCoord[0]);
         }
 
-        if (enum_integer(components & MeshComponents::UV1)) {
+        if ((bool)(components & MeshComponents::UV1)) {
             v.uv1 = fpack<uint16_t>(texCoord[0]);
         }
 
-        if (enum_integer(components & MeshComponents::JointInfluence)) {
+        if ((bool)(components & MeshComponents::JointInfluence)) {
             v.jointIndex = jointIndex;
             v.jointWeight = fpack<uint8_t>(jointWeight);
         }
@@ -117,6 +117,7 @@ struct BuildVertexData {
 
 struct BuildMeshData {
     MeshComponents components;
+    uint8_t material;
     std::vector<BuildVertexData> vertices;
     std::vector<uint32_t> indices;
     std::optional<std::vector<glm::mat4>> joints;
@@ -153,6 +154,10 @@ struct BuildMeshData {
         if (mesh->HasBones()) {
             components |= MeshComponents::JointInfluence;
         }
+
+        lemon::utils::log("mesh components: ", magic_enum::flags::enum_name(components));
+
+        material = mesh->mMaterialIndex;
 
         size_t numVertices = mesh->mNumVertices;
 
@@ -228,12 +233,13 @@ struct BuildMeshData {
 
     template<class Archive>
     inline void
-    CEREAL_SAVE_FUNCTION_NAME(Archive& ar) const {
+    save(Archive& ar) const {
         MeshIndexFormat indexFormat = vertices.size() > std::numeric_limits<uint16_t>::max()
                                           ? MeshIndexFormat::U32
                                           : MeshIndexFormat::U16;
 
-        LEMON_SERIALIZE(ar, components);
+        LEMON_SERIALIZE(ar, material);
+        LEMON_SERIALIZE_FLAGS(ar, components);
         LEMON_SERIALIZE(ar, indexFormat);
 
         size_t vbSize = vertices.size() * MeshPackedVertex::getSize(components);
@@ -243,7 +249,7 @@ struct BuildMeshData {
             v.pack(components).serialize(ar, components);
         }
 
-        size_t ibSize = indices.size() * enum_integer(indexFormat);
+        size_t ibSize = indices.size() * magic_enum::enum_integer(indexFormat);
         LEMON_SERIALIZE(ar, ibSize);
 
         for (uint32_t idx32 : indices) {
@@ -267,13 +273,13 @@ struct BuildModel {
         for (int i = 0; i < scene->mNumMeshes; i++) {
             auto* mesh = scene->mMeshes[i];
             if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
-                lemon::utils::printErr("mesh ", i,
-                                       " contains unsupported primitive type: ", mesh->mPrimitiveTypes);
+                lemon::utils::logErr("mesh ", i,
+                                     " contains unsupported primitive type: ", mesh->mPrimitiveTypes);
                 lemon::utils::halt(nullptr);
             }
 
-            lemon::utils::print("exporting mesh [", i, "] vertices: ", mesh->mNumVertices,
-                                " skinned: ", mesh->HasBones() ? "yes" : "no");
+            lemon::utils::log("exporting mesh [", i, "] vertices: ", mesh->mNumVertices,
+                              " skinned: ", mesh->HasBones() ? "yes" : "no");
 
             addMesh(mesh);
         }
@@ -288,7 +294,7 @@ struct BuildModel {
 
     void
     addNode(const aiNode* node) {
-        lemon::utils::print("exporting node [", node->mName.C_Str(), "] meshes: ", node->mNumMeshes);
+        lemon::utils::log("exporting node [", node->mName.C_Str(), "] meshes: ", node->mNumMeshes);
 
         ModelNode data;
         data.transform = glm::mat4(1.0);
@@ -319,7 +325,7 @@ struct BuildModel {
 
     template<class Archive>
     inline void
-    CEREAL_SAVE_FUNCTION_NAME(Archive& ar) const {
+    save(Archive& ar) const {
         LEMON_SERIALIZE(ar, meshes);
         LEMON_SERIALIZE(ar, nodes);
     }
@@ -334,15 +340,17 @@ lemon::converter::convert(std::filesystem::path inFile, std::filesystem::path ou
     // aiProcess_FlipWindingOrder ??
     // aiProcess_GenBoundingBoxes ??
     // aiProcess_TransformUVCoords ??
+    // aiProcess_CalcTangentSpace ??
 
-    const auto ppFlags =
-        aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
-        aiProcess_SortByPType | aiProcess_LimitBoneWeights | aiProcess_ValidateDataStructure |
-        aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials | aiProcess_OptimizeMeshes |
-        aiProcess_GenUVCoords | aiProcess_FindInstances | aiProcess_OptimizeGraph;
+    const auto ppFlags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType |
+                         aiProcess_LimitBoneWeights | aiProcess_ValidateDataStructure |
+                         aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials |
+                         aiProcess_OptimizeMeshes | aiProcess_FindInstances | aiProcess_OptimizeGraph;
 
-    lemon::utils::print("building model: [", outFile, "]");
-    lemon::utils::print("source: [", inFile, "]");
+    lemon::utils::log("building model: [", outFile, "]");
+    lemon::utils::log("source: [", inFile, "]");
+
+    MeshComponents components = MeshComponents::Position | MeshComponents::Normal;
 
     const aiScene* scene = importer.ReadFile(inFile.string(), ppFlags);
     BuildModel model(scene);

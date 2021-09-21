@@ -5,25 +5,23 @@ using namespace lemon::res;
 ResourceLocation::ResourceLocation(const std::string& inLocation) {
     size_t pos = inLocation.find(kLocationObjectDelimiter);
     if (pos != std::string::npos) {
-        auto locSub = inLocation.substr(0, pos);
+        auto sFile = inLocation.substr(0, pos);
+        auto sObject = inLocation.substr(pos + 1);
 
-        file = inLocation.substr(0, pos);
-        object = inLocation.substr(pos + 1);
-        handle = ResourceHandle(locSub);
+        handle = ResourceHandle(createHash(sFile));
+        object = ResourceObjectHandle(createHash(sObject));
 
-        assert((*object).find(kLocationObjectDelimiter) == std::string::npos);
+        assert((sObject).find(kLocationObjectDelimiter) == std::string::npos);
     } else {
-        file = inLocation;
-        object = std::nullopt;
-        handle = ResourceHandle(inLocation);
+        handle = ResourceHandle(createHash(inLocation));
+        object = ResourceObjectHandle::InvalidHandle;
     }
 }
 
-ResourceLocation::ResourceLocation(const std::string& inLocation, std::string&& inObject) {
+ResourceLocation::ResourceLocation(const std::string& inLocation, std::string& inObject) {
     assert(inLocation.find(kLocationObjectDelimiter) == std::string::npos);
     assert(inObject.find(kLocationObjectDelimiter) == std::string::npos);
 
-    file = inLocation;
-    object = inObject;
-    handle = ResourceHandle(inLocation);
+    handle = ResourceHandle(createHash(inLocation));
+    object = ResourceObjectHandle(createHash(inObject));
 }

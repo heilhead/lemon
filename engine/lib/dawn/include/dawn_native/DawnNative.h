@@ -66,6 +66,8 @@ namespace dawn_native {
         std::vector<const char*> requiredExtensions;
         std::vector<const char*> forceEnabledToggles;
         std::vector<const char*> forceDisabledToggles;
+
+        const WGPURequiredLimits* requiredLimits = nullptr;
     };
 
     // A struct to record the information of a toggle. A toggle is a code path in Dawn device that
@@ -108,6 +110,9 @@ namespace dawn_native {
 
         std::vector<const char*> GetSupportedExtensions() const;
         WGPUDeviceProperties GetAdapterProperties() const;
+        bool GetLimits(WGPUSupportedLimits* limits) const;
+
+        void SetUseTieredLimits(bool useTieredLimits);
 
         // Check that the Adapter is able to support importing external images. This is necessary
         // to implement the swapchain and interop APIs in Chromium.
@@ -119,6 +124,10 @@ namespace dawn_native {
         // a device descriptor and a pointer to backend specific options.
         // On an error, nullptr is returned.
         WGPUDevice CreateDevice(const DeviceDescriptor* deviceDescriptor = nullptr);
+
+        void RequestDevice(const DeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
 
         // Reset the backend device object for testing purposes.
         void ResetInternalDeviceForTesting();

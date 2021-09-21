@@ -1,7 +1,6 @@
 project(lemon-core)
 
 set(SOURCE_FILES
-        src/lemon/Triangle.cpp
         src/lemon/engine.cpp
         src/lemon/device/Window.cpp
         src/lemon/resource/ResourceInstance.cpp
@@ -12,13 +11,14 @@ set(SOURCE_FILES
         src/lemon/resource/types/MaterialResource.cpp
         src/lemon/resource/types/TextureResource.cpp
         src/lemon/resource/types/BundleResource.cpp
+        src/lemon/resource/types/ModelResource.cpp
         src/lemon/resource/common.cpp
         src/lemon/shared/Vector.cpp
         src/lemon/shared/filesystem.cpp
         src/lemon/utils/utils.cpp
         src/lemon/scheduler/Scheduler.cpp
         src/lemon/scheduler/utils.cpp
-        )
+        src/lemon/shared/HashStringStore.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

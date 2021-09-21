@@ -11,3 +11,4 @@
 #include <lemon/resource/types/BundleResource.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
+#include <lemon/resource/types/ModelResource.h>

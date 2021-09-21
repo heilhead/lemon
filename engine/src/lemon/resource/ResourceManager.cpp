@@ -3,6 +3,7 @@
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/BundleResource.h>
+#include <lemon/resource/types/ModelResource.h>
 
 using namespace lemon::res;
 
@@ -18,6 +19,7 @@ ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefa
     registerClass<TextureResource>();
     registerClass<MaterialResource>();
     registerClass<BundleResource>();
+    registerClass<ModelResource>();
 }
 
 ResourceManager::~ResourceManager() {
@@ -31,7 +33,12 @@ ResourceManager::get() {
 
 std::filesystem::path
 ResourceManager::resolvePath(const ResourceLocation& location) {
-    return std::filesystem::path(root) / location.file;
+    return std::filesystem::path(root) / location.getFileName();
+}
+
+std::filesystem::path
+ResourceManager::resolvePath(const std::filesystem::path& relPath) {
+    return std::filesystem::path(root) / relPath;
 }
 
 ResourceContract*
@@ -70,7 +77,7 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
 ResourceContract::FutureType<ResourceInstance>
 ResourceManager::loadResource(ResourceClassID id, const ResourceLocation& location,
                               ResourceLifetime lifetime) {
-    return CPUTask(detail::coResourceFactory(id, location.file.string(), lifetime));
+    return CPUTask(detail::coResourceFactory(id, location.getFileName(), lifetime));
 }
 
 bool
@@ -119,7 +126,7 @@ ResourceManager::getFactoryFn(ResourceClassID id) {
 }
 
 FactoryResultType
-lemon::res::detail::coResourceFactory(ResourceClassID classID, const std::string refLocation,
+lemon::res::detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
                                       ResourceLifetime lifetime) {
     auto factory = ResourceManager::get()->getFactoryFn(classID);
     if (!factory) {

@@ -10,6 +10,7 @@ using namespace lemon::scheduler;
 
 namespace lemon::res {
     struct ResourceMetadata;
+    struct ResourceLocation;
 
     class ResourceObject {
         friend class ResourceInstance;
@@ -50,15 +51,19 @@ namespace lemon::res {
         virtual ~ResourceInstance();
 
     private:
-        folly::small_vector<ResourceObject*, kObjectCapacity> objects;
+        folly::small_vector<ResourceObject*> objects;
         folly::small_vector<ResourceInstance*, kDependencyCapacity> dependencies;
         ResourceHandle handle{ResourceHandle::InvalidHandle};
         std::atomic<uint32_t> dependants{0};
 
     public:
-        template<class T = ResourceObject>
-        const T*
+        template<class TObject = ResourceObject>
+        const TObject*
         getObject(ResourceObjectHandle handle) const;
+
+        template<class TObject = ResourceObject>
+        const TObject*
+        getObject(const ResourceLocation& location) const;
 
         inline void
         setHandle(ResourceHandle inHandle) {
@@ -77,7 +82,7 @@ namespace lemon::res {
         addDependency(ResourceInstance* pResource);
 
     protected:
-        template<class T = ResourceObject, typename... Args>
+        template<class TObject = ResourceObject, typename... Args>
         void
         createObject(ResourceObjectHandle handle, Args&&... args);
 

@@ -17,18 +17,17 @@ namespace lemon::res {
             std::unordered_map<std::string, int> shaderConfig;
             std::unordered_map<std::string, std::string> textures;
 
-            template<class Archive>
+            template<class TArchive>
             void
-            serialize(Archive& ar);
+            serialize(TArchive& ar) {
+                ResourceMetadataBase::serialize(ar);
+
+                LEMON_SERIALIZE(ar, shaderConfig);
+                LEMON_SERIALIZE(ar, textures);
+            }
         };
 
-        template<typename Archive>
-        static std::unique_ptr<ResourceMetadataBase>
-        loadMetadata(Archive& ar);
-
-        template<typename Archive>
-        static void
-        saveMetadata(Archive& ar, const ResourceMetadata& data);
+        LEMON_RESOURCE_TRAITS(MaterialResource);
 
         /////////////////////////////////////////////////////////////////////////////////////
         // END Resource traits
@@ -42,5 +41,3 @@ namespace lemon::res {
         load(ResourceMetadata& meta) override;
     };
 } // namespace lemon::res
-
-#include <lemon/resource/types/MaterialResource.inl>

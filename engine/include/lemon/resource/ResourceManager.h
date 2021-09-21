@@ -47,6 +47,14 @@ namespace lemon::res {
         resolvePath(const struct ResourceLocation& location);
 
         /// <summary>
+        /// Resolves a relative resource path to the absolute file system path;
+        /// </summary>
+        /// <param name="relPath">Relative resource path</param>
+        /// <returns>Absolute file system path</returns>
+        std::filesystem::path
+        resolvePath(const std::filesystem::path& relPath);
+
+        /// <summary>
         /// Returns the underlying store. Used internally.
         /// </summary>
         /// <returns>Resource store</returns>

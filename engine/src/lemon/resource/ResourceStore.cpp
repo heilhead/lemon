@@ -52,7 +52,7 @@ void
 ResourceStore::remove(ResourceHandle handle) {
     auto it = map.find(handle);
     if (it == map.end()) {
-        lemon::utils::printErr("failed to remove resource: handle ", handle.get(), " not found");
+        lemon::utils::logErr("failed to remove resource: handle ", handle.get(), " not found");
         return;
     }
 

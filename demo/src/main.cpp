@@ -3,6 +3,7 @@
 
 #include <folly/experimental/coro/BlockingWait.h>
 #include <folly/experimental/coro/Collect.h>
+#include <folly/PackedSyncPtr.h>
 #include <lemon/scheduler.h>
 
 #include <lemon/resource/ResourceManager.h>
@@ -48,19 +49,20 @@ run() {
     auto meta = resMan->loadMetadata<MaterialResource>(location);
     if (meta) {
         auto* matData = (*meta).get<MaterialResource::Metadata>();
-        lemon::utils::print("load metadata: success");
+        lemon::utils::log("load metadata: success");
     } else {
-        lemon::utils::print("load metadata: error");
+        lemon::utils::logErr("load metadata: error");
     }
 }
 
 int
 main(int argc, char* argv[]) {
-    std::unique_ptr<Scheduler> schedMan = std::make_unique<Scheduler>(24, 24);
+    // std::unique_ptr<Scheduler> schedMan = std::make_unique<Scheduler>(1, 1);
 
     // createMetadata();
     // testBundleLoading();
-    testMeshLoading();
+    // testMeshLoading();
+    testMeshRendering();
 
     return 0;
 }

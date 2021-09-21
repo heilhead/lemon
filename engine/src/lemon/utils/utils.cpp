@@ -4,9 +4,9 @@ void
 lemon::utils::halt(const char* message, int code) {
     if (message != nullptr) {
         if (code > 0) {
-            printErr(message);
+            logErr(message);
         } else {
-            print(message);
+            log(message);
         }
     }
 

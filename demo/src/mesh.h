@@ -1,4 +1,7 @@
 #pragma once
 
+// void
+// testMeshLoading();
+
 void
-testMeshLoading();
+testMeshRendering();
