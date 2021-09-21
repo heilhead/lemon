@@ -23,8 +23,6 @@ set(SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
-
 #target_compile_options(${PROJECT_NAME} PRIVATE
 #        $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 #        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>)
@@ -37,7 +35,7 @@ target_include_directories(${PROJECT_NAME}
 
 include(${LEMON_CPM_CMAKE_PATH})
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn_static)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -62,7 +60,7 @@ CPMAddPackage(
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
-        lemon-dawn
+        lemon::dawn_static
         glm::glm
         Folly::folly
         tl::expected
