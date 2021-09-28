@@ -1,12 +1,15 @@
+.cipd/
 .cpm-cache/
 .vs/
 .vscode/
 /bin/
 /build/
+/build-vs-code/
 cmake-build-*/
 /out/
 /lib/boost_1_77_0/
 /vcpkg_installed/
+/engine/lib/tint/
 
 # Prerequisites
 *.d

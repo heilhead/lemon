@@ -11,6 +11,7 @@
     "glm",
     "lodepng",
     "magic-enum",
+    "nlohmann-json",
     "range-v3",
     "tl-expected"
   ]

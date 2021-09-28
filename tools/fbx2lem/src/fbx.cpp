@@ -27,13 +27,15 @@ using namespace lemon::res::model;
 
 template<class T>
 std::enable_if_t<std::is_integral_v<T>, T>
-fpack(float v) {
+fpack(float v)
+{
     return static_cast<T>(std::numeric_limits<T>::max() * v);
 }
 
-template<typename T, size_t N, glm::qualifier Q = glm::qualifier::defaultp>
+template<typename T, size_t N, glm::qualifier Q = glm::packed_highp>
 glm::vec<N, T, Q>
-fpack(const glm::vec<N, float, Q>& v) {
+fpack(const glm::vec<N, float, Q>& v)
+{
     if constexpr (N == 1) {
         return glm::vec<N, T, Q>(fpack<T>(v.x));
     } else if constexpr (N == 2) {
@@ -45,23 +47,38 @@ fpack(const glm::vec<N, float, Q>& v) {
     }
 }
 
+template<typename T, size_t N0, size_t N1, glm::qualifier Q = glm::packed_highp>
+glm::vec<N1, T, Q>
+padvec(const glm::vec<N0, float, Q>& v)
+{
+    static_assert(N0 < N1, "invalid padding");
+
+    glm::vec<N1, T, Q> result;
+    memcpy(&result, &v, sizeof(v));
+    return result;
+}
+
 glm::vec3
-fvec3(const aiVector3D& v) {
+fvec3(const aiVector3D& v)
+{
     return glm::vec3(v.x, v.y, v.z);
 }
 
 glm::vec2
-fvec2(const aiVector2D& v) {
+fvec2(const aiVector2D& v)
+{
     return glm::vec2(v.x, v.y);
 }
 
 glm::vec2
-fvec2(const aiVector3D& v) {
+fvec2(const aiVector3D& v)
+{
     return glm::vec2(v.x, v.y);
 }
 
 glm::mat4
-fmat4(const aiMatrix4x4& m) {
+fmat4(const aiMatrix4x4& m)
+{
     // N.B. Convert from `aiMatrix4x4` row-major order to `glm::mat4` column-major order.
 
     // clang-format off
@@ -83,7 +100,8 @@ struct BuildVertexData {
     glm::f32vec4 jointWeight; // => unorm8x4
 
     MeshPackedVertex
-    pack(MeshComponents components) const {
+    pack(MeshComponents components) const
+    {
         MeshPackedVertex v;
 
         if ((bool)(components & MeshComponents::Position)) {
@@ -91,11 +109,11 @@ struct BuildVertexData {
         }
 
         if ((bool)(components & MeshComponents::Normal)) {
-            v.normal = fpack<int8_t>(normal);
+            v.normal = padvec<float, 3, 4, glm::packed_highp>(fpack<int8_t>(normal));
         }
 
         if ((bool)(components & MeshComponents::Tangent)) {
-            v.tangent = fpack<int8_t>(tangent);
+            v.tangent = padvec<float, 3, 4, glm::packed_highp>(fpack<int8_t>(tangent));
         }
 
         if ((bool)(components & MeshComponents::UV0)) {
@@ -122,7 +140,8 @@ struct BuildMeshData {
     std::vector<uint32_t> indices;
     std::optional<std::vector<glm::mat4>> joints;
 
-    BuildMeshData(const aiMesh* mesh) {
+    BuildMeshData(const aiMesh* mesh)
+    {
         size_t numUVTracks = mesh->GetNumUVChannels();
 
         if (numUVTracks > 2) {
@@ -233,7 +252,8 @@ struct BuildMeshData {
 
     template<class Archive>
     inline void
-    save(Archive& ar) const {
+    save(Archive& ar) const
+    {
         MeshIndexFormat indexFormat = vertices.size() > std::numeric_limits<uint16_t>::max()
                                           ? MeshIndexFormat::U32
                                           : MeshIndexFormat::U16;
@@ -246,7 +266,7 @@ struct BuildMeshData {
         LEMON_SERIALIZE(ar, vbSize);
 
         for (auto& v : vertices) {
-            v.pack(components).serialize(ar, components);
+            v.pack(components).save(ar, components);
         }
 
         size_t ibSize = indices.size() * magic_enum::enum_integer(indexFormat);
@@ -269,7 +289,8 @@ struct BuildModel {
     std::vector<BuildMeshData> meshes;
     std::vector<ModelNode> nodes;
 
-    BuildModel(const aiScene* scene) {
+    BuildModel(const aiScene* scene)
+    {
         for (int i = 0; i < scene->mNumMeshes; i++) {
             auto* mesh = scene->mMeshes[i];
             if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
@@ -288,12 +309,14 @@ struct BuildModel {
     }
 
     void
-    addMesh(const aiMesh* mesh) {
+    addMesh(const aiMesh* mesh)
+    {
         meshes.emplace_back(BuildMeshData(mesh));
     }
 
     void
-    addNode(const aiNode* node) {
+    addNode(const aiNode* node)
+    {
         lemon::utils::log("exporting node [", node->mName.C_Str(), "] meshes: ", node->mNumMeshes);
 
         ModelNode data;
@@ -313,7 +336,8 @@ struct BuildModel {
     }
 
     void
-    findNodes(aiNode* node) {
+    findNodes(aiNode* node)
+    {
         if (node->mNumMeshes > 0) {
             addNode(node);
         }
@@ -325,14 +349,16 @@ struct BuildModel {
 
     template<class Archive>
     inline void
-    save(Archive& ar) const {
+    save(Archive& ar) const
+    {
         LEMON_SERIALIZE(ar, meshes);
         LEMON_SERIALIZE(ar, nodes);
     }
 };
 
 void
-lemon::converter::convert(std::filesystem::path inFile, std::filesystem::path outFile) {
+lemon::converter::convert(std::filesystem::path inFile, std::filesystem::path outFile)
+{
     Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
     Assimp::Importer importer;
 

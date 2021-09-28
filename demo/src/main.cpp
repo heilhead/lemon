@@ -24,12 +24,14 @@
 #include "metadata.h"
 #include "bundles.h"
 #include "mesh.h"
+#include "shader.h"
 
 using namespace lemon::scheduler;
 using namespace lemon::res;
 
 void
-run() {
+run()
+{
     std::unique_ptr<lemon::res::ResourceManager> resMan =
         std::make_unique<lemon::res::ResourceManager>(R"(C:\git\lemon\resources)");
 
@@ -56,13 +58,15 @@ run() {
 }
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char* argv[])
+{
     // std::unique_ptr<Scheduler> schedMan = std::make_unique<Scheduler>(1, 1);
 
     // createMetadata();
     // testBundleLoading();
     // testMeshLoading();
-    testMeshRendering();
+    // testMeshRendering();
+    testShader();
 
     return 0;
 }

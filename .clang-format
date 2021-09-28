@@ -15,3 +15,4 @@ IndentAccessModifiers: False
 AccessModifierOffset: -4
 SortIncludes: Never
 BreakBeforeTernaryOperators: True
+BreakBeforeBraces: WebKit

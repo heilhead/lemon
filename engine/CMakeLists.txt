@@ -18,7 +18,9 @@ set(SOURCE_FILES
         src/lemon/utils/utils.cpp
         src/lemon/scheduler/Scheduler.cpp
         src/lemon/scheduler/utils.cpp
-        src/lemon/shared/HashStringStore.cpp)
+        src/lemon/shared/HashStringStore.cpp
+        src/lemon/render/utils.cpp
+        src/lemon/render/Shader.cpp "src/lemon/device/Platform.cpp" "src/lemon/render/ConstantBuffer.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -45,6 +47,9 @@ find_package(tl-expected CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 find_package(lodepng CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT)
 
 CPMAddPackage(
 	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"
@@ -58,6 +63,8 @@ CPMAddPackage(
 	"ozz_build_tests OFF"
 	"ozz_build_msvc_rt_dll OFF")
 
+CPMAddPackage("gh:pantor/inja#635e1fb")
+
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon::dawn_static
@@ -68,6 +75,7 @@ target_link_libraries(${PROJECT_NAME}
         magic_enum::magic_enum
         ozz_animation
         lodepng
+        pantor::inja
         PRIVATE
         range-v3
         glfw)

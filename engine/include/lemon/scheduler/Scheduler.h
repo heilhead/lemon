@@ -6,6 +6,7 @@
 #include <folly/executors/IOThreadPoolExecutor.h>
 #include <folly/executors/CPUThreadPoolExecutor.h>
 #include <folly/experimental/coro/Task.h>
+#include <folly/experimental/coro/BlockingWait.h>
 
 namespace lemon::scheduler {
     template<typename TResult, typename TError>
@@ -41,24 +42,34 @@ namespace lemon::scheduler {
 
     public:
         inline folly::CPUThreadPoolExecutor*
-        getCPUExecutor() {
+        getCPUExecutor()
+        {
             return poolCPU.get();
         }
 
         inline folly::IOThreadPoolExecutor*
-        getIOExecutor() {
+        getIOExecutor()
+        {
             return poolIO.get();
         }
 
         static std::optional<std::string>
         getCurrentThreadName();
+
+        template<typename TResult>
+        inline TResult
+        block(folly::Future<TResult>&& awaitable)
+        {
+            return folly::coro::blockingWait(std::move(awaitable));
+        }
     };
 
     namespace detail {
         template<typename TTask, typename TFuture, bool bWithPriority>
         inline TFuture
         ScheduleTaskImpl(TTask&& task, folly::Executor::KeepAlive<> executor,
-                         Priority priority = Priority::Medium) {
+                         Priority priority = Priority::Medium)
+        {
             if constexpr (bWithPriority) {
                 return std::move(task).semi().via(executor, static_cast<int8_t>(priority));
             } else {
@@ -69,28 +80,32 @@ namespace lemon::scheduler {
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    IOTask(Task<TResult, TError>&& task) {
+    IOTask(Task<TResult, TError>&& task)
+    {
         return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, false>(
             std::move(task), Scheduler::get()->getIOExecutor()->weakRef());
     }
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    CPUTask(Task<TResult, TError>&& task, Priority priority = Priority::Medium) {
+    CPUTask(Task<TResult, TError>&& task, Priority priority = Priority::Medium)
+    {
         return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, true>(
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
     }
 
     template<typename TError>
     VoidTaskFuture<TError>
-    IOTask(VoidTask<TError>&& task) {
+    IOTask(VoidTask<TError>&& task)
+    {
         return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, false>(
             std::move(task), Scheduler::get()->getIOExecutor()->weakRef());
     }
 
     template<typename TError>
     VoidTaskFuture<TError>
-    CPUTask(VoidTask<TError>&& task, Priority priority = Priority::Medium) {
+    CPUTask(VoidTask<TError>&& task, Priority priority = Priority::Medium)
+    {
         return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, true>(
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
     }
