@@ -1,0 +1,22 @@
+use_relative_paths = True
+
+vars = {
+  'chromium_git': 'https://chromium.googlesource.com',
+  'dawn_git': 'https://dawn.googlesource.com',
+  'github_git': 'https://github.com',
+  'swiftshader_git': 'https://swiftshader.googlesource.com'
+}
+
+deps = {
+  'lib/tint': {
+    'url': '{dawn_git}/tint@9c7cd9e9c3eed042bd7f27d4600bcc9878f9835c',
+  }
+}
+
+hooks = [
+
+]
+
+recursedeps = [
+  'lib/tint'
+]

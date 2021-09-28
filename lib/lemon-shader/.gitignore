@@ -1,0 +1,4 @@
+/.cipd/
+/out/
+/lib/tint/
+.gclient_entries
