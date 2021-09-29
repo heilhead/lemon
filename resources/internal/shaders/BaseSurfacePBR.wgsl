@@ -25,7 +25,24 @@ var<uniform> lemonData: LemonData;
 //# endblock
 
 //# block vs_surface
-{{super()}}
+fn vs_surface(vertexData: VertexInput) -> VertexOutput {
+  let position: vec4<f32> = sceneParams.projection * vec4<f32>(vertexData.position.xyz, 1.0);
+  var normal: vec4<f32> = sceneParams.projection * vec4<f32>(vertexData.normal.xyz, 1.0);
+  normal = vec4<f32>(normal.xyz / normal.w, 1.0);
+  normal = normal  * lemonData.lemonMat;
+
+  let tangent: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+  let uv0: vec2<f32> = vec2<f32>(1.0, 1.0);
+  let uv1: vec2<f32> = vec2<f32>(1.0, 1.0);
+
+  return VertexOutput(
+    position,
+    normal,
+    tangent,
+    uv0,
+    uv1
+  );
+}
 //# endblock
 
 //# block fs_surface

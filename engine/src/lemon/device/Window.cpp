@@ -6,9 +6,10 @@
 #include <chrono>
 #include <lemon/prelude.h>
 
-using namespace lemon;
+using namespace lemon::device;
 
-Window::Window(WindowDescriptor desc) {
+Window::Window(WindowDescriptor desc)
+{
     if (!glfwInit()) {
         utils::halt("GLFW init failed");
     }
@@ -25,12 +26,14 @@ Window::Window(WindowDescriptor desc) {
     height = desc.height;
 }
 
-Window::~Window() {
+Window::~Window()
+{
     glfwDestroyWindow(window);
 }
 
 void
-Window::loop(const std::function<LoopControl(float)>& callback) const {
+Window::loop(const std::function<LoopControl(float)>& callback) const
+{
     typedef std::chrono::steady_clock clock;
     typedef std::chrono::duration<float> duration;
 

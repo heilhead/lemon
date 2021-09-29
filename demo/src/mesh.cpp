@@ -7,8 +7,7 @@
 
 #include <lemon/utils/utils.h>
 #include <lemon/engine.h>
-#include <lemon/device/Window.h>
-#include <lemon/device/Platform.h>
+#include <lemon/device/Device.h>
 #include <lemon/shared/filesystem.h>
 #include <lemon/resources.h>
 #include <lemon/resource/types/ModelResource.h>
@@ -25,35 +24,11 @@
 #include <dawn_native/D3D12Backend.h>
 
 using namespace lemon;
+using namespace lemon::device;
 using namespace lemon::utils;
 using namespace lemon::res;
 using namespace lemon::scheduler;
 using namespace lemon::render;
-
-void
-printDeviceError(WGPUErrorType errorType, const char* message, void*)
-{
-    const char* errorTypeName = "";
-    switch (errorType) {
-    case WGPUErrorType_Validation:
-        errorTypeName = "Validation";
-        break;
-    case WGPUErrorType_OutOfMemory:
-        errorTypeName = "Out of memory";
-        break;
-    case WGPUErrorType_Unknown:
-        errorTypeName = "Unknown";
-        break;
-    case WGPUErrorType_DeviceLost:
-        errorTypeName = "Device lost";
-        break;
-    default:
-        assert(false);
-        return;
-    }
-
-    logErr("WebGPU device error: ", errorTypeName, ": ", message);
-}
 
 const ModelResource::Model*
 loadModel()
@@ -165,14 +140,14 @@ public:
                                              wgpu::BufferBindingType::Uniform, true},
                                         });
 
-        wgpu::BindGroupLayout bgLayouts[5] = {bgl0, bgl1, bgl2, bgl2, bgl2};
+        wgpu::BindGroupLayout bgLayouts[2] = {bgl0, bgl1};
 
         auto shaderSource =
             *lemon::io::readTextFile(R"(C:\git\lemon\resources\ozz-sample\shader-basic.wgsl)");
         auto shaderModule = createShaderModule(device, shaderSource.c_str());
 
         wgpu::PipelineLayoutDescriptor plLayoutDesc;
-        plLayoutDesc.bindGroupLayoutCount = 3;
+        plLayoutDesc.bindGroupLayoutCount = 2;
         plLayoutDesc.bindGroupLayouts = bgLayouts;
 
         wgpu::RenderPipelineDescriptor desc;
@@ -268,58 +243,14 @@ public:
         glm::vec4 v(0.69291f, 0.66929f, -0.24409, 0.0f);
         glm::vec4 normalized = glm::normalize(v);
 
-        platform = std::make_unique<lemon::device::Platform>();
+        auto* gpu = Device::get()->getGPU();
 
-        // stage 1
-        auto instance = std::make_unique<dawn_native::Instance>();
+        device = gpu->getDevice();
+        swapChain = gpu->getSwapChain();
+        queue = gpu->getQueue();
 
-        // TODO: Intercept cache requests when building shaders and use cached SPIR-V bytecode for reflection
-
-        instance->SetPlatform(platform.get());
-        instance->DiscoverDefaultAdapters();
-
-        dawn_native::Adapter backendAdapter;
-        {
-            log("discovering adapters...");
-
-            auto adapters = instance->GetAdapters();
-            for (dawn_native::Adapter& adapter : adapters) {
-                wgpu::AdapterProperties properties;
-                adapter.GetProperties(&properties);
-
-                log("found adapter: ", properties.name, " backend: ", properties.backendType);
-
-                if (properties.backendType == wgpu::BackendType::D3D12) {
-                    backendAdapter = adapter;
-                    log("using adapter: ", properties.name, " backend: ", properties.backendType);
-                    break;
-                }
-            }
-
-            assert(backendAdapter && "no suitable adapter found");
-        }
-
-        auto backendDevice = backendAdapter.CreateDevice();
-        auto backendProcs = dawn_native::GetProcs();
-
-        dawnProcSetProcs(&backendProcs);
-        backendProcs.deviceSetUncapturedErrorCallback(backendDevice, printDeviceError, nullptr);
-        device = wgpu::Device::Acquire(backendDevice);
-
-        // stage 2
-
-        queue = device.GetQueue();
-
-        auto swapChainImpl =
-            dawn_native::d3d12::CreateNativeSwapChainImpl(backendDevice, window->getContextHandle());
+        const auto& swapChainImpl = gpu->getSwapChainImpl();
         auto [wndWidth, wndHeight] = window->getSize();
-
-        wgpu::SwapChainDescriptor swapChainDesc;
-        swapChainDesc.implementation = reinterpret_cast<uint64_t>(&swapChainImpl);
-        swapChain = device.CreateSwapChain(nullptr, &swapChainDesc);
-        auto textureFormat = static_cast<wgpu::TextureFormat>(
-            dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&swapChainImpl));
-        swapChain.Configure(textureFormat, wgpu::TextureUsage::RenderAttachment, wndWidth, wndHeight);
 
         // stage 3
 
@@ -345,19 +276,19 @@ public:
     void
     render()
     {
-        cbuffer.reset();
-        cbufLayout.reset();
+        // cbuffer.reset();
+        // cbufLayout.reset();
 
-        {
-            glm::f32vec4 v1(1.0f, 1.0f, 1.0f, 1.0f);
-            cbufLayout.addData(cbuffer, 2, v1);
+        //{
+        //    glm::f32vec4 v1(1.0f, 1.0f, 1.0f, 1.0f);
+        //    cbufLayout.addData(cbuffer, 2, v1);
 
-            glm::f32vec4 v2(0.5f, 0.5f, 0.5f, 1.0f);
-            cbufLayout.addData(cbuffer, 3, v2);
+        //    glm::f32vec4 v2(0.5f, 0.5f, 0.5f, 1.0f);
+        //    cbufLayout.addData(cbuffer, 3, v2);
 
-            glm::f32vec4 v3(1.0f, 0.0f, 0.0f, 1.0f);
-            cbufLayout.addData(cbuffer, 4, v3);
-        }
+        //    glm::f32vec4 v3(1.0f, 0.0f, 0.0f, 1.0f);
+        //    cbufLayout.addData(cbuffer, 4, v3);
+        //}
 
         wgpu::TextureView backbufferView = swapChain.GetCurrentTextureView();
         ComboRenderPassDescriptor renderPass({backbufferView}, depthStencilView);
@@ -369,7 +300,7 @@ public:
             pass.SetBindGroup(0, bindGroupShared);
             pass.SetBindGroup(1, bindGroup);
 
-            cbufLayout.bind(pass);
+            // cbufLayout.bind(pass);
 
             pass.SetVertexBuffer(0, vertexBuffer);
             pass.SetIndexBuffer(indexBuffer, mesh->indexFormat);
@@ -473,12 +404,12 @@ testMeshRendering()
 
     MiniRender render;
 
-    render.init(engine.getWindow());
+    render.init(Device::get()->getWindow());
 
     {
         engine.loop([&](float dt) {
             render.render();
-            return lemon::LoopControl::Continue;
+            return LoopControl::Continue;
         });
     }
 

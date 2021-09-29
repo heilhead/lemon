@@ -59,15 +59,6 @@ struct VecUniform {
     data: vec4<f32>;
 };
 
-[[group(2), binding(0)]]
-var<uniform> colWhite: VecUniform;
-
-[[group(3), binding(0)]]
-var<uniform> colGray: VecUniform;
-
-[[group(4), binding(0)]]
-var<uniform> colRed: VecUniform;
-
 [[stage(vertex)]]
 fn vs_main(vertexData: VertexInput) -> VertexOutput {
     let position: vec4<f32> = sceneParams.projection * vec4<f32>(vertexData.position.xyz, 1.0);
@@ -93,9 +84,9 @@ struct FragmentOutput {
 
 [[stage(fragment)]]
 fn fs_main(fragData: VertexOutput) -> FragmentOutput {
-    return FragmentOutput(vec4<f32>(colWhite.data.xyz, 1.0));
+    //return FragmentOutput(vec4<f32>(colWhite.data.xyz, 1.0));
 
     // return FragmentOutput(vec4<f32>(fragData.normal.xyz, 1.0));
     
-    // return FragmentOutput(textureSample(myTexture, mySampler, fragData.position.xy / vec2<f32>(640.0, 480.0)));
+    return FragmentOutput(textureSample(myTexture, mySampler, fragData.position.xy / vec2<f32>(640.0, 480.0)));
 }

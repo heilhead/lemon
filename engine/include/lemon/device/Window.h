@@ -5,7 +5,7 @@
 #include <functional>
 #include <windows.h>
 
-namespace lemon {
+namespace lemon::device {
     enum class WindowKind { Window, Fullscreen, WindowedFullscreen };
 
     enum class LoopControl { Continue, Abort };
@@ -29,16 +29,18 @@ namespace lemon {
 
     public:
         [[nodiscard]] HWND
-        getContextHandle() const {
+        getContextHandle() const
+        {
             return hWnd;
         }
 
         [[nodiscard]] std::pair<uint32_t, uint32_t>
-        getSize() const {
+        getSize() const
+        {
             return {width, height};
         }
 
         void
         loop(const std::function<LoopControl(float)>& callback) const;
     };
-} // namespace lemon
+} // namespace lemon::device

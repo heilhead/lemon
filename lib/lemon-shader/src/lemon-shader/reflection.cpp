@@ -128,6 +128,7 @@ ShaderProgram::isValid() const
 std::string
 ShaderProgram::getDiagnostic() const
 {
+    // TODO: Diagnostics can't be retreived on some errors resulting in invalid memory access (?)
     return program->Diagnostics().str();
 }
 
@@ -141,19 +142,13 @@ ShaderProgram::getBindingReflection() const
 
     assert(inspector.error().empty());
 
-    std::vector<ResourceBindingReflection> combinedBindings;
     std::unordered_map<BindingPoint, VariableDescriptor> boundVars;
-    std::unordered_map<BindingPoint, int> processed;
 
+    // First, collect all variable semantic used across all entry points. This is required
+    // to set pipeline stage flags for each variable before the reflection step.
     for (auto& entryPoint : entryPoints) {
-        auto bindings = inspector.GetResourceBindings(entryPoint.name);
-
-        assert(inspector.error().empty());
-
         auto* func = program->AST().Functions().Find(program->Symbols().Get(entryPoint.name));
-        if (!func) {
-            continue;
-        }
+        assert(func != nullptr);
 
         auto pipelineStage = getPipelineStage(entryPoint);
         auto* funcSem = program->Sem().Get(func);
@@ -170,21 +165,30 @@ ShaderProgram::getBindingReflection() const
                 }
             }
         }
+    }
+
+    std::vector<ResourceBindingReflection> result;
+    std::unordered_set<BindingPoint> processed;
+
+    // Once we have full variable semantic details for each variable used, perform type reflection.
+    for (auto& entryPoint : entryPoints) {
+        auto bindings = inspector.GetResourceBindings(entryPoint.name);
+        assert(inspector.error().empty());
 
         for (auto& binding : bindings) {
             BindingPoint bp = {binding.bind_group, binding.binding};
-            auto iter = boundVars.find(bp);
-            assert(iter != boundVars.end());
+            auto varSearch = boundVars.find(bp);
+            assert(varSearch != boundVars.end());
 
             if (processed.find(bp) != processed.end()) {
                 continue;
             }
 
-            processed.insert({bp, 0});
+            processed.insert(bp);
 
-            combinedBindings.emplace_back(createBindingReflection(*program, bp, iter->second, binding));
+            result.emplace_back(createBindingReflection(*program, bp, varSearch->second, binding));
         }
     }
 
-    return combinedBindings;
+    return result;
 }

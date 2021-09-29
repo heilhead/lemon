@@ -7,6 +7,7 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceStore.h>
 #include <lemon/shared/filesystem.h>
+#include <lemon/resource/types/material/ShaderComposer.h>
 
 namespace lemon::res {
     struct ResourceContract;
@@ -36,6 +37,7 @@ namespace lemon::res {
         ResourceStore store;
         std::filesystem::path root;
         std::unordered_map<ResourceClassID, ResourceFactoryFn> factories;
+        material::ShaderComposer shaderComposer;
 
     public:
         /// <summary>
@@ -59,8 +61,19 @@ namespace lemon::res {
         /// </summary>
         /// <returns>Resource store</returns>
         inline ResourceStore&
-        getStore() {
+        getStore()
+        {
             return store;
+        }
+
+        /// <summary>
+        /// Returns the shader composer. Used internally.
+        /// </summary>
+        /// <returns>Resource store</returns>
+        inline material::ShaderComposer&
+        getShaderComposer()
+        {
+            return shaderComposer;
         }
 
         /// <summary>
@@ -161,7 +174,8 @@ namespace lemon::res {
         /// <returns>Hash-based class ID (`uint64_t`)</returns>
         template<class TResource>
         static ResourceClassID
-        getClassID() {
+        getClassID()
+        {
             static std::string_view strName{typeid(TResource).name()};
             static auto hash = folly::hash::fnv64_buf(strName.data(), strName.size());
             return hash;

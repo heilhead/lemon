@@ -10,7 +10,9 @@ using namespace lemon::res;
 static ResourceManager* gInstance;
 static constexpr size_t kDefaultStoreSize = 1024;
 
-ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefaultStoreSize}, factories{} {
+ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
+    : store{kDefaultStoreSize}, factories{}, shaderComposer{rootPath}
+{
     assert(gInstance == nullptr);
     gInstance = this;
     root = rootPath;
@@ -22,32 +24,38 @@ ResourceManager::ResourceManager(std::filesystem::path&& rootPath) : store{kDefa
     registerClass<ModelResource>();
 }
 
-ResourceManager::~ResourceManager() {
+ResourceManager::~ResourceManager()
+{
     gInstance = nullptr;
 }
 
 ResourceManager*
-ResourceManager::get() {
+ResourceManager::get()
+{
     return gInstance;
 }
 
 std::filesystem::path
-ResourceManager::resolvePath(const ResourceLocation& location) {
+ResourceManager::resolvePath(const ResourceLocation& location)
+{
     return std::filesystem::path(root) / location.getFileName();
 }
 
 std::filesystem::path
-ResourceManager::resolvePath(const std::filesystem::path& relPath) {
+ResourceManager::resolvePath(const std::filesystem::path& relPath)
+{
     return std::filesystem::path(root) / relPath;
 }
 
 ResourceContract*
-ResourceManager::getContract(ResourceHandle handle) {
+ResourceManager::getContract(ResourceHandle handle)
+{
     return store.find(handle);
 }
 
 ResourceState
-ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object) {
+ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object)
+{
     ResourceContract* pContract = getContract(handle);
     if (pContract == nullptr) {
         return ResourceState::NotLoaded;
@@ -75,18 +83,20 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
 }
 
 ResourceContract::FutureType<ResourceInstance>
-ResourceManager::loadResource(ResourceClassID id, const ResourceLocation& location,
-                              ResourceLifetime lifetime) {
+ResourceManager::loadResource(ResourceClassID id, const ResourceLocation& location, ResourceLifetime lifetime)
+{
     return CPUTask(detail::coResourceFactory(id, location.getFileName(), lifetime));
 }
 
 bool
-ResourceManager::unloadResource(const ResourceLocation& location) {
+ResourceManager::unloadResource(const ResourceLocation& location)
+{
     return unloadResource(location.handle);
 }
 
 bool
-ResourceManager::unloadResource(ResourceHandle handle) {
+ResourceManager::unloadResource(ResourceHandle handle)
+{
     auto state = getResourceState(handle);
     if (state != ResourceState::Ready) {
         // Resource is not available for unloading.
@@ -116,7 +126,8 @@ ResourceManager::unloadResource(ResourceHandle handle) {
 }
 
 std::optional<ResourceFactoryFn>
-ResourceManager::getFactoryFn(ResourceClassID id) {
+ResourceManager::getFactoryFn(ResourceClassID id)
+{
     auto result = factories.find(id);
     if (result != factories.end()) {
         return result->second;
@@ -127,7 +138,8 @@ ResourceManager::getFactoryFn(ResourceClassID id) {
 
 FactoryResultType
 lemon::res::detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
-                                      ResourceLifetime lifetime) {
+                                      ResourceLifetime lifetime)
+{
     auto factory = ResourceManager::get()->getFactoryFn(classID);
     if (!factory) {
         co_return tl::make_unexpected(ResourceLoadingError::FactoryMissing);

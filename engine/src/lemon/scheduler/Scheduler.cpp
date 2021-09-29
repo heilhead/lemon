@@ -5,25 +5,26 @@ using namespace lemon::scheduler;
 
 static Scheduler* gInstance;
 
-Scheduler::Scheduler(size_t threadsIO, size_t threadsCPU) {
+Scheduler::Scheduler(size_t threadsIO, size_t threadsCPU) : poolCPU(threadsCPU, 3), poolIO(threadsIO)
+{
     assert(gInstance == nullptr);
     gInstance = this;
-
-    poolCPU = std::make_unique<folly::CPUThreadPoolExecutor>(threadsCPU, 3);
-    poolIO = std::make_unique<folly::IOThreadPoolExecutor>(threadsIO);
 }
 
-Scheduler::~Scheduler() {
+Scheduler::~Scheduler()
+{
     gInstance = nullptr;
 }
 
 Scheduler*
-Scheduler::get() {
+Scheduler::get()
+{
     return gInstance;
 }
 
 std::optional<std::string>
-Scheduler::getCurrentThreadName() {
+Scheduler::getCurrentThreadName()
+{
     auto name = folly::getCurrentThreadName();
     if (name) {
         return *name;

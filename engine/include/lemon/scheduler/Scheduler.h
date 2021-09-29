@@ -37,20 +37,20 @@ namespace lemon::scheduler {
         get();
 
     private:
-        std::unique_ptr<folly::IOThreadPoolExecutor> poolIO;
-        std::unique_ptr<folly::CPUThreadPoolExecutor> poolCPU;
+        folly::IOThreadPoolExecutor poolIO;
+        folly::CPUThreadPoolExecutor poolCPU;
 
     public:
         inline folly::CPUThreadPoolExecutor*
         getCPUExecutor()
         {
-            return poolCPU.get();
+            return &poolCPU;
         }
 
         inline folly::IOThreadPoolExecutor*
         getIOExecutor()
         {
-            return poolIO.get();
+            return &poolIO;
         }
 
         static std::optional<std::string>
