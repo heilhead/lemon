@@ -3,10 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-
-namespace tint {
-    class Program;
-}
+#include <tint/tint.h>
 
 namespace lemon {
     namespace shader {
@@ -104,7 +101,7 @@ namespace lemon {
 
         /// Note: This is extracted from `tint` inspector code, with some additions.
         /// Container for information about how a resource is bound.
-        struct ResourceBindingReflection {
+        struct ResourceBindingDescriptor {
             /// Declaration variable name.
             std::string name;
             /// Pipeline stages that use the resource.
@@ -132,15 +129,12 @@ namespace lemon {
             std::vector<StructMember> members;
         };
 
-        struct Diagnostic {
-        };
-
-        class ShaderProgram {
-            tint::Program* program;
+        class ShaderReflection {
+            tint::Program program;
 
         public:
-            ShaderProgram(std::string& codePath, std::string& code);
-            ~ShaderProgram();
+            void
+            init(const std::string& codePath, const std::string& code);
 
             bool
             isValid() const;
@@ -148,7 +142,7 @@ namespace lemon {
             std::string
             getDiagnostic() const;
 
-            std::vector<ResourceBindingReflection>
+            std::vector<ResourceBindingDescriptor>
             getBindingReflection() const;
         };
     } // namespace shader

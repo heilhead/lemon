@@ -18,7 +18,7 @@ add_subdirectory(lib/lemon-shader)
 
 add_subdirectory(engine)
 add_subdirectory(demo)
-add_subdirectory(tools)
+# add_subdirectory(tools)
 
 #option(LEMON_BUILD_TESTS OFF)
 #if (LEMON_BUILD_TESTS)

@@ -1,18 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<cereal>
-	<BundleResource>
-		<common>
-			<references size="dynamic">
-				<value0>
-					<location>RB_A</location>
-					<type>4773101802588095312</type>
-				</value0>
-				<value1>
-					<location>RB_B</location>
-					<type>4773101802588095312</type>
-				</value1>
-			</references>
-		</common>
-	</BundleResource>
-</cereal>
-
+BundleResource:
+  common:
+    references:
+      - location: RB_A
+        type: 4773101802588095312
+      - location: RB_B
+        type: 4773101802588095312

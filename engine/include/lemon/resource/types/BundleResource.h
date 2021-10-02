@@ -16,7 +16,8 @@ namespace lemon::res {
         struct Metadata : ResourceMetadataBase {
             template<class TArchive>
             void
-            serialize(TArchive& ar) {
+            serialize(TArchive& ar)
+            {
                 ResourceMetadataBase::serialize(ar);
             }
         };
@@ -32,6 +33,6 @@ namespace lemon::res {
         ~BundleResource() override;
 
         VoidTask<ResourceLoadingError>
-        load(ResourceMetadata& meta) override;
+        load(ResourceMetadata&& meta) override;
     };
 } // namespace lemon::res

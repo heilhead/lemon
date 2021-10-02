@@ -1,9 +1,10 @@
-#include <lemon/resource/types/material/ShaderComposer.h>
-#include <folly/Hash.h>
+#include <lemon/resource/types/material/MaterialComposer.h>
+#include <lemon/shared/Hash.h>
+#include <lemon/utils/utils.h>
 
 using namespace lemon::res::material;
 
-ShaderComposer::ShaderComposer(std::filesystem::path& resourceRootDir) : tplEnv{}
+MaterialComposer::MaterialComposer(std::filesystem::path& resourceRootDir) : tplEnv{}
 {
     baseDir = resourceRootDir / "internal" / "shaders";
 
@@ -11,29 +12,29 @@ ShaderComposer::ShaderComposer(std::filesystem::path& resourceRootDir) : tplEnv{
     tplEnv.set_search_included_templates_in_files(false);
     tplEnv.set_include_callback([&](auto&, auto& name) {
         auto fullPath = baseDir / name;
-        return loadShaderCode(fullPath);
+        return loadTemplate(fullPath);
     });
 }
 
-tl::expected<ShaderBlueprint, ShaderCompositionError>
-ShaderComposer::getBlueprint(std::filesystem::path& fullPath)
+tl::expected<Blueprint, CompositionError>
+MaterialComposer::getBlueprint(std::filesystem::path& fullPath)
 {
     auto hash = folly::hash::fnv64(fullPath.string());
     auto [result, bInserted] = tplCache.findOrInsert(hash, [&]() {
         // TODO: Actually handle errors in shader composition.
-        return new tl::expected<inja::Template, ShaderCompositionError>(loadShaderCode(fullPath));
+        return new tl::expected<inja::Template, CompositionError>(loadTemplate(fullPath));
     });
 
     if (result->has_value()) {
         auto& val = result->value();
-        return ShaderBlueprint(&val, &tplEnv);
+        return Blueprint(&val, &tplEnv);
     } else {
         return tl::make_unexpected(result->error());
     }
 }
 
 inja::Template
-ShaderComposer::loadShaderCode(std::filesystem::path& path)
+MaterialComposer::loadTemplate(std::filesystem::path& path)
 {
     auto res = lemon::io::readTextFile(path);
     if (res) {

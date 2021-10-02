@@ -1,9 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<cereal>
-	<ModelResource>
-		<common>
-			<references size="dynamic"/>
-		</common>
-	</ModelResource>
-</cereal>
-
+ModelResource:
+  common:
+    references:
+      []

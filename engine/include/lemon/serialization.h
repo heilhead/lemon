@@ -2,11 +2,12 @@
 
 #include <cereal/cereal.hpp>
 #include <cereal/archives/binary.hpp>
-#include <cereal/archives/xml.hpp>
+#include <cereal-yaml/archives/yaml.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/unordered_map.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/variant.hpp>
 #include <magic_enum.hpp>
 #include <lemon/serialization/common.h>
 
@@ -63,110 +64,128 @@ namespace lemon {
         };
     };
 
-    namespace serialization_detail {
-        template<typename T>
-        constexpr bool
-        isEnum()
-        {
-            return magic_enum::is_scoped_enum_v<T> || magic_enum::is_unscoped_enum_v<T>;
-        }
-
-        template<typename TArchive>
-        constexpr bool
-        isOutputArchive()
-        {
-            return std::is_same_v<typename TArchive::is_saving, std::true_type>;
-        }
-
-        template<typename TArchive>
-        constexpr bool
-        isInputArchive()
-        {
-            return std::is_same_v<typename TArchive::is_loading, std::true_type>;
-        }
-
-        template<typename TArchive>
-        constexpr bool
-        isTextArchive()
-        {
-            return std::is_base_of_v<cereal::traits::TextArchive, TArchive>;
-        }
-
-        template<typename TEnum, bool bFlags>
-        std::optional<TEnum>
-        enum_cast(std::string_view& val)
-        {
-            if constexpr (bFlags) {
-                return magic_enum::flags::enum_cast<TEnum>(val);
-            } else {
-                return magic_enum::enum_cast<TEnum>(val);
+    namespace serialization {
+        namespace detail {
+            template<typename T>
+            constexpr bool
+            isEnum()
+            {
+                return magic_enum::is_scoped_enum_v<T> || magic_enum::is_unscoped_enum_v<T>;
             }
-        }
 
-        template<typename TArchive, typename TEnum, typename TName = void, typename TEnumTraits = EnumTraits>
-        void
-        serializeEnum(TArchive& ar, TEnum& val, const TName* name = nullptr)
-        {
-            if constexpr (isTextArchive<TArchive>()) {
-                constexpr bool bUseNVP = std::is_same_v<TName, char>;
+            template<typename TArchive>
+            constexpr bool
+            isOutputArchive()
+            {
+                return std::is_same_v<typename TArchive::is_saving, std::true_type>;
+            }
 
-                if constexpr (isOutputArchive<TArchive>()) {
-                    std::string str(TEnumTraits::template name(val));
-                    if constexpr (bUseNVP) {
-                        ar(str);
+            template<typename TArchive>
+            constexpr bool
+            isInputArchive()
+            {
+                return std::is_same_v<typename TArchive::is_loading, std::true_type>;
+            }
+
+            template<typename TArchive>
+            constexpr bool
+            isTextArchive()
+            {
+                return std::is_base_of_v<cereal::traits::TextArchive, TArchive>;
+            }
+
+            template<typename TEnum, bool bFlags>
+            std::optional<TEnum>
+            enum_cast(std::string_view& val)
+            {
+                if constexpr (bFlags) {
+                    return magic_enum::flags::enum_cast<TEnum>(val);
+                } else {
+                    return magic_enum::enum_cast<TEnum>(val);
+                }
+            }
+
+            template<typename TArchive, typename TEnum, typename TName = void,
+                     typename TEnumTraits = EnumTraits>
+            void
+            serializeEnum(TArchive& ar, TEnum& val, const TName* name = nullptr)
+            {
+                if constexpr (isTextArchive<TArchive>()) {
+                    constexpr bool bUseNVP = std::is_same_v<TName, char>;
+
+                    if constexpr (isOutputArchive<TArchive>()) {
+                        std::string str(TEnumTraits::template name(val));
+                        if constexpr (bUseNVP) {
+                            ar(cereal::make_nvp(name, str));
+                        } else {
+                            ar(str);
+                        }
+                    } else if constexpr (isInputArchive<TArchive>()) {
+                        std::string str;
+                        if constexpr (bUseNVP) {
+                            ar(cereal::make_nvp(name, str));
+                        } else {
+                            ar(str);
+                        }
+                        val = *TEnumTraits::template cast<TEnum>(str);
                     } else {
-                        ar(cereal::make_nvp(name, str));
+                        static_assert(false, "TArchive must be either output or input");
                     }
-                } else if constexpr (isInputArchive<TArchive>()) {
-                    std::string str;
-                    if constexpr (bUseNVP) {
-                        ar(str);
+                } else {
+                    if constexpr (isOutputArchive<TArchive>()) {
+                        int ival = TEnumTraits::template integer(val);
+                        ar(ival);
+                    } else if constexpr (isInputArchive<TArchive>()) {
+                        int ival;
+                        ar(ival);
+                        val = *TEnumTraits::template cast<TEnum>(ival);
                     } else {
-                        ar(cereal::make_nvp(name, str));
+                        static_assert(false, "TArchive must be either output or input");
                     }
-                    val = *TEnumTraits::template cast<TEnum>(str);
-                } else {
-                    static_assert(false, "TArchive must be either output or input");
-                }
-            } else {
-                if constexpr (isOutputArchive<TArchive>()) {
-                    int ival = TEnumTraits::template integer(val);
-                    ar(ival);
-                } else if constexpr (isInputArchive<TArchive>()) {
-                    int ival;
-                    ar(ival);
-                    val = *TEnumTraits::template cast<TEnum>(ival);
-                } else {
-                    static_assert(false, "TArchive must be either output or input");
                 }
             }
-        }
 
-        template<typename TArchive, typename TValue, typename TName = void>
-        inline void
-        serializeImpl(TArchive& ar, TValue& val, const TName* name = nullptr)
-        {
-            if constexpr (isEnum<TValue>()) {
-                serializeEnum(ar, val, name);
-            } else {
-                if constexpr (std::is_same_v<TName, void> || !isTextArchive<TArchive>()) {
-                    ar(val);
+            template<typename TArchive, typename TValue, typename TName = void>
+            inline void
+            serializeImpl(TArchive& ar, TValue& val, const TName* name = nullptr)
+            {
+                if constexpr (isEnum<TValue>()) {
+                    serializeEnum(ar, val, name);
                 } else {
-                    ar(cereal::make_nvp(name, val));
+                    if constexpr (std::is_same_v<TName, void> || !isTextArchive<TArchive>()) {
+                        ar(val);
+                    } else {
+                        ar(cereal::make_nvp(name, val));
+                    }
                 }
             }
+
+            template<typename TArchive, typename TEnum, typename TName = void>
+            void
+            serializeFlags(TArchive& ar, TEnum& val, const TName* name = nullptr)
+            {
+                serializeEnum<TArchive, TEnum, TName, EnumTraits::Flags>(ar, val, name);
+            }
+        } // namespace detail
+
+        template<typename TArchive>
+        constexpr bool
+        isSaving(TArchive& ar)
+        {
+            return detail::isOutputArchive<TArchive>();
         }
 
-        template<typename TArchive, typename TEnum, typename TName = void>
-        void
-        serializeFlags(TArchive& ar, TEnum& val, const TName* name = nullptr)
+        template<typename TArchive>
+        constexpr bool
+        isLoading(TArchive& ar)
         {
-            serializeEnum<TArchive, TEnum, TName, EnumTraits::Flags>(ar, val, name);
+            return detail::isInputArchive<TArchive>();
         }
-    } // namespace serialization_detail
+    } // namespace serialization
 } // namespace lemon
 
-#define LEMON_SERIALIZE(ar, val) ::lemon::serialization_detail::serializeImpl(ar, val, #val)
-#define LEMON_SERIALIZE_NVP(ar, name, val) ::lemon::serialization_detail::serializeImpl(ar, val, #name)
-#define LEMON_SERIALIZE_FLAGS(ar, val) ::lemon::serialization_detail::serializeFlags(ar, val, #val)
-#define LEMON_SERIALIZE_NVP_FLAGS(ar, name, val) ::lemon::serialization_detail::serializeFlags(ar, val, #name)
+#define LEMON_SERIALIZE(ar, val) ::lemon::serialization::detail::serializeImpl(ar, val, #val)
+#define LEMON_SERIALIZE_NVP(ar, name, val) ::lemon::serialization::detail::serializeImpl(ar, val, #name)
+#define LEMON_SERIALIZE_FLAGS(ar, val) ::lemon::serialization::detail::serializeFlags(ar, val, #val)
+#define LEMON_SERIALIZE_NVP_FLAGS(ar, name, val)                                                             \
+    ::lemon::serialization::detail::serializeFlags(ar, val, #name)

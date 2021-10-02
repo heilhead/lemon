@@ -8,6 +8,7 @@
 #include <dawn_native/D3D12Backend.h>
 
 using namespace lemon::device;
+using namespace lemon::render;
 using namespace lemon;
 
 void
@@ -85,4 +86,12 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
         auto [wndWidth, wndHeight] = window->getSize();
         swapChain.Configure(textureFormat, wgpu::TextureUsage::RenderAttachment, wndWidth, wndHeight);
     }
+
+    shaderCompiler = ShaderCompiler(&device);
+}
+
+std::unique_ptr<render::ShaderProgram>
+GPUDevice::compileShaderProgram(const std::string& sourceCode)
+{
+    return shaderCompiler.compile(sourceCode);
 }

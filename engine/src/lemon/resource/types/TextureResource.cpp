@@ -6,20 +6,24 @@ using namespace lemon::res;
 using namespace lemon::utils;
 
 VoidTask<ResourceLoadingError>
-loadTexture(TextureResource& mat, ResourceMetadata& meta) {
+loadTexture(TextureResource& mat, ResourceMetadata& meta)
+{
     co_return std::nullopt;
 }
 
-TextureResource::TextureResource() {
+TextureResource::TextureResource()
+{
     lemon::utils::log("TextureResource::TextureResource()");
 }
 
-TextureResource::~TextureResource() {
+TextureResource::~TextureResource()
+{
     lemon::utils::log("TextureResource::~TextureResource()");
 }
 
 VoidTask<ResourceLoadingError>
-TextureResource::load(ResourceMetadata& meta) {
+TextureResource::load(ResourceMetadata&& meta)
+{
     auto* pMetadata = meta.get<Metadata>();
     lemon::utils::log("TextureResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
                       " name: ", meta.name);

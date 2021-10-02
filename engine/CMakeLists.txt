@@ -20,12 +20,14 @@ set(SOURCE_FILES
         src/lemon/scheduler/utils.cpp
         src/lemon/shared/HashStringStore.cpp
         src/lemon/render/utils.cpp
-        src/lemon/render/Shader.cpp
+        src/lemon/render/ShaderCompiler.cpp
+        src/lemon/render/ShaderProgram.cpp
         src/lemon/device/Platform.cpp
         src/lemon/render/ConstantBuffer.cpp
         src/lemon/device/GPUDevice.cpp
         src/lemon/device/Device.cpp
-        src/lemon/resource/types/material/ShaderComposer.cpp)
+        src/lemon/resource/types/material/MaterialComposer.cpp
+        src/lemon/resource/types/material/Blueprint.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -53,8 +55,9 @@ find_package(cereal CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 find_package(lodepng CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT)
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT INJA_NOEXCEPTION)
 
 CPMAddPackage(
 	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"
@@ -73,6 +76,7 @@ CPMAddPackage("gh:pantor/inja#635e1fb")
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon::dawn_static
+        lemon::shader
         glm::glm
         Folly::folly
         tl::expected
@@ -81,6 +85,7 @@ target_link_libraries(${PROJECT_NAME}
         ozz_animation
         lodepng
         pantor::inja
+        yaml-cpp
         PRIVATE
         range-v3
         glfw)

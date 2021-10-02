@@ -7,7 +7,8 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceStore.h>
 #include <lemon/shared/filesystem.h>
-#include <lemon/resource/types/material/ShaderComposer.h>
+#include <lemon/render/ShaderProgram.h>
+#include <lemon/resource/types/material/MaterialComposer.h>
 
 namespace lemon::res {
     struct ResourceContract;
@@ -37,7 +38,8 @@ namespace lemon::res {
         ResourceStore store;
         std::filesystem::path root;
         std::unordered_map<ResourceClassID, ResourceFactoryFn> factories;
-        material::ShaderComposer shaderComposer;
+        material::MaterialComposer materialComposer;
+        AtomicCache<uint64_t, render::ShaderProgram> shaderCache;
 
     public:
         /// <summary>
@@ -67,13 +69,19 @@ namespace lemon::res {
         }
 
         /// <summary>
-        /// Returns the shader composer. Used internally.
+        /// Returns the material composer. Used internally.
         /// </summary>
         /// <returns>Resource store</returns>
-        inline material::ShaderComposer&
-        getShaderComposer()
+        inline material::MaterialComposer&
+        getMaterialComposer()
         {
-            return shaderComposer;
+            return materialComposer;
+        }
+
+        inline AtomicCache<uint64_t, render::ShaderProgram>&
+        getShaderCache()
+        {
+            return shaderCache;
         }
 
         /// <summary>
@@ -173,12 +181,10 @@ namespace lemon::res {
         /// <typeparam name="TResource">`ResourceInstance` subclass</typeparam>
         /// <returns>Hash-based class ID (`uint64_t`)</returns>
         template<class TResource>
-        static ResourceClassID
+        inline static ResourceClassID
         getClassID()
         {
-            static std::string_view strName{typeid(TResource).name()};
-            static auto hash = folly::hash::fnv64_buf(strName.data(), strName.size());
-            return hash;
+            return ::lemon::res::getClassID<TResource>();
         }
 
         /// <summary>

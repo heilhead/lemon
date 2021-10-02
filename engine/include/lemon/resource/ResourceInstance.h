@@ -23,13 +23,15 @@ namespace lemon::res {
 
     public:
         inline ResourceObjectHandle
-        getHandle() const {
+        getHandle() const
+        {
             return handle;
         }
 
     private:
         inline void
-        setHandle(ResourceObjectHandle inHandle) {
+        setHandle(ResourceObjectHandle inHandle)
+        {
             handle = inHandle;
         }
     };
@@ -66,17 +68,19 @@ namespace lemon::res {
         getObject(const ResourceLocation& location) const;
 
         inline void
-        setHandle(ResourceHandle inHandle) {
+        setHandle(ResourceHandle inHandle)
+        {
             handle = inHandle;
         }
 
         [[nodiscard]] inline ResourceHandle
-        getHandle() const {
+        getHandle() const
+        {
             return handle;
         }
 
         virtual VoidTask<ResourceLoadingError>
-        load(ResourceMetadata& meta) = 0;
+        load(ResourceMetadata&& meta) = 0;
 
         void
         addDependency(ResourceInstance* pResource);
@@ -88,17 +92,18 @@ namespace lemon::res {
 
     private:
         inline uint32_t
-        getDependantCount() const {
+        getDependantCount() const
+        {
             return dependants.load(std::memory_order_relaxed);
         }
 
-        inline void
-        addDependant(/*ResourceInstance* pResource*/) {
+        inline void addDependant(/*ResourceInstance* pResource*/)
+        {
             dependants++;
         }
 
-        inline void
-        removeDependant(/*ResourceInstance* pResource*/) {
+        inline void removeDependant(/*ResourceInstance* pResource*/)
+        {
             dependants--;
         }
 

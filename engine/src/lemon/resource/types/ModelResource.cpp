@@ -10,7 +10,8 @@ using namespace lemon::utils;
 enum class ModelDataLoadingError { Unknown, StreamError };
 
 Task<std::unique_ptr<model::LemonModel>, ModelDataLoadingError>
-loadData(std::filesystem::path& file) {
+loadData(std::filesystem::path& file)
+{
     if (std::ifstream stream{file, std::ios::binary}) {
         cereal::BinaryInputArchive archive(stream);
         auto data = std::make_unique<model::LemonModel>();
@@ -21,16 +22,19 @@ loadData(std::filesystem::path& file) {
     }
 }
 
-ModelResource::ModelResource() {
+ModelResource::ModelResource()
+{
     lemon::utils::log("ModelResource::ModelResource()");
 }
 
-ModelResource::~ModelResource() {
+ModelResource::~ModelResource()
+{
     lemon::utils::log("ModelResource::~ModelResource()");
 }
 
 VoidTask<ResourceLoadingError>
-ModelResource::load(ResourceMetadata& meta) {
+ModelResource::load(ResourceMetadata&& meta)
+{
     auto* pMetadata = meta.get<Metadata>();
 
     lemon::utils::log("ModelResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,

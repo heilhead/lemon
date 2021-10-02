@@ -35,7 +35,8 @@ namespace lemon::res {
 
         ResourceObjectHandle(uint64_t hash) : inner{hash} {}
 
-        ResourceObjectHandle(const std::string& name) {
+        ResourceObjectHandle(const std::string& name)
+        {
             inner = folly::hash::fnva64(name);
         }
 
@@ -44,16 +45,19 @@ namespace lemon::res {
 
     public:
         inline uint64_t
-        get() const {
+        get() const
+        {
             return inner;
         }
 
-        inline operator uint64_t() const {
+        inline operator uint64_t() const
+        {
             return inner;
         }
 
         inline bool
-        isValid() const {
+        isValid() const
+        {
             return inner != InvalidHandle;
         }
     };
@@ -66,4 +70,19 @@ namespace lemon::res {
         ResourceState
         getState(ResourceObjectHandle object = ResourceObjectHandle());
     };
+
+    /// <summary>
+    /// Creates a hash-based class ID. Note that the ID is based on the mangled C++ class name
+    /// and will change if the class is renamed, moved to another namespace etc.
+    /// </summary>
+    /// <typeparam name="TResource">`ResourceInstance` subclass</typeparam>
+    /// <returns>Hash-based class ID (`uint64_t`)</returns>
+    template<class TResource>
+    inline static ResourceClassID
+    getClassID()
+    {
+        static std::string_view strName{typeid(TResource).name()};
+        static auto hash = folly::hash::fnv64_buf(strName.data(), strName.size());
+        return hash;
+    }
 } // namespace lemon::res

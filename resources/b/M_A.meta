@@ -1,42 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?>
-<cereal>
-	<MaterialResource>
-		<common>
-			<references size="dynamic">
-				<value0>
-					<location>b\a\T_A.png</location>
-					<type>18210393133251925649</type>
-				</value0>
-				<value1>
-					<location>b\a\T_B.png</location>
-					<type>18210393133251925649</type>
-				</value1>
-				<value2>
-					<location>b\a\T_C.png</location>
-					<type>18210393133251925649</type>
-				</value2>
-			</references>
-		</common>
-		<shaderConfig size="dynamic">
-			<value0>
-				<key>ENABLE_SKINNING</key>
-				<value>0</value>
-			</value0>
-		</shaderConfig>
-		<textures size="dynamic">
-			<value0>
-				<key>albedo</key>
-				<value>b\a\T_A.png</value>
-			</value0>
-			<value1>
-				<key>normal</key>
-				<value>b\a\T_B.png</value>
-			</value1>
-			<value2>
-				<key>roughness</key>
-				<value>b\a\T_C.png</value>
-			</value2>
-		</textures>
-	</MaterialResource>
-</cereal>
-
+MaterialResource:
+  common:
+    references:
+      []
+  baseType: Shader
+  basePath: internal\shaders\BaseSurfacePBR.wgsl
+  usage: StaticMesh|SkeletalMesh
+  domain: Surface
+  shadingModel: Lit
+  blendMode: Opaque
+  definitions:
+    - key: SCROLL_SPEED_U
+      value:
+        index: 2
+        data: 0.5
+    - key: SCROLL_SPEED_V
+      value:
+        index: 2
+        data: 1
+    - key: ENABLE_ARBITRARY_FLAG
+      value:
+        index: 3
+        data: true
+  samplers:
+    - key: mySampler1
+      value:
+        addressModeU: ClampToEdge
+        addressModeV: ClampToEdge
+        addressModeW: ClampToEdge
+        magFilter: Nearest
+        minFilter: Nearest
+        mipmapFilter: Nearest
+        lodMinClamp: 0
+        lodMaxClamp: 1000
+        compare: Undefined
+        maxAnisotropy: 1
+    - key: mySampler2
+      value:
+        addressModeU: ClampToEdge
+        addressModeV: ClampToEdge
+        addressModeW: ClampToEdge
+        magFilter: Nearest
+        minFilter: Nearest
+        mipmapFilter: Nearest
+        lodMinClamp: 0
+        lodMaxClamp: 1000
+        compare: Undefined
+        maxAnisotropy: 1
+  textures:
+    - key: albedo
+      value: b\a\T_A.png
+    - key: normal
+      value: b\a\T_B.png
+    - key: roughness
+      value: b\a\T_C.png
+  uniforms:
+    - key: lemonData.lemonVecData
+      value:
+        index: 8
+        data:
+          value0: 1.5
+          value1: 2.5
+          value2: 3.5
+          value3: 4.5
+    - key: lemonData.lemonMat
+      value:
+        index: 9
+        data:
+          value0:
+            value0: 1
+            value1: 0
+            value2: 0
+            value3: 0
+          value1:
+            value0: 0
+            value1: 1
+            value2: 0
+            value3: 0
+          value2:
+            value0: 0
+            value1: 0
+            value2: 1
+            value3: 0
+          value3:
+            value0: 0
+            value1: 0
+            value2: 0
+            value3: 1
+    - key: lemonData.lemonArr
+      value:
+        index: 2
+        data:
+          value0: 1
+          value1: 2
+          value2: 3
+          value3: 4

@@ -17,7 +17,8 @@ namespace lemon::res {
         struct Metadata : ResourceMetadataBase {
             template<class TArchive>
             void
-            serialize(TArchive& ar) {
+            serialize(TArchive& ar)
+            {
                 ResourceMetadataBase::serialize(ar);
             }
         };
@@ -36,7 +37,8 @@ namespace lemon::res {
         /// </summary>
         class Model : public ResourceObject {
         public:
-            Model(const model::LemonModel* pModel, const model::ModelNode* pNode) {
+            Model(const model::LemonModel* pModel, const model::ModelNode* pNode)
+            {
                 node = pNode;
                 meshes.reserve(pNode->meshes.size());
                 for (auto idx : pNode->meshes) {
@@ -50,12 +52,14 @@ namespace lemon::res {
 
         public:
             inline const std::string&
-            getName() const {
+            getName() const
+            {
                 return node->name;
             }
 
             inline const folly::small_vector<const model::ModelMesh*, kObjectCapacity>&
-            getMeshes() const {
+            getMeshes() const
+            {
                 return meshes;
             }
         };
@@ -65,7 +69,7 @@ namespace lemon::res {
         ~ModelResource() override;
 
         VoidTask<ResourceLoadingError>
-        load(ResourceMetadata& meta) override;
+        load(ResourceMetadata&& meta) override;
 
     private:
         std::unique_ptr<model::LemonModel> data;

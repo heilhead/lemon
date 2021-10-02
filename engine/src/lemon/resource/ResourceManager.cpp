@@ -11,7 +11,7 @@ static ResourceManager* gInstance;
 static constexpr size_t kDefaultStoreSize = 1024;
 
 ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
-    : store{kDefaultStoreSize}, factories{}, shaderComposer{rootPath}
+    : store{kDefaultStoreSize}, factories{}, materialComposer{rootPath}
 {
     assert(gInstance == nullptr);
     gInstance = this;

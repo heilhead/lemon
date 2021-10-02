@@ -1,9 +1,7 @@
-#include <lemon-shader/reflection.h>
+#include <lemon-shader/ShaderReflection.h>
 #include <cstdio>
 #include <cassert>
 #include <magic_enum.hpp>
-
-#include <tint/tint.h>
 
 // Enable access to tint's internals
 #undef INCLUDE_TINT_TINT_H_
@@ -68,11 +66,11 @@ getPipelineStage(tint::inspector::EntryPoint& entryPoint)
     }
 }
 
-ResourceBindingReflection
+ResourceBindingDescriptor
 createBindingReflection(const tint::Program& program, const BindingPoint& bindingPoint,
                         const VariableDescriptor& variable, const tint::inspector::ResourceBinding& resource)
 {
-    ResourceBindingReflection result;
+    ResourceBindingDescriptor result;
     result.stage = variable.stage;
     result.resourceType = (ResourceType)resource.resource_type;
     result.bindGroup = resource.bind_group;
@@ -108,36 +106,32 @@ createBindingReflection(const tint::Program& program, const BindingPoint& bindin
     return result;
 }
 
-ShaderProgram::ShaderProgram(std::string& codePath, std::string& code)
+void
+ShaderReflection::init(const std::string& codePath, const std::string& code)
 {
     tint::Source::File sourceFile(codePath, code);
-    program = new tint::Program(tint::reader::wgsl::Parse(&sourceFile));
-}
-
-ShaderProgram::~ShaderProgram()
-{
-    delete program;
+    program = tint::Program(tint::reader::wgsl::Parse(&sourceFile));
 }
 
 bool
-ShaderProgram::isValid() const
+ShaderReflection::isValid() const
 {
-    return program->IsValid();
+    return program.IsValid();
 }
 
 std::string
-ShaderProgram::getDiagnostic() const
+ShaderReflection::getDiagnostic() const
 {
     // TODO: Diagnostics can't be retreived on some errors resulting in invalid memory access (?)
-    return program->Diagnostics().str();
+    return program.Diagnostics().str();
 }
 
-std::vector<ResourceBindingReflection>
-ShaderProgram::getBindingReflection() const
+std::vector<ResourceBindingDescriptor>
+ShaderReflection::getBindingReflection() const
 {
     assert(isValid());
 
-    tint::inspector::Inspector inspector(program);
+    tint::inspector::Inspector inspector(&program);
     auto entryPoints = inspector.GetEntryPoints();
 
     assert(inspector.error().empty());
@@ -147,11 +141,11 @@ ShaderProgram::getBindingReflection() const
     // First, collect all variable semantic used across all entry points. This is required
     // to set pipeline stage flags for each variable before the reflection step.
     for (auto& entryPoint : entryPoints) {
-        auto* func = program->AST().Functions().Find(program->Symbols().Get(entryPoint.name));
+        auto* func = program.AST().Functions().Find(program.Symbols().Get(entryPoint.name));
         assert(func != nullptr);
 
         auto pipelineStage = getPipelineStage(entryPoint);
-        auto* funcSem = program->Sem().Get(func);
+        auto* funcSem = program.Sem().Get(func);
 
         for (auto* var : funcSem->ReferencedModuleVariables()) {
             if (auto bindingPoint = var->Declaration()->binding_point()) {
@@ -167,7 +161,7 @@ ShaderProgram::getBindingReflection() const
         }
     }
 
-    std::vector<ResourceBindingReflection> result;
+    std::vector<ResourceBindingDescriptor> result;
     std::unordered_set<BindingPoint> processed;
 
     // Once we have full variable semantic details for each variable used, perform type reflection.
@@ -186,7 +180,7 @@ ShaderProgram::getBindingReflection() const
 
             processed.insert(bp);
 
-            result.emplace_back(createBindingReflection(*program, bp, varSearch->second, binding));
+            result.emplace_back(createBindingReflection(program, bp, varSearch->second, binding));
         }
     }
 

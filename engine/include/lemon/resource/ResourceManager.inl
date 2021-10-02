@@ -15,11 +15,12 @@ namespace lemon::res {
         template<class TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
         parseMetadata(tl::expected<std::string, lemon::io::Error>&& data,
-                      const std::filesystem::path&& fullPath, const std::string& name) {
+                      const std::filesystem::path&& fullPath, const std::string& name)
+        {
             return data.map_error([](auto&& err) { return ResourceLoadingError::MetadataMissing; })
                 .map([&](auto&& str) {
                     std::istringstream is(str);
-                    cereal::XMLInputArchive archive(is);
+                    cereal::YAMLInputArchive archive(is);
 
                     ResourceMetadataDescriptor desc{.type = ResourceManager::getClassID<TResource>(),
                                                     .data = TResource::loadMetadata(archive),
@@ -35,14 +36,16 @@ namespace lemon::res {
 
         template<class TResource>
         Task<ResourceMetadata, ResourceLoadingError>
-        coReadMetadata(const std::filesystem::path&& fullPath, const std::string& name) {
+        coReadMetadata(const std::filesystem::path&& fullPath, const std::string& name)
+        {
             auto result = co_await IOTask(lemon::io::coReadTextFile(fullPath));
             co_return parseMetadata<TResource>(std::move(result), std::move(fullPath), name);
         }
 
         template<class TResource>
         Task<TResource*, ResourceLoadingError>
-        coLoadResourceImpl(const ResourceLocation& location, ResourceLifetime lifetime) {
+        coLoadResourceImpl(const ResourceLocation& location, ResourceLifetime lifetime)
+        {
             auto* manager = ResourceManager::get();
 
             auto& fileName = location.getFileName();
@@ -64,7 +67,7 @@ namespace lemon::res {
                     co_return tl::make_unexpected(metadataRes.error());
                 }
 
-                ResourceMetadata& metadata = *metadataRes;
+                auto metadata = std::move(metadataRes.value());
                 auto& refs = metadata.getReferences();
                 std::vector<FactoryResultType> futRefs;
 
@@ -90,7 +93,7 @@ namespace lemon::res {
                     }
                 }
 
-                std::optional<ResourceLoadingError> loadErr = co_await pRes->load(metadata);
+                std::optional<ResourceLoadingError> loadErr = co_await pRes->load(std::move(metadata));
                 if (loadErr) {
                     lemon::utils::logErr("resource load error: ", (int)*loadErr);
                     delete pRes;
@@ -125,7 +128,8 @@ namespace lemon::res {
 
     template<class TResource>
     TResource*
-    ResourceManager::getResource(ResourceHandle handle) {
+    ResourceManager::getResource(ResourceHandle handle)
+    {
         ResourceContract* pContract = getContract(handle);
         if (pContract == nullptr) {
             return nullptr;
@@ -147,7 +151,8 @@ namespace lemon::res {
 
     template<class TResource>
     ResourceContract::FutureType<TResource>
-    ResourceManager::loadResource(const ResourceLocation& location, ResourceLifetime lifetime) {
+    ResourceManager::loadResource(const ResourceLocation& location, ResourceLifetime lifetime)
+    {
         static_assert(std::is_base_of_v<ResourceInstance, TResource>,
                       "TResource must be a subclass of ResourceInstance");
         return CPUTask(detail::template coLoadResourceImpl<TResource>(location, lifetime));
@@ -155,7 +160,8 @@ namespace lemon::res {
 
     template<class TResource>
     tl::expected<ResourceMetadata, ResourceLoadingError>
-    ResourceManager::loadMetadata(const ResourceLocation& location) {
+    ResourceManager::loadMetadata(const ResourceLocation& location)
+    {
         auto fullPath = resolvePath(location);
         fullPath += ".meta";
 
@@ -165,7 +171,8 @@ namespace lemon::res {
 
     template<class TResource>
     void
-    ResourceManager::registerClass() {
+    ResourceManager::registerClass()
+    {
         auto classID = getClassID<TResource>();
         auto factory = [](const std::string& ref, ResourceLifetime lifetime) -> FactoryResultType {
             // The reference string received here may include subobject, e.g. `some\resource:SubObjectName`,

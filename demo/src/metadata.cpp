@@ -11,33 +11,39 @@ using namespace lemon::scheduler;
 using namespace lemon::res;
 
 auto
-createTexture() {
+createTexture()
+{
     return std::make_unique<TextureResource::Metadata>();
 }
 
 auto
-createMaterial() {
+createMaterial()
+{
     return std::make_unique<MaterialResource::Metadata>();
 }
 
 auto
-createBundle() {
+createBundle()
+{
     return std::make_unique<BundleResource::Metadata>();
 }
 
 auto
-createModel() {
+createModel()
+{
     return std::make_unique<ModelResource::Metadata>();
 }
 
 void
-addDependencies(ResourceMetadataBase* data, std::initializer_list<RawResourceReference> refs) {
+addDependencies(ResourceMetadataBase* data, std::initializer_list<RawResourceReference> refs)
+{
     data->common.references = refs;
 }
 
 template<typename T>
 void
-saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path& path) {
+saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path& path)
+{
     static std::filesystem::path basePath = R"(C:\git\lemon\resources\)";
 
     auto fullPath = basePath;
@@ -45,7 +51,7 @@ saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path
     fullPath += ".meta";
 
     std::ofstream os(fullPath.c_str(), std::ios::binary);
-    cereal::XMLOutputArchive ar(os);
+    cereal::YAMLOutputArchive ar(os);
     ResourceMetadataDescriptor desc{
         .type = ResourceManager::getClassID<T>(), .data = std::move(data), .fullPath = "", .name = ""};
     ResourceMetadata md(std::move(desc));
@@ -53,7 +59,8 @@ saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path
 }
 
 void
-createMetadata() {
+createMetadata()
+{
     using namespace std::filesystem;
 
     std::vector<std::string> dirs = {"a", "b", "c"};
@@ -72,7 +79,33 @@ createMetadata() {
             p2 /= dirs[j];
 
             auto mat = createMaterial();
-            mat->shaderConfig.insert({"ENABLE_SKINNING", 0});
+            mat->baseType = MaterialResource::MaterialBaseType::Shader;
+            mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
+            mat->usage =
+                MaterialResource::MaterialUsage::StaticMesh | MaterialResource::MaterialUsage::SkeletalMesh;
+            mat->domain = MaterialResource::MaterialDomain::Surface;
+            mat->shadingModel = MaterialResource::MaterialShadingModel::Lit;
+            mat->blendMode = MaterialResource::MaterialBlendMode::Opaque;
+            mat->samplers.insert({"mySampler1", lemon::res::MaterialResource::SamplerDescriptor()});
+            mat->samplers.insert({"mySampler2", lemon::res::MaterialResource::SamplerDescriptor()});
+            mat->definitions.insert({"SCROLL_SPEED_U", 0.5f});
+            mat->definitions.insert({"SCROLL_SPEED_V", 1.0f});
+            mat->definitions.insert({"ENABLE_ARBITRARY_FLAG", true});
+
+            using UniformValue = lemon::res::MaterialResource::MaterialUniformValue;
+
+            {
+                mat->uniforms.insert({"lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}});
+            }
+
+            {
+                mat->uniforms.insert(
+                    {"lemonData.lemonVecData", UniformValue{glm::f32vec4{1.5f, 2.5f, 3.5f, 4.5f}}});
+            }
+
+            {
+                mat->uniforms.insert({"lemonData.lemonArr", UniformValue{glm::i32vec4{1, 2, 3, 4}}});
+            }
 
             for (int k = 0; k < 3; k++) {
                 path texPath = p2;
@@ -86,10 +119,10 @@ createMetadata() {
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
 
-                mat->common.references.push_back(RawResourceReference{
-                    .location = texPath.string(),
-                    .type = ResourceManager::getClassID<TextureResource>(),
-                });
+                // mat->common.references.push_back(RawResourceReference{
+                //     .location = texPath.string(),
+                //     .type = ResourceManager::getClassID<TextureResource>(),
+                // });
                 mat->textures.insert({textureTypes[k], texPath.string()});
             }
 

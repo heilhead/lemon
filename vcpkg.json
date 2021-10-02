@@ -13,6 +13,7 @@
     "magic-enum",
     "nlohmann-json",
     "range-v3",
-    "tl-expected"
+    "tl-expected",
+    "yaml-cpp"
   ]
 }

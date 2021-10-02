@@ -15,7 +15,7 @@ set(LEMON_CPM_CMAKE_PATH ${LEMON_ROOT}/buildtools/cmake/CPM.cmake)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(SOURCE_FILES src/lemon-shader/reflection.cpp)
+set(SOURCE_FILES src/lemon-shader/ShaderReflection.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::shader ALIAS ${PROJECT_NAME})
@@ -39,4 +39,4 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/lib/tint)
 
 find_package(magic_enum CONFIG REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE magic_enum::magic_enum libtint)
+target_link_libraries(${PROJECT_NAME} PUBLIC libtint PRIVATE magic_enum::magic_enum)

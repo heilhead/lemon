@@ -368,11 +368,8 @@ texture1
 
 material:
 
-    [either `shader` or `parent`]
-    -> shader
-        -> path/to/shader.wgsl
-    -> parent
-        -> path/to/material
+    -> baseType: Shader | Material
+    -> basePath: [string path to either material or shader]
 
     [shader/template definitions]
     -> definitions [key (string) => value (string)]

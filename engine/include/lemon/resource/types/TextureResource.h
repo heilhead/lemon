@@ -25,7 +25,8 @@ namespace lemon::res {
 
             template<class TArchive>
             void
-            serialize(TArchive& ar) {
+            serialize(TArchive& ar)
+            {
                 ResourceMetadataBase::serialize(ar);
 
                 LEMON_SERIALIZE(ar, format);
@@ -45,6 +46,6 @@ namespace lemon::res {
         ~TextureResource() override;
 
         VoidTask<ResourceLoadingError>
-        load(ResourceMetadata& meta) override;
+        load(ResourceMetadata&& meta) override;
     };
 } // namespace lemon::res

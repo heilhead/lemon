@@ -11,7 +11,8 @@ namespace lemon::res {
 
         template<class Archive>
         void
-        serialize(Archive& ar) {
+        serialize(Archive& ar)
+        {
             LEMON_SERIALIZE(ar, location);
             LEMON_SERIALIZE(ar, type);
         }
@@ -22,7 +23,8 @@ namespace lemon::res {
 
         template<class Archive>
         void
-        serialize(Archive& ar) {
+        serialize(Archive& ar)
+        {
             LEMON_SERIALIZE(ar, references);
         }
     };
@@ -34,8 +36,30 @@ namespace lemon::res {
 
         template<class TArchive>
         void
-        serialize(TArchive& ar) {
+        serialize(TArchive& ar)
+        {
             LEMON_SERIALIZE(ar, common);
+        }
+
+        template<class TArchive>
+        constexpr bool
+        isSaving(TArchive& ar)
+        {
+            return serialization::isSaving(ar);
+        }
+
+        template<class TArchive>
+        constexpr bool
+        isLoading(TArchive& ar)
+        {
+            return serialization::isLoading(ar);
+        }
+
+        template<class TResource>
+        void
+        addReference(std::string& refPath)
+        {
+            common.references.emplace_back(RawResourceReference{refPath, getClassID<TResource>()});
         }
     };
 
@@ -52,8 +76,9 @@ namespace lemon::res {
         std::filesystem::path fullPath;
         std::filesystem::path name;
 
-        ResourceMetadata(ResourceMetadataDescriptor&& desc) {
-            type = std::move(desc.type);
+        ResourceMetadata(ResourceMetadataDescriptor&& desc)
+        {
+            type = desc.type;
             data = std::move(desc.data);
             fullPath = std::move(desc.fullPath);
             name = std::move(desc.name);
@@ -61,12 +86,14 @@ namespace lemon::res {
 
         template<typename T>
         [[nodiscard]] T*
-        get() const {
+        get() const
+        {
             return dynamic_cast<T*>(data.get());
         }
 
         inline const std::vector<RawResourceReference>&
-        getReferences() const {
+        getReferences() const
+        {
             assert(data != nullptr);
             return get<ResourceMetadataBase>()->common.references;
         }

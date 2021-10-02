@@ -18,10 +18,6 @@ struct LemonData {
 
 [[group(1), binding(2)]]
 var<uniform> lemonData: LemonData;
-
-[[group(1), binding(3)]] var t_f : texture_2d<f32>;
-[[group(1), binding(4)]] var t_i : texture_2d<i32>;
-[[group(1), binding(5)]] var t_u : texture_2d<u32>;
 //# endblock
 
 //# block vs_surface

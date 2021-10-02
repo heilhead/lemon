@@ -1,12 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<cereal>
-	<TextureResource>
-		<common>
-			<references size="dynamic"/>
-		</common>
-		<value0>RGBA8UnormSrgb</value0>
-		<width>512</width>
-		<height>512</height>
-	</TextureResource>
-</cereal>
-
+TextureResource:
+  common:
+    references:
+      []
+  format: RGBA8UnormSrgb
+  width: 512
+  height: 512
