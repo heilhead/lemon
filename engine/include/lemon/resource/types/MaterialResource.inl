@@ -35,7 +35,7 @@ namespace lemon::res {
         LEMON_SERIALIZE(ar, uniforms);
 
         if (isLoading(ar)) {
-            if (baseType == MaterialBaseType::Material) {
+            if (baseType == BaseType::Material) {
                 addReference<MaterialResource>(basePath);
             }
 

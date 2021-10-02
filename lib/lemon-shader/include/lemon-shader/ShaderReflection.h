@@ -133,8 +133,7 @@ namespace lemon {
             tint::Program program;
 
         public:
-            void
-            init(const std::string& codePath, const std::string& code);
+            ShaderReflection(const std::string& codePath, const std::string& code);
 
             bool
             isValid() const;

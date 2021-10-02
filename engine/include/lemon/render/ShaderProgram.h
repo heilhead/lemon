@@ -26,8 +26,13 @@ namespace lemon::render {
         bool valid = false;
         std::vector<DiagnosticMessage> diagnostics;
         std::vector<ResourceDescriptor> reflection;
+        uint64_t hash;
 
     public:
+        ShaderProgram() : hash{0} {}
+
+        ShaderProgram(uint64_t hash) : hash{hash} {}
+
         inline bool
         isValid() const
         {

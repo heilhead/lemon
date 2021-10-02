@@ -12,7 +12,7 @@ namespace lemon::render {
         ShaderCompiler(wgpu::Device* pDevice) : pDevice{pDevice} {}
 
         std::unique_ptr<ShaderProgram>
-        compile(const std::string& sourceCode);
+        compile(uint64_t hash, const std::string& sourceCode);
 
     private:
         static void

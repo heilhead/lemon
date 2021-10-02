@@ -46,6 +46,6 @@ namespace lemon::device {
         }
 
         std::unique_ptr<render::ShaderProgram>
-        compileShaderProgram(const std::string& sourceCode);
+        compileShaderProgram(uint64_t hash, const std::string& sourceCode);
     };
 } // namespace lemon::device

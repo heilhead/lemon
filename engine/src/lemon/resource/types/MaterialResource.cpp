@@ -13,17 +13,17 @@ using namespace lemon::res::material;
 using namespace lemon::render;
 
 uint64_t
-computeShaderHash(const std::optional<Blueprint>& blueprint, const BlueprintConfiguration& config)
+computeHash(const std::optional<Blueprint>& blueprint, const BlueprintConfiguration& config)
 {
-    lemon::Hash h;
+    lemon::Hash hash;
 
-    h.append(config);
+    hash.append(config);
 
     if (blueprint) {
-        h.append(*blueprint);
+        hash.appendHash(blueprint->getHash());
     }
 
-    return h;
+    return hash;
 }
 
 Task<Blueprint, ResourceLoadingError>
@@ -51,7 +51,7 @@ VoidTask<ResourceLoadingError>
 MaterialResource::load(ResourceMetadata&& inMetadata)
 {
     metadata = std::move(*inMetadata.get<Metadata>());
-    if (metadata.baseType == MaterialBaseType::Shader) {
+    if (metadata.baseType == BaseType::Shader) {
         auto result = co_await IOTask(loadShaderBlueprint(metadata.basePath));
         if (result) {
             blueprint = std::move(*result);
@@ -65,24 +65,35 @@ MaterialResource::load(ResourceMetadata&& inMetadata)
     co_return {};
 }
 
+uint64_t
+MaterialResource::computeShaderHash(const BlueprintConfiguration& pipelineConfig) const
+{
+    BlueprintConfiguration finalConfig = config;
+    finalConfig.merge(pipelineConfig);
+    return computeHash(blueprint, finalConfig);
+}
+
 const ShaderProgram*
 MaterialResource::getShader(const BlueprintConfiguration& pipelineConfig)
 {
     BlueprintConfiguration finalConfig = config;
     finalConfig.merge(pipelineConfig);
-
-    uint64_t programHash = computeShaderHash(blueprint, finalConfig);
+    uint64_t hash = computeHash(blueprint, finalConfig);
 
     auto& cache = ResourceManager::get()->getShaderCache();
-    auto [pProgram, bInserted] = cache.findOrInsert(programHash, [&]() {
+    auto [pProgram, bInserted] = cache.findOrInsert(hash, [&]() {
+        ShaderProgram* pProgram;
+
         if (blueprint) {
             // TODO: Handle compilation errors, e.g. `template variable not found`
             auto sourceCode = blueprint->renderShaderSource(finalConfig);
-            return Device::get()->getGPU()->compileShaderProgram(sourceCode).release();
+            pProgram = Device::get()->getGPU()->compileShaderProgram(hash, sourceCode).release();
         } else {
             // Create an unitialized and invalid program.
-            return new ShaderProgram{};
+            pProgram = new ShaderProgram{hash};
         }
+
+        return pProgram;
     });
 
     return pProgram;

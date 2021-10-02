@@ -79,20 +79,19 @@ createMetadata()
             p2 /= dirs[j];
 
             auto mat = createMaterial();
-            mat->baseType = MaterialResource::MaterialBaseType::Shader;
+            mat->baseType = MaterialResource::BaseType::Shader;
             mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
-            mat->usage =
-                MaterialResource::MaterialUsage::StaticMesh | MaterialResource::MaterialUsage::SkeletalMesh;
-            mat->domain = MaterialResource::MaterialDomain::Surface;
-            mat->shadingModel = MaterialResource::MaterialShadingModel::Lit;
-            mat->blendMode = MaterialResource::MaterialBlendMode::Opaque;
+            mat->usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
+            mat->domain = MaterialResource::Domain::Surface;
+            mat->shadingModel = MaterialResource::ShadingModel::Lit;
+            mat->blendMode = MaterialResource::BlendMode::Opaque;
             mat->samplers.insert({"mySampler1", lemon::res::MaterialResource::SamplerDescriptor()});
             mat->samplers.insert({"mySampler2", lemon::res::MaterialResource::SamplerDescriptor()});
             mat->definitions.insert({"SCROLL_SPEED_U", 0.5f});
             mat->definitions.insert({"SCROLL_SPEED_V", 1.0f});
             mat->definitions.insert({"ENABLE_ARBITRARY_FLAG", true});
 
-            using UniformValue = lemon::res::MaterialResource::MaterialUniformValue;
+            using UniformValue = lemon::res::MaterialResource::UniformValue;
 
             {
                 mat->uniforms.insert({"lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}});

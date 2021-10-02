@@ -12,14 +12,26 @@ namespace lemon::res::material {
 
         const inja::Template* tpl;
         inja::Environment* env;
+        uint64_t hash;
 
     public:
-        Blueprint(const inja::Template* inTpl, inja::Environment* inEnv) : tpl{inTpl}, env{inEnv} {}
+        Blueprint(const inja::Template* inTpl, inja::Environment* inEnv) : tpl{inTpl}, env{inEnv}
+        {
+            hash = lemon::hash(*this);
+        }
 
         inline std::string
         renderShaderSource(const BlueprintConfiguration& config)
         {
+            assert(tpl != nullptr);
+            assert(env != nullptr);
             return env->render(*tpl, config.getDefinitions());
+        }
+
+        inline uint64_t
+        getHash() const
+        {
+            return hash;
         }
     };
 } // namespace lemon::res::material

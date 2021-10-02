@@ -1,11 +1,11 @@
 #include <lemon/render/ShaderCompiler.h>
-#include <lemon-shader/ShaderReflection.h>
+#include <lemon-shader/reflection.h>
 
 using namespace lemon::render;
 using namespace lemon::shader;
 
 std::unique_ptr<ShaderProgram>
-ShaderCompiler::compile(const std::string& sourceCode)
+ShaderCompiler::compile(uint64_t hash, const std::string& sourceCode)
 {
     wgpu::ShaderModuleWGSLDescriptor wgslDesc;
     wgslDesc.source = sourceCode.c_str();
@@ -13,16 +13,12 @@ ShaderCompiler::compile(const std::string& sourceCode)
     wgpu::ShaderModuleDescriptor desc;
     desc.nextInChain = &wgslDesc;
 
-    auto pProgram = std::make_unique<ShaderProgram>();
+    auto pProgram = std::make_unique<ShaderProgram>(hash);
     pProgram->shaderModule = pDevice->CreateShaderModule(&desc);
     pProgram->shaderModule.GetCompilationInfo(compilationInfoCallback, pProgram.get());
 
     if (pProgram->isValid()) {
-        std::string path = "<unknown>";
-        ShaderReflection refl;
-        refl.init(path, sourceCode);
-
-        pProgram->reflection = std::move(refl.getBindingReflection());
+        pProgram->reflection = std::move(createReflection("<unknown>", sourceCode));
     }
 
     return pProgram;

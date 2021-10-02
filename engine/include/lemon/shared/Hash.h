@@ -40,7 +40,6 @@ namespace lemon {
             return value();
         }
 
-    private:
         void
         appendHash(uint64_t inHash)
         {

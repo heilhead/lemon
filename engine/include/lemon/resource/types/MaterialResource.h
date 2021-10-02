@@ -13,8 +13,6 @@
 #include <dawn/webgpu_cpp.h>
 
 namespace lemon::res {
-    using namespace lemon::res::material;
-
     class MaterialResource : public ResourceInstance {
     public:
         struct SamplerDescriptor {
@@ -34,34 +32,33 @@ namespace lemon::res {
             serialize(TArchive& ar);
         };
 
-        enum class MaterialBaseType { Shader, Material };
-        enum class MaterialUsage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
-        enum class MaterialDomain { Surface, PostProcess, UserInterface };
-        enum class MaterialShadingModel { Lit, Unlit };
-        enum class MaterialBlendMode { Opaque, Masked, Translucent };
+        enum class BaseType { Shader, Material };
+        enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
+        enum class Domain { Surface, PostProcess, UserInterface };
+        enum class ShadingModel { Lit, Unlit };
+        enum class BlendMode { Opaque, Masked, Translucent };
 
         // Note: New types can only be added at the back of the type list of these variants,
         // otherwise serialization will break.
-        using MaterialUniformValue =
-            std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2, glm::u32vec4, float,
-                         glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
-        using MaterialDefinitionValue = std::variant<int32_t, uint32_t, float, bool, std::string>;
+        using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
+                                          glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
+        using DefinitionValue = std::variant<int32_t, uint32_t, float, bool, std::string>;
 
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource traits
         /////////////////////////////////////////////////////////////////////////////////////
 
         struct Metadata : ResourceMetadataBase {
-            MaterialBaseType baseType;
+            BaseType baseType;
             std::string basePath;
-            MaterialUsage usage;
-            MaterialDomain domain;
-            MaterialShadingModel shadingModel;
-            MaterialBlendMode blendMode;
-            std::unordered_map<std::string, MaterialDefinitionValue> definitions;
+            Usage usage;
+            Domain domain;
+            ShadingModel shadingModel;
+            BlendMode blendMode;
+            std::unordered_map<std::string, DefinitionValue> definitions;
             std::unordered_map<std::string, SamplerDescriptor> samplers;
             std::unordered_map<std::string, std::string> textures;
-            std::unordered_map<std::string, MaterialUniformValue> uniforms;
+            std::unordered_map<std::string, UniformValue> uniforms;
 
             template<class TArchive>
             void
@@ -76,8 +73,8 @@ namespace lemon::res {
 
     private:
         Metadata metadata;
-        std::optional<Blueprint> blueprint;
-        BlueprintConfiguration config;
+        std::optional<material::Blueprint> blueprint;
+        material::BlueprintConfiguration config;
 
     public:
         MaterialResource();
@@ -86,8 +83,11 @@ namespace lemon::res {
         VoidTask<ResourceLoadingError>
         load(ResourceMetadata&& meta) override;
 
-        const class render::ShaderProgram*
-        getShader(const BlueprintConfiguration& pipelineConfig);
+        uint64_t
+        computeShaderHash(const material::BlueprintConfiguration& pipelineConfig) const;
+
+        const render::ShaderProgram*
+        getShader(const material::BlueprintConfiguration& pipelineConfig);
     };
 } // namespace lemon::res
 

@@ -106,8 +106,7 @@ createBindingReflection(const tint::Program& program, const BindingPoint& bindin
     return result;
 }
 
-void
-ShaderReflection::init(const std::string& codePath, const std::string& code)
+ShaderReflection::ShaderReflection(const std::string& codePath, const std::string& code)
 {
     tint::Source::File sourceFile(codePath, code);
     program = tint::Program(tint::reader::wgsl::Parse(&sourceFile));

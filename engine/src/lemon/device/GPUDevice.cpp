@@ -91,7 +91,7 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
 }
 
 std::unique_ptr<render::ShaderProgram>
-GPUDevice::compileShaderProgram(const std::string& sourceCode)
+GPUDevice::compileShaderProgram(uint64_t hash, const std::string& sourceCode)
 {
-    return shaderCompiler.compile(sourceCode);
+    return shaderCompiler.compile(hash, sourceCode);
 }
