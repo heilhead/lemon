@@ -3,7 +3,7 @@
 #include <dawn/webgpu_cpp.h>
 #include <dawn/dawn_wsi.h>
 #include <dawn_native/DawnNative.h>
-#include <lemon/render/ShaderCompiler.h>
+#include <lemon/render/RenderManager.h>
 
 namespace lemon::device {
     class Platform;
@@ -15,7 +15,7 @@ namespace lemon::device {
         wgpu::Queue queue;
         wgpu::SwapChain swapChain;
         DawnSwapChainImplementation swapChainImpl;
-        render::ShaderCompiler shaderCompiler;
+        render::RenderManager renderManager;
 
     public:
         GPUDevice(Platform* platform, Window* window);
@@ -44,8 +44,5 @@ namespace lemon::device {
             // TODO: Should this method even exist?
             return swapChainImpl;
         }
-
-        std::unique_ptr<render::ShaderProgram>
-        compileShaderProgram(uint64_t hash, const std::string& sourceCode);
     };
 } // namespace lemon::device

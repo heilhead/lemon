@@ -87,11 +87,5 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
         swapChain.Configure(textureFormat, wgpu::TextureUsage::RenderAttachment, wndWidth, wndHeight);
     }
 
-    shaderCompiler = ShaderCompiler(&device);
-}
-
-std::unique_ptr<render::ShaderProgram>
-GPUDevice::compileShaderProgram(uint64_t hash, const std::string& sourceCode)
-{
-    return shaderCompiler.compile(hash, sourceCode);
+    renderManager.setDevice(device);
 }

@@ -73,8 +73,8 @@ namespace lemon::res {
 
     private:
         Metadata metadata;
-        std::optional<material::Blueprint> blueprint;
-        material::BlueprintConfiguration config;
+        std::optional<material::MaterialBlueprint> blueprint;
+        material::MaterialConfiguration config;
 
     public:
         MaterialResource();
@@ -84,10 +84,10 @@ namespace lemon::res {
         load(ResourceMetadata&& meta) override;
 
         uint64_t
-        computeShaderHash(const material::BlueprintConfiguration& pipelineConfig) const;
+        computeShaderHash(const material::MaterialConfiguration& pipelineConfig) const;
 
         const render::ShaderProgram*
-        getShader(const material::BlueprintConfiguration& pipelineConfig);
+        getShader(const material::MaterialConfiguration& pipelineConfig);
     };
 } // namespace lemon::res
 

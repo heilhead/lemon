@@ -5,7 +5,7 @@
 #include <lemon/shared/filesystem.h>
 #include <lemon/shared/AtomicCache.h>
 #include <lemon/resource/types/material/common.h>
-#include <lemon/resource/types/material/Blueprint.h>
+#include <lemon/resource/types/material/MaterialBlueprint.h>
 #include <inja/inja.hpp>
 #include <inja/environment.hpp>
 
@@ -18,7 +18,7 @@ namespace lemon::res::material {
     public:
         MaterialComposer(std::filesystem::path& inBaseDir);
 
-        tl::expected<Blueprint, CompositionError>
+        tl::expected<MaterialBlueprint, CompositionError>
         getBlueprint(std::filesystem::path& fullPath);
 
     private:

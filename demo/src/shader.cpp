@@ -1,9 +1,11 @@
 #include "shader.h"
 
+#include <cassert>
 #include <lemon/shared.h>
 #include <lemon/utils/utils.h>
 #include <lemon/shared/filesystem.h>
 #include <lemon/engine.h>
+#include <lemon/render/RenderManager.h>
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
 
@@ -18,6 +20,7 @@
 #include <lemon-shader/ShaderReflection.h>
 
 using namespace lemon::res;
+using namespace lemon::render;
 
 void
 testShader()
@@ -26,7 +29,7 @@ testShader()
     std::string assetPath(R"(C:\git\lemon\resources)");
     engine.init(assetPath);
 
-    auto* pSchedMan = Scheduler::get();
+    auto* pScheduler = Scheduler::get();
     auto* pResMan = ResourceManager::get();
 
     // Scheduler schedMan(1, 1);
@@ -34,38 +37,15 @@ testShader()
     // ResourceManager resMan(std::move(baseDir));
 
     ResourceLocation matLoc(R"(a\M_A)");
-    auto result = pSchedMan->block(pResMan->loadResource<MaterialResource>(matLoc));
+    auto result = pScheduler->block(pResMan->loadResource<MaterialResource>(matLoc));
     if (result) {
-        material::BlueprintConfiguration config;
+        material::MaterialConfiguration config;
         config.define("TEXCOORD1", false);
-        auto shader = (*result)->getShader(config);
+        auto* shader = (*result)->getShader(config);
         auto refl = shader->getReflection();
+        auto bgl = RenderManager::get()->getShaderCompiler().getBindGroupLayout(*shader);
         lemon::utils::log("material loaded");
     } else {
         lemon::utils::logErr("material failed to load: ", (int)result.error());
     }
-
-    // auto& composer = resMan.getShaderComposer();
-
-    // lemon::res::material::ShaderConfiguration config;
-    // config.define("TEXCOORD1", false);
-
-    // auto codePath = baseDir / "internal" / "shaders" / "BaseSurfacePBR.wgsl";
-    // auto blueprint = composer.getBlueprint(codePath);
-    // if (blueprint) {
-    //     auto code = (*blueprint).getCode(config);
-    //     auto pathStr = codePath.string();
-
-    //    lemon::shader::ShaderProgram program(pathStr, code);
-
-    //    if (program.isValid()) {
-    //        auto bindingReflection = program.getBindingReflection();
-    //        lemon::utils::log("found bindings: ", bindingReflection.size());
-    //    } else {
-    //        lemon::utils::logErr(code);
-    //        lemon::utils::logErr("program invalid: ", program.getDiagnostic());
-    //    }
-    //} else {
-    //    lemon::utils::logErr("failed to compose shader blueprint: ", (int)blueprint.error());
-    //}
 }

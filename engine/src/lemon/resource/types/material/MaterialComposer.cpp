@@ -16,7 +16,7 @@ MaterialComposer::MaterialComposer(std::filesystem::path& resourceRootDir) : tpl
     });
 }
 
-tl::expected<Blueprint, CompositionError>
+tl::expected<MaterialBlueprint, CompositionError>
 MaterialComposer::getBlueprint(std::filesystem::path& fullPath)
 {
     auto hash = folly::hash::fnv64(fullPath.string());
@@ -27,7 +27,7 @@ MaterialComposer::getBlueprint(std::filesystem::path& fullPath)
 
     if (result->has_value()) {
         auto& val = result->value();
-        return Blueprint(&val, &tplEnv);
+        return MaterialBlueprint(&val, &tplEnv);
     } else {
         return tl::make_unexpected(result->error());
     }

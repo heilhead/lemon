@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <folly/Hash.h>
 
 namespace lemon {
@@ -9,21 +10,28 @@ namespace lemon {
 
     public:
         template<typename... Value>
-        void
+        inline void
         append(Value const&... value)
         {
             appendHash(folly::hash::commutative_hash_combine(value...));
         }
 
-        template<class Iter>
-        void
-        appendRange(Iter first, Iter last)
+        template<typename T>
+        inline void
+        append(std::vector<T> const& data)
         {
-            appendHash(folly::hash::hash_range(first, last));
+            appendRange(data.begin(), data.end());
         }
 
         template<class Iter>
-        void
+        inline void
+        appendRange(Iter first, Iter last)
+        {
+            appendHash(folly::hash::hash_range<Iter, folly::Hash>(first, last));
+        }
+
+        template<class Iter>
+        inline void
         appendRangeCommutative(Iter first, Iter last)
         {
             appendHash(folly::hash::commutative_hash_combine_range(first, last));
@@ -35,12 +43,12 @@ namespace lemon {
             return hash;
         }
 
-        operator uint64_t() const
+        inline operator uint64_t() const
         {
             return value();
         }
 
-        void
+        inline void
         appendHash(uint64_t inHash)
         {
             hash = folly::hash::hash_128_to_64(hash, inHash);
