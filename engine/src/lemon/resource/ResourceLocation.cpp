@@ -1,4 +1,5 @@
 #include <lemon/resource/ResourceLocation.h>
+#include <lemon/shared/assert.h>
 
 using namespace lemon::res;
 
@@ -11,7 +12,7 @@ ResourceLocation::ResourceLocation(const std::string& inLocation) {
         handle = ResourceHandle(createHash(sFile));
         object = ResourceObjectHandle(createHash(sObject));
 
-        assert((sObject).find(kLocationObjectDelimiter) == std::string::npos);
+        LEMON_ASSERT((sObject).find(kLocationObjectDelimiter) == std::string::npos);
     } else {
         handle = ResourceHandle(createHash(inLocation));
         object = ResourceObjectHandle::InvalidHandle;
@@ -19,8 +20,8 @@ ResourceLocation::ResourceLocation(const std::string& inLocation) {
 }
 
 ResourceLocation::ResourceLocation(const std::string& inLocation, std::string& inObject) {
-    assert(inLocation.find(kLocationObjectDelimiter) == std::string::npos);
-    assert(inObject.find(kLocationObjectDelimiter) == std::string::npos);
+    LEMON_ASSERT(inLocation.find(kLocationObjectDelimiter) == std::string::npos);
+    LEMON_ASSERT(inObject.find(kLocationObjectDelimiter) == std::string::npos);
 
     handle = ResourceHandle(createHash(inLocation));
     object = ResourceObjectHandle(createHash(inObject));

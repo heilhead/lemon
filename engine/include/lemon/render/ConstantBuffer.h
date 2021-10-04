@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lemon/shared.h>
+#include <lemon/shared/assert.h>
 
 #include <dawn/webgpu_cpp.h>
 #include <dawn/webgpu_cpp_print.h>
@@ -29,7 +30,7 @@ namespace lemon::render {
         write(TData& inData)
         {
             auto szData = sizeof(inData);
-            assert(offset + szData <= size);
+            LEMON_ASSERT(offset + szData <= size);
             auto dataOffset = offset;
             memcpy(data.get<uint32_t>() + offset, &inData, szData);
             offset += alignup(szData, 256);

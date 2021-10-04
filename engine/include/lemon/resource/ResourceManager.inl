@@ -6,6 +6,7 @@
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/scheduler.h>
 #include <lemon/utils/utils.h>
+#include <lemon/shared/assert.h>
 
 using namespace lemon::scheduler;
 using namespace lemon::utils;
@@ -49,7 +50,7 @@ namespace lemon::res {
             auto* manager = ResourceManager::get();
 
             auto& fileName = location.getFileName();
-            assert(fileName != "");
+            LEMON_ASSERT(fileName != "");
 
             lemon::utils::log("loading resource: ", fileName);
 
@@ -187,7 +188,7 @@ namespace lemon::res {
                 .map([](TResource* v) { return reinterpret_cast<ResourceInstance*>(v); });
         };
 
-        assert(factories.find(classID) == factories.end());
+        LEMON_ASSERT(factories.find(classID) == factories.end());
 
         factories.insert({classID, factory});
     }

@@ -3,6 +3,7 @@
 #include <lemon/resource/types/material/common.h>
 #include <lemon/resource/types/material/MaterialConfiguration.h>
 #include <lemon/shared/Hash.h>
+#include <lemon/shared/assert.h>
 #include <inja/inja.hpp>
 #include <inja/environment.hpp>
 
@@ -23,8 +24,8 @@ namespace lemon::res::material {
         inline std::string
         renderShaderSource(const MaterialConfiguration& config)
         {
-            assert(tpl != nullptr);
-            assert(env != nullptr);
+            LEMON_ASSERT(tpl != nullptr);
+            LEMON_ASSERT(env != nullptr);
             return env->render(*tpl, config.getDefinitions());
         }
 

@@ -25,11 +25,11 @@ MaterialComposer::getBlueprint(std::filesystem::path& fullPath)
         return new tl::expected<inja::Template, CompositionError>(loadTemplate(fullPath));
     });
 
-    if (result->has_value()) {
-        auto& val = result->value();
+    if (result.get().has_value()) {
+        auto& val = result.get().value();
         return MaterialBlueprint(&val, &tplEnv);
     } else {
-        return tl::make_unexpected(result->error());
+        return tl::make_unexpected(result.get().error());
     }
 }
 

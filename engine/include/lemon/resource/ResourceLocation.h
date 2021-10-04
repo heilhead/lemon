@@ -4,6 +4,7 @@
 #include <folly/hash/Hash.h>
 #include <lemon/resource/common.h>
 #include <lemon/shared/HashStringStore.h>
+#include <lemon/shared/assert.h>
 
 namespace lemon::res {
     static const char* kLocationObjectDelimiter = ":";
@@ -17,17 +18,17 @@ namespace lemon::res {
 
         inline const std::string&
         getFileName() const {
-            assert(handle.isValid());
+            LEMON_ASSERT(handle.isValid());
             auto* ptr = gLookupMap.find(handle);
-            assert(ptr != nullptr);
+            LEMON_ASSERT(ptr != nullptr);
             return *ptr;
         }
 
         inline const std::string&
         getObjectName() const {
-            assert(object.isValid());
+            LEMON_ASSERT(object.isValid());
             auto* ptr = gLookupMap.find(object);
-            assert(ptr != nullptr);
+            LEMON_ASSERT(ptr != nullptr);
             return *ptr;
         }
 

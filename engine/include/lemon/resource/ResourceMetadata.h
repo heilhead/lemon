@@ -2,6 +2,7 @@
 
 #include <lemon/serialization.h>
 #include <lemon/resource/common.h>
+#include <lemon/shared/assert.h>
 #include <filesystem>
 
 namespace lemon::res {
@@ -94,7 +95,7 @@ namespace lemon::res {
         inline const std::vector<RawResourceReference>&
         getReferences() const
         {
-            assert(data != nullptr);
+            LEMON_ASSERT(data != nullptr);
             return get<ResourceMetadataBase>()->common.references;
         }
     };

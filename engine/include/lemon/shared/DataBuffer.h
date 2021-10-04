@@ -1,18 +1,20 @@
 #pragma once
 
-#include <cassert>
+#include <lemon/shared/assert.h>
 #include <cstdint>
 
 namespace lemon {
     class HeapAllocator {
     public:
         static uint8_t*
-        allocate(size_t length) {
+        allocate(size_t length)
+        {
             return new uint8_t[length];
         }
 
         static void
-        release(const uint8_t* ptr) {
+        release(const uint8_t* ptr)
+        {
             delete[] ptr;
         }
     };
@@ -24,22 +26,23 @@ namespace lemon {
     public:
         DataBuffer() : data{nullptr}, length{0} {}
 
-        explicit DataBuffer(size_t length) : DataBuffer() {
+        explicit DataBuffer(size_t length) noexcept : DataBuffer()
+        {
             allocate(length);
         }
 
-        DataBuffer(DataBuffer&& other) noexcept {
-            data = other.data;
-            length = other.length;
-            other.data = nullptr;
-            other.length = 0;
+        DataBuffer(DataBuffer&& other) noexcept : DataBuffer()
+        {
+            *this = std::move(other);
         }
 
-        DataBuffer(const DataBuffer& other) : data{nullptr}, length{0} {
+        DataBuffer(const DataBuffer& other) noexcept : DataBuffer()
+        {
             *this = other;
         }
 
-        ~DataBuffer() {
+        ~DataBuffer()
+        {
             if (data != nullptr) {
                 release();
             }
@@ -51,25 +54,28 @@ namespace lemon {
 
     public:
         uint8_t*
-        operator*() {
+        operator*()
+        {
             return data;
         }
 
         DataBuffer&
-        operator=(const DataBuffer& other) {
+        operator=(const DataBuffer& other)
+        {
             if (data != nullptr) {
                 release();
             }
 
             allocate(other.length);
             auto err = memcpy_s(data, length, other.data, length);
-            assert(!err);
+            LEMON_ASSERT(!err);
 
             return *this;
         }
 
         DataBuffer&
-        operator=(DataBuffer&& other) noexcept {
+        operator=(DataBuffer&& other) noexcept
+        {
             if (data != nullptr) {
                 release();
             }
@@ -83,24 +89,27 @@ namespace lemon {
         }
 
         size_t
-        size() const {
+        size() const
+        {
             return length;
         }
 
         void
-        allocate(size_t inLength) {
+        allocate(size_t inLength)
+        {
             if (data != nullptr) {
                 release();
             }
 
             data = Allocator::allocate(inLength);
             length = inLength;
-            assert(data != nullptr);
+            LEMON_ASSERT(data != nullptr);
         }
 
         void
-        release() {
-            assert(data != nullptr);
+        release()
+        {
+            LEMON_ASSERT(data != nullptr);
             Allocator::release(data);
             data = nullptr;
             length = 0;
@@ -108,7 +117,8 @@ namespace lemon {
 
         template<typename U>
         U*
-        get() const {
+        get() const
+        {
             return (U*)data;
         }
     };
@@ -124,10 +134,11 @@ namespace lemon {
         uint8_t data[N];
 
     public:
-        template<typename U>
-        U*
-        get() {
-            return (U*)&data;
+        template<typename T>
+        T*
+        get()
+        {
+            return (T*)&data;
         }
     };
 } // namespace lemon

@@ -1,5 +1,5 @@
 #include <lemon/render/RenderManager.h>
-#include <cassert>
+#include <lemon/shared/assert.h>
 
 using namespace lemon::render;
 
@@ -7,7 +7,7 @@ static RenderManager* gInstance;
 
 RenderManager::RenderManager() : pDevice{nullptr}
 {
-    assert(gInstance == nullptr);
+    LEMON_ASSERT(gInstance == nullptr);
     gInstance = this;
 }
 

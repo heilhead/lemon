@@ -1,5 +1,6 @@
 #include <lemon/resource/types/model/LemonModel.h>
 #include <lemon/utils/utils.h>
+#include <lemon/shared/assert.h>
 
 using namespace lemon;
 using namespace lemon::res::model;
@@ -44,7 +45,7 @@ MeshGPUVertexFormat::add(wgpu::VertexFormat format)
     auto size = lemon::render::getVertexFormatSize(format);
     auto location = (size_t)locationCount++;
 
-    assert(size > 0);
+    LEMON_ASSERT(size > 0);
 
     attributes[idx].format = format;
     attributes[idx].offset = stride;

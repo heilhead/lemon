@@ -11,7 +11,7 @@
 
 namespace lemon::res::material {
     class MaterialComposer {
-        AtomicCache<uint64_t, tl::expected<inja::Template, CompositionError>> tplCache;
+        AtomicCache<tl::expected<inja::Template, CompositionError>> tplCache;
         std::filesystem::path baseDir;
         inja::Environment tplEnv;
 

@@ -130,17 +130,17 @@ ShaderCompiler::compile(uint64_t hash, const std::string& sourceCode)
 const wgpu::BindGroupLayout&
 ShaderCompiler::getBindGroupLayout(const ShaderProgram& program)
 {
-    auto [pBindGroupLayout, bInserted] = bglCache.findOrInsert(program.reflectionHash, [&]() {
-        return new wgpu::BindGroupLayout(
-            std::move(createBindGroupLayout(kUserBindGroupIndex, &program)));
-    });
+    auto [pBindGroupLayout, bInserted] =
+        ResourceCache::bindGroupLayout().findOrInsert(program.reflectionHash, [&]() {
+            return new wgpu::BindGroupLayout(std::move(createBindGroupLayout(kUserBindGroupIndex, &program)));
+        });
 
-    return *pBindGroupLayout;
+    return pBindGroupLayout.get();
 }
 
 void
 ShaderCompiler::compilationInfoCallback(WGPUCompilationInfoRequestStatus status,
-                                        WGPUCompilationInfo const* compilationInfo, void* userdata)
+                                        const WGPUCompilationInfo* compilationInfo, void* userdata)
 {
     auto* pProgram = reinterpret_cast<ShaderProgram*>(userdata);
     pProgram->valid = status == WGPUCompilationInfoRequestStatus_Success;

@@ -1,5 +1,5 @@
 #include <lemon/render/material/MaterialManager.h>
-#include <cassert>
+#include <lemon/shared/assert.h>
 
 using namespace lemon::render;
 
@@ -7,7 +7,7 @@ static MaterialManager* gInstance;
 
 MaterialManager::MaterialManager()
 {
-    assert(gInstance == nullptr);
+    LEMON_ASSERT(gInstance == nullptr);
     gInstance = this;
 }
 

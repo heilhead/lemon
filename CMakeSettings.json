@@ -11,7 +11,14 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "enableMicrosoftCodeAnalysis": true,
-      "enableClangTidyCodeAnalysis": true
+      "enableClangTidyCodeAnalysis": true,
+      "variables": [
+        {
+          "name": "BUILD_TESTING",
+          "value": "False",
+          "type": "BOOL"
+        }
+      ]
     }
   ]
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lemon/resource/ResourceLocation.h>
+#include <lemon/shared/assert.h>
 
 // Implement default metadata serialization methods with the specified tag.
 #define LEMON_RESOURCE_TRAITS(tag)                                                                           \
@@ -47,7 +48,7 @@ namespace lemon::res {
     template<class TObject, typename... Args>
     void
     ResourceInstance::createObject(ResourceObjectHandle handle, Args&&... args) {
-        assert(getObject(handle) == nullptr);
+        LEMON_ASSERT(getObject(handle) == nullptr);
         auto pObj = new TObject(std::forward<Args>(args)...);
         pObj->setHandle(handle);
         objects.emplace_back(pObj);

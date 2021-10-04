@@ -75,14 +75,14 @@ MaterialResource::computeShaderHash(const MaterialConfiguration& pipelineConfig)
     return computeHash(blueprint, finalConfig);
 }
 
-const ShaderProgram*
+lemon::AtomicCacheRef<ShaderProgram>
 MaterialResource::getShader(const MaterialConfiguration& pipelineConfig)
 {
     MaterialConfiguration finalConfig = config;
     finalConfig.merge(pipelineConfig);
     uint64_t hash = computeHash(blueprint, finalConfig);
 
-    auto [pProgram, bInserted] = ResourceManager::get()->getShaderCache().findOrInsert(hash, [&]() {
+    auto [pProgram, bInserted] = ResourceCache::shaderProgram().findOrInsert(hash, [&]() {
         ShaderProgram* pProgram;
 
         if (blueprint) {
@@ -97,5 +97,5 @@ MaterialResource::getShader(const MaterialConfiguration& pipelineConfig)
         return pProgram;
     });
 
-    return pProgram;
+    return std::move(pProgram);
 }

@@ -8,8 +8,6 @@ namespace lemon::render {
     class ShaderCompiler {
         static constexpr uint8_t kUserBindGroupIndex = 1;
 
-        AtomicCache<uint64_t, wgpu::BindGroupLayout> bglCache{64};
-
     public:
         std::unique_ptr<ShaderProgram>
         compile(uint64_t hash, const std::string& sourceCode);
@@ -20,6 +18,6 @@ namespace lemon::render {
     private:
         static void
         compilationInfoCallback(WGPUCompilationInfoRequestStatus status,
-                                WGPUCompilationInfo const* compilationInfo, void* userdata);
+                                const WGPUCompilationInfo* compilationInfo, void* userdata);
     };
 } // namespace lemon::render

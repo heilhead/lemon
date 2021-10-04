@@ -41,7 +41,7 @@ testShader()
     if (result) {
         material::MaterialConfiguration config;
         config.define("TEXCOORD1", false);
-        auto* shader = (*result)->getShader(config);
+        auto shader = (*result)->getShader(config);
         auto refl = shader->getReflection();
         auto bgl = RenderManager::get()->getShaderCompiler().getBindGroupLayout(*shader);
         lemon::utils::log("material loaded");

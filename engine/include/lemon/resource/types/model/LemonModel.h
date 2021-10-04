@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
 #include <lemon/shared/DataBuffer.h>
+#include <lemon/shared/assert.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
 #include <lemon/serialization/DataBuffer.h>
@@ -119,7 +120,7 @@ namespace lemon::res::model {
                 lIdxFormat == MeshIndexFormat::U32 ? wgpu::IndexFormat::Uint32 : wgpu::IndexFormat::Uint16;
             indexCount = indexData.size() / idxSize;
 
-            assert(indexData.size() % idxSize == 0);
+            LEMON_ASSERT(indexData.size() % idxSize == 0);
 
             updateVertexFormat();
         }

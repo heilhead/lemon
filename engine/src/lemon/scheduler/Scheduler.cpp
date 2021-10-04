@@ -1,4 +1,5 @@
 #include <lemon/scheduler/Scheduler.h>
+#include <lemon/shared/assert.h>
 #include <folly/system/ThreadName.h>
 
 using namespace lemon::scheduler;
@@ -7,7 +8,7 @@ static Scheduler* gInstance;
 
 Scheduler::Scheduler(size_t threadsIO, size_t threadsCPU) : poolCPU(threadsCPU, 3), poolIO(threadsIO)
 {
-    assert(gInstance == nullptr);
+    LEMON_ASSERT(gInstance == nullptr);
     gInstance = this;
 }
 

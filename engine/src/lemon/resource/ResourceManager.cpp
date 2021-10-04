@@ -1,9 +1,9 @@
-#include <cassert>
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/BundleResource.h>
 #include <lemon/resource/types/ModelResource.h>
+#include <lemon/shared/assert.h>
 
 using namespace lemon::res;
 
@@ -13,7 +13,7 @@ static constexpr size_t kDefaultStoreSize = 1024;
 ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
     : store{kDefaultStoreSize}, factories{}, materialComposer{rootPath}
 {
-    assert(gInstance == nullptr);
+    LEMON_ASSERT(gInstance == nullptr);
     gInstance = this;
     root = rootPath;
 

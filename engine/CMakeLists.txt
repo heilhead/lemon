@@ -28,6 +28,7 @@ set(SOURCE_FILES
         src/lemon/device/Device.cpp
         src/lemon/resource/types/material/MaterialComposer.cpp
         src/lemon/render/RenderManager.cpp
+        src/lemon/render/ResourceCache.cpp
         src/lemon/render/material/MaterialManager.cpp
         src/lemon/render/material/MaterialInstance.cpp
         src/lemon/render/material/SurfaceMaterialInstance.cpp)

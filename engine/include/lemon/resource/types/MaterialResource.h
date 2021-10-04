@@ -10,6 +10,7 @@
 #include <lemon/serialization/glm.h>
 #include <lemon/utils/utils.h>
 #include <lemon/scheduler.h>
+#include <lemon/shared/AtomicCache.h>
 #include <dawn/webgpu_cpp.h>
 
 namespace lemon::res {
@@ -86,7 +87,8 @@ namespace lemon::res {
         uint64_t
         computeShaderHash(const material::MaterialConfiguration& pipelineConfig) const;
 
-        const render::ShaderProgram*
+        // TODO: Move this method to somewhere in render namespace.
+        AtomicCacheRef<render::ShaderProgram>
         getShader(const material::MaterialConfiguration& pipelineConfig);
     };
 } // namespace lemon::res

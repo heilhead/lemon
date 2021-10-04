@@ -7,7 +7,6 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceStore.h>
 #include <lemon/shared/filesystem.h>
-#include <lemon/render/ShaderProgram.h>
 #include <lemon/resource/types/material/MaterialComposer.h>
 
 namespace lemon::res {
@@ -39,7 +38,6 @@ namespace lemon::res {
         std::filesystem::path root;
         std::unordered_map<ResourceClassID, ResourceFactoryFn> factories;
         material::MaterialComposer materialComposer;
-        AtomicCache<uint64_t, render::ShaderProgram> shaderCache;
 
     public:
         /// <summary>
@@ -76,12 +74,6 @@ namespace lemon::res {
         getMaterialComposer()
         {
             return materialComposer;
-        }
-
-        inline AtomicCache<uint64_t, render::ShaderProgram>&
-        getShaderCache()
-        {
-            return shaderCache;
         }
 
         /// <summary>
