@@ -20,16 +20,15 @@ tl::expected<MaterialBlueprint, CompositionError>
 MaterialComposer::getBlueprint(std::filesystem::path& fullPath)
 {
     auto hash = folly::hash::fnv64(fullPath.string());
-    auto [result, bInserted] = tplCache.findOrInsert(hash, [&]() {
+    auto tplRef = cache.get(hash, [&]() {
         // TODO: Actually handle errors in shader composition.
         return new tl::expected<inja::Template, CompositionError>(loadTemplate(fullPath));
     });
 
-    if (result.get().has_value()) {
-        auto& val = result.get().value();
-        return MaterialBlueprint(&val, &tplEnv);
+    if (tplRef->has_value()) {
+        return MaterialBlueprint(std::move(tplRef), &tplEnv);
     } else {
-        return tl::make_unexpected(result.get().error());
+        return tl::make_unexpected(tplRef->error());
     }
 }
 

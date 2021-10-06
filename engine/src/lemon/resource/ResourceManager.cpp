@@ -85,7 +85,7 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
 ResourceContract::FutureType<ResourceInstance>
 ResourceManager::loadResource(ResourceClassID id, const ResourceLocation& location, ResourceLifetime lifetime)
 {
-    return CPUTask(detail::coResourceFactory(id, location.getFileName(), lifetime));
+    return CPUTask(res_detail::coResourceFactory(id, location.getFileName(), lifetime));
 }
 
 bool
@@ -137,7 +137,7 @@ ResourceManager::getFactoryFn(ResourceClassID id)
 }
 
 FactoryResultType
-lemon::res::detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
+lemon::res::res_detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
                                       ResourceLifetime lifetime)
 {
     auto factory = ResourceManager::get()->getFactoryFn(classID);

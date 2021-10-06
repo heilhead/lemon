@@ -49,7 +49,7 @@ namespace lemon::res {
     void
     ResourceInstance::createObject(ResourceObjectHandle handle, Args&&... args) {
         LEMON_ASSERT(getObject(handle) == nullptr);
-        auto pObj = new TObject(std::forward<Args>(args)...);
+        auto* pObj = new TObject(std::forward<Args>(args)...);
         pObj->setHandle(handle);
         objects.emplace_back(pObj);
     }

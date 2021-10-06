@@ -81,10 +81,10 @@ createMetadata()
             auto mat = createMaterial();
             mat->baseType = MaterialResource::BaseType::Shader;
             mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
-            mat->usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
-            mat->domain = MaterialResource::Domain::Surface;
-            mat->shadingModel = MaterialResource::ShadingModel::Lit;
-            mat->blendMode = MaterialResource::BlendMode::Opaque;
+            mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
+            mat->domain.type = MaterialResource::Domain::Surface;
+            mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
+            mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
             mat->samplers.insert({"mySampler1", lemon::res::MaterialResource::SamplerDescriptor()});
             mat->samplers.insert({"mySampler2", lemon::res::MaterialResource::SamplerDescriptor()});
             mat->definitions.insert({"SCROLL_SPEED_U", 0.5f});

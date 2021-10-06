@@ -2,14 +2,27 @@
 
 #include <functional>
 #include <limits>
+#include <optional>
 #include <lemon/shared/assert.h>
-#include <tl/expected.hpp>
 #include <folly/AtomicHashMap.h>
 #include <folly/PackedSyncPtr.h>
 
 namespace lemon {
+    /// <summary>
+    /// Thread-safe atomic reference counted resource handle for use with `AtomicCache`.
+    /// 
+    /// Notes:
+    /// 
+    /// - The data being pointed to by this handle is assumed to be read-only. It must
+    ///   be fully initialized when inserted into the `AtomicCache`, and remain immutable
+    ///   until deleted. If mutability is a requirement, a separate locking mechanism
+    ///   must be implemented within the data itself.
+    /// 
+    /// - `ResourceRef` objects must not outlive the `AtomicCache` containing the data.
+    /// </summary>
+    /// <typeparam name="TData">Resource data type</typeparam>
     template<typename TData>
-    class AtomicCacheRef {
+    class ResourceRef {
     public:
         // Only the lower 15 bits are available, so use `int16_t` max value as a limit.
         static constexpr uint16_t kRefCountLimit = std::numeric_limits<int16_t>::max();
@@ -18,24 +31,24 @@ namespace lemon {
         // The lifetime matches `AtomicCache` lifetime.
         folly::PackedSyncPtr<TData>* ptr{nullptr};
 
-        AtomicCacheRef(folly::PackedSyncPtr<TData>* ptr = nullptr) noexcept : ptr{ptr}
+        ResourceRef(folly::PackedSyncPtr<TData>* ptr = nullptr) noexcept : ptr{ptr}
         {
             if (ptr != nullptr) {
                 acquire();
             }
         }
 
-        AtomicCacheRef(const AtomicCacheRef<TData>& other) noexcept : AtomicCacheRef(nullptr)
+        ResourceRef(const ResourceRef<TData>& other) noexcept : ResourceRef(nullptr)
         {
             *this = other;
         }
 
-        AtomicCacheRef(AtomicCacheRef<TData>&& other) noexcept : AtomicCacheRef(nullptr)
+        ResourceRef(ResourceRef<TData>&& other) noexcept : ResourceRef(nullptr)
         {
             *this = std::move(other);
         }
 
-        ~AtomicCacheRef()
+        ~ResourceRef()
         {
             if (ptr != nullptr) {
                 release();
@@ -64,13 +77,13 @@ namespace lemon {
         }
 
         inline bool
-        operator==(const AtomicCacheRef<TData>& other) const noexcept
+        operator==(const ResourceRef<TData>& other) const noexcept
         {
             return ptr == other.ptr;
         }
 
-        AtomicCacheRef<TData>&
-        operator=(const AtomicCacheRef<TData>& other) noexcept
+        ResourceRef<TData>&
+        operator=(const ResourceRef<TData>& other) noexcept
         {
             if (ptr != nullptr) {
                 release();
@@ -85,8 +98,8 @@ namespace lemon {
             return *this;
         }
 
-        inline AtomicCacheRef<TData>&
-        operator=(AtomicCacheRef<TData>&& other) noexcept
+        inline ResourceRef<TData>&
+        operator=(ResourceRef<TData>&& other) noexcept
         {
             if (ptr != nullptr) {
                 release();
@@ -98,7 +111,7 @@ namespace lemon {
             return *this;
         }
 
-        operator bool() noexcept
+        operator bool() const noexcept
         {
             if (ptr == nullptr) {
                 return false;
@@ -119,7 +132,7 @@ namespace lemon {
         }
 
     private:
-        inline void
+        void
         acquire()
         {
             LEMON_ASSERT(ptr != nullptr);
@@ -134,7 +147,7 @@ namespace lemon {
             ptr->unlock();
         }
 
-        inline void
+        void
         release()
         {
             LEMON_ASSERT(ptr != nullptr);
@@ -158,6 +171,33 @@ namespace lemon {
         }
     };
 
+    /// <summary>
+    /// Thread-safe hashmap-based storage for cacheable objects of arbitrary types.
+    /// The underlying data structure is `folly::AtomicHashMap`, which has a few
+    /// important restrictions:
+    /// 
+    /// - `TKey` must be of an atomic integral type - either `uint32_t` or `uint64_t`.
+    /// 
+    /// - An estimated maximum number of elements is expected to be known at compile-time.
+    ///   Attempting to insert an item into cache with no space left will result in an
+    ///   exception being thrown.
+    /// 
+    /// Notes:
+    /// 
+    /// - The cache expects data to be allocated on the heap elsewhere, and only stores
+    ///   a pointer to the data inside its own storage. The initialization function must
+    ///   take care of allocating the data.
+    /// 
+    /// - The returned resource handle is `ResourceRef`, which is an atomic reference
+    ///   counted pointer. Once all of the handles pointing to the data are destroyed,
+    ///   the data is destroyed too.
+    /// 
+    /// - All of the data stored in `AtomicCache` map is destroyed along with it. For this
+    ///   reason, no `ResourceRef` can outlive the `AtomicCache` as they'll be left with
+    ///   a dangling pointer.
+    /// </summary>
+    /// <typeparam name="TData">Resource data type</typeparam>
+    /// <typeparam name="TKey">An atomic integer type: either `uint32_t` or `uint64_t`</typeparam>
     template<typename TData, typename TKey = uint64_t>
     class AtomicCache {
         static constexpr size_t kSizeEst = 256;
@@ -165,7 +205,7 @@ namespace lemon {
         folly::AtomicHashMap<TKey, folly::PackedSyncPtr<TData>> data;
 
     public:
-        using Ref = AtomicCacheRef<TData>;
+        using Ref = ResourceRef<TData>;
 
         AtomicCache(size_t sizeEst = kSizeEst) : data{kSizeEst} {}
 
@@ -184,6 +224,9 @@ namespace lemon {
         {
             folly::PackedSyncPtr<TData> newPtr{};
             newPtr.init();
+
+            // Insert a 'locked' pointer, so that we can safely initialize the data
+            // in case of winning the race.
             newPtr.lock();
 
             auto [search, bInserted] = data.insert({key, std::move(newPtr)});
@@ -207,6 +250,24 @@ namespace lemon {
 
                 ptr.unlock();
                 return std::make_pair(Ref(&ptr), bInitialized);
+            }
+        }
+
+        inline Ref
+        get(const TKey key, const std::function<TData*()>& initFn)
+        {
+            auto [ref, _] = findOrInsert(key, initFn);
+            return std::move(ref);
+        }
+
+        inline std::optional<Ref>
+        find(const TKey key)
+        {
+            auto search = data.find(key);
+            if (search != data.end()) {
+                return search->second;
+            } else {
+                return std::nullopt;
             }
         }
     };

@@ -20,15 +20,14 @@ set(SOURCE_FILES
         src/lemon/scheduler/utils.cpp
         src/lemon/shared/HashStringStore.cpp
         src/lemon/render/utils.cpp
-        src/lemon/render/ShaderCompiler.cpp
-        src/lemon/render/ShaderProgram.cpp
+        src/lemon/render/material/ShaderCompiler.cpp
+        src/lemon/render/material/ShaderProgram.cpp
         src/lemon/device/Platform.cpp
         src/lemon/render/ConstantBuffer.cpp
         src/lemon/device/GPUDevice.cpp
         src/lemon/device/Device.cpp
         src/lemon/resource/types/material/MaterialComposer.cpp
         src/lemon/render/RenderManager.cpp
-        src/lemon/render/ResourceCache.cpp
         src/lemon/render/material/MaterialManager.cpp
         src/lemon/render/material/MaterialInstance.cpp
         src/lemon/render/material/SurfaceMaterialInstance.cpp)

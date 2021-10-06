@@ -4,6 +4,8 @@
 #include <folly/Hash.h>
 
 namespace lemon {
+    using StringID = uint64_t;
+
     struct Hash {
     private:
         uint64_t hash;
@@ -54,6 +56,18 @@ namespace lemon {
             hash = folly::hash::hash_128_to_64(hash, inHash);
         }
     };
+
+    constexpr StringID
+    sid(const char* str)
+    {
+        return folly::hash::fnva64_buf(str, std::char_traits<char>::length(str));
+    }
+
+    inline StringID
+    sid(const std::string& str)
+    {
+        return sid(str.c_str());
+    }
 
     template<typename... Value>
     uint64_t

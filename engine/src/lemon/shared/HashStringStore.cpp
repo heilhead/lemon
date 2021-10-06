@@ -1,5 +1,7 @@
 #include <lemon/shared/HashStringStore.h>
 
+using namespace lemon;
+
 HashStringStore::HashStringStore(size_t sizeEst) : map{sizeEst} {}
 
 HashStringStore::~HashStringStore() {

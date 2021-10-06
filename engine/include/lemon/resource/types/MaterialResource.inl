@@ -19,16 +19,23 @@ namespace lemon::res {
 
     template<class TArchive>
     void
+    MaterialResource::DomainDescriptor::serialize(TArchive& ar)
+    {
+        LEMON_SERIALIZE(ar, type);
+        LEMON_SERIALIZE_FLAGS(ar, usage);
+        LEMON_SERIALIZE(ar, shadingModel);
+        LEMON_SERIALIZE(ar, blendMode);
+    }
+
+    template<class TArchive>
+    void
     MaterialResource::Metadata::serialize(TArchive& ar)
     {
         ResourceMetadataBase::serialize(ar);
 
         LEMON_SERIALIZE(ar, baseType);
         LEMON_SERIALIZE(ar, basePath);
-        LEMON_SERIALIZE_FLAGS(ar, usage);
         LEMON_SERIALIZE(ar, domain);
-        LEMON_SERIALIZE(ar, shadingModel);
-        LEMON_SERIALIZE(ar, blendMode);
         LEMON_SERIALIZE(ar, definitions);
         LEMON_SERIALIZE(ar, samplers);
         LEMON_SERIALIZE(ar, textures);
@@ -39,9 +46,22 @@ namespace lemon::res {
                 addReference<MaterialResource>(basePath);
             }
 
-            for (auto& kv : textures) {
-                addReference<TextureResource>(kv.second);
+            for (auto& [name, filePath] : textures) {
+                addReference<TextureResource>(filePath);
             }
         }
     }
 } // namespace lemon::res
+
+template<>
+struct folly::hasher<lemon::res::MaterialResource::SamplerDescriptor> {
+    using folly_is_avalanching = std::true_type;
+
+    size_t
+    operator()(const lemon::res::MaterialResource::SamplerDescriptor& data) const
+    {
+        return lemon::hash(data.addressModeU, data.addressModeV, data.addressModeW, data.magFilter,
+                           data.minFilter, data.mipmapFilter, data.lodMinClamp, data.lodMaxClamp,
+                           data.compare, data.maxAnisotropy);
+    }
+};

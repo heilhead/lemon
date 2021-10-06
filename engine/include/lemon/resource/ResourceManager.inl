@@ -12,7 +12,7 @@ using namespace lemon::scheduler;
 using namespace lemon::utils;
 
 namespace lemon::res {
-    namespace detail {
+    namespace res_detail {
         template<class TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
         parseMetadata(tl::expected<std::string, lemon::io::Error>&& data,
@@ -81,13 +81,13 @@ namespace lemon::res {
                     co_await folly::coro::collectAllRange(futRefs | ranges::views::move);
                 lemon::utils::log("dependencies finished: ", resolvedDeps.size());
 
-                auto* pRes = new TResource();
+                // Use `unique_ptr` here so that it's easier to destroy the data if bailing on error.
+                auto pRes = std::make_unique<TResource>();
                 pRes->setHandle(location.handle);
 
                 for (auto& dep : resolvedDeps) {
                     if (!dep) {
                         lemon::utils::logErr("dependency error: ", (int)dep.error());
-                        delete pRes;
                         co_return tl::make_unexpected(ResourceLoadingError::DependencyError);
                     } else {
                         pRes->addDependency(*dep);
@@ -97,7 +97,6 @@ namespace lemon::res {
                 std::optional<ResourceLoadingError> loadErr = co_await pRes->load(std::move(metadata));
                 if (loadErr) {
                     lemon::utils::logErr("resource load error: ", (int)*loadErr);
-                    delete pRes;
                     co_return tl::make_unexpected(*loadErr);
                 }
 
@@ -105,17 +104,19 @@ namespace lemon::res {
                     auto* pSubObject = pRes->getObject(location.object);
                     if (pSubObject == nullptr) {
                         lemon::utils::logErr("resource load error: subobject not available");
-                        delete pRes;
                         co_return tl::make_unexpected(ResourceLoadingError::ObjectMissing);
                     }
                 }
 
-                // Initialization successful!
-                pContract->getPromise().setValue(pRes);
+                // Initialization successful! Release the pointer and settle the contract.
+                auto* pRawRes = pRes.release();
 
-                // Signal awaiting coroutines that the data is available.
+                pContract->getPromise().setValue(pRawRes);
+
+                // Signal the awaiting coroutines that the data is now available.
                 pContract->getBaton().post();
-                co_return pRes;
+
+                co_return pRawRes;
             } else {
                 lemon::utils::log("found existing resource: ", fileName);
 
@@ -125,7 +126,7 @@ namespace lemon::res {
                 co_return pContract->getFuture<TResource>().value();
             }
         }
-    } // namespace detail
+    } // namespace res_detail
 
     template<class TResource>
     TResource*
@@ -156,7 +157,7 @@ namespace lemon::res {
     {
         static_assert(std::is_base_of_v<ResourceInstance, TResource>,
                       "TResource must be a subclass of ResourceInstance");
-        return CPUTask(detail::template coLoadResourceImpl<TResource>(location, lifetime));
+        return CPUTask(res_detail::coLoadResourceImpl<TResource>(location, lifetime));
     }
 
     template<class TResource>
@@ -166,8 +167,8 @@ namespace lemon::res {
         auto fullPath = resolvePath(location);
         fullPath += ".meta";
 
-        return detail::parseMetadata<TResource>(lemon::io::readTextFile(fullPath), std::move(fullPath),
-                                                location.getFileName());
+        return res_detail::parseMetadata<TResource>(lemon::io::readTextFile(fullPath), std::move(fullPath),
+                                                    location.getFileName());
     }
 
     template<class TResource>
@@ -184,7 +185,7 @@ namespace lemon::res {
             lemon::utils::log("resourceFactory: classID=", ResourceManager::getClassID<TResource>(),
                               " location.file=", location.getFileName());
 
-            co_return(co_await lemon::res::detail::coLoadResourceImpl<TResource>(location, lifetime))
+            co_return(co_await res_detail::coLoadResourceImpl<TResource>(location, lifetime))
                 .map([](TResource* v) { return reinterpret_cast<ResourceInstance*>(v); });
         };
 

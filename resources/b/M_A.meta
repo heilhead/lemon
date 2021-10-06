@@ -4,10 +4,11 @@ MaterialResource:
       []
   baseType: Shader
   basePath: internal\shaders\BaseSurfacePBR.wgsl
-  usage: StaticMesh|SkeletalMesh
-  domain: Surface
-  shadingModel: Lit
-  blendMode: Opaque
+  domain:
+    type: Surface
+    usage: StaticMesh|SkeletalMesh
+    shadingModel: Lit
+    blendMode: Opaque
   definitions:
     - key: SCROLL_SPEED_U
       value:

@@ -26,7 +26,7 @@ TEST_CASE("AtomicCache")
         AtomicCache<Data> cache;
 
         {
-            AtomicCacheRef<Data> ref0;
+            ResourceRef<Data> ref0;
 
             REQUIRE((bool)ref0 == false);
 
@@ -53,17 +53,17 @@ TEST_CASE("AtomicCache")
             REQUIRE(ref0.refCount() == 1);
 
             // Move constructor.
-            AtomicCacheRef<Data> ref3(std::move(ref0));
+            ResourceRef<Data> ref3(std::move(ref0));
 
             REQUIRE(ref3.refCount() == 1);
 
             // Copy constructor.
-            AtomicCacheRef<Data> ref4(ref3);
+            ResourceRef<Data> ref4(ref3);
 
             REQUIRE(ref4.refCount() == 2);
 
             // Move assignment.
-            AtomicCacheRef<Data> ref5 = std::move(ref3);
+            ResourceRef<Data> ref5 = std::move(ref3);
 
             REQUIRE(ref5.refCount() == 2);
         }

@@ -2,7 +2,7 @@
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/material/MaterialBlueprint.h>
-#include <lemon/render/ShaderProgram.h>
+#include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/RenderManager.h>
 #include <lemon/device/Device.h>
 #include <lemon/utils/utils.h>
@@ -50,11 +50,29 @@ MaterialResource::~MaterialResource()
 }
 
 VoidTask<ResourceLoadingError>
-MaterialResource::load(ResourceMetadata&& inMetadata)
+MaterialResource::load(ResourceMetadata&& md)
 {
-    metadata = std::move(*inMetadata.get<Metadata>());
-    if (metadata.baseType == BaseType::Shader) {
-        auto result = co_await IOTask(loadShaderBlueprint(metadata.basePath));
+    auto* pMeta = md.get<Metadata>();
+    domain = pMeta->domain;
+
+    for (const auto& [k, v] : pMeta->definitions) {
+        config.define(k, v);
+    }
+
+    for (const auto& [k, v] : pMeta->samplers) {
+        samplers.insert({lemon::sid(k), v});
+    }
+
+    for (const auto& [k, v] : pMeta->textures) {
+        textures.insert({lemon::sid(k), ResourceLocation(v)});
+    }
+
+    for (const auto& [k, v] : pMeta->uniforms) {
+        uniforms.insert({lemon::sid(k), v});
+    }
+
+    if (pMeta->baseType == BaseType::Shader) {
+        auto result = co_await IOTask(loadShaderBlueprint(pMeta->basePath));
         if (result) {
             blueprint = std::move(*result);
         } else {
@@ -67,35 +85,35 @@ MaterialResource::load(ResourceMetadata&& inMetadata)
     co_return {};
 }
 
-uint64_t
-MaterialResource::computeShaderHash(const MaterialConfiguration& pipelineConfig) const
+const MaterialResource::SamplerDescriptor*
+MaterialResource::getSamplerDescriptor(StringID id) const
 {
-    MaterialConfiguration finalConfig = config;
-    finalConfig.merge(pipelineConfig);
-    return computeHash(blueprint, finalConfig);
+    auto search = samplers.find(id);
+    if (search == samplers.end()) {
+        return nullptr;
+    }
+
+    return &search->second;
 }
 
-lemon::AtomicCacheRef<ShaderProgram>
-MaterialResource::getShader(const MaterialConfiguration& pipelineConfig)
+const ResourceLocation*
+MaterialResource::getTextureLocation(StringID id) const
 {
-    MaterialConfiguration finalConfig = config;
-    finalConfig.merge(pipelineConfig);
-    uint64_t hash = computeHash(blueprint, finalConfig);
+    auto search = textures.find(id);
+    if (search == textures.end()) {
+        return nullptr;
+    }
 
-    auto [pProgram, bInserted] = ResourceCache::shaderProgram().findOrInsert(hash, [&]() {
-        ShaderProgram* pProgram;
+    return &search->second;
+}
 
-        if (blueprint) {
-            // TODO: Handle compilation errors, e.g. `template variable not found`
-            auto sourceCode = blueprint->renderShaderSource(finalConfig);
-            pProgram = RenderManager::get()->getShaderCompiler().compile(hash, sourceCode).release();
-        } else {
-            // Create an unitialized and invalid program.
-            pProgram = new ShaderProgram{hash};
-        }
+const MaterialResource::UniformValue*
+MaterialResource::getUniformValue(StringID id) const
+{
+    auto search = uniforms.find(id);
+    if (search == uniforms.end()) {
+        return nullptr;
+    }
 
-        return pProgram;
-    });
-
-    return std::move(pProgram);
+    return &search->second;
 }

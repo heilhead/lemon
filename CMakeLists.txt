@@ -22,5 +22,5 @@ add_subdirectory(demo)
 
 #option(LEMON_BUILD_TESTS ON)
 #if (LEMON_BUILD_TESTS)
-    add_subdirectory(test)
+#    add_subdirectory(test)
 #endif ()

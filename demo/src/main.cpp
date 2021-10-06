@@ -63,9 +63,9 @@ main(int argc, char* argv[])
     // std::unique_ptr<Scheduler> schedMan = std::make_unique<Scheduler>(1, 1);
 
     // createMetadata();
-    //  testBundleLoading();
-    //  testMeshLoading();
-    //  testMeshRendering();
+    // testBundleLoading();
+    // testMeshLoading();
+    // testMeshRendering();
     testShader();
 
     return 0;

@@ -5,7 +5,7 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/material/MaterialComposer.h>
-#include <lemon/render/ShaderProgram.h>
+#include <lemon/render/material/ShaderProgram.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
 #include <lemon/utils/utils.h>
@@ -16,6 +16,28 @@
 namespace lemon::res {
     class MaterialResource : public ResourceInstance {
     public:
+        enum class BaseType { Shader, Material };
+        enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
+        enum class Domain { Surface, PostProcess, UserInterface };
+        enum class ShadingModel { Lit, Unlit };
+        enum class BlendMode { Opaque, Masked, Translucent };
+
+        // Note: New types can only be added at the back of the type list of these variants,
+        // otherwise serialization will break.
+        using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
+                                          glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
+
+        struct DomainDescriptor {
+            Usage usage;
+            Domain type;
+            ShadingModel shadingModel;
+            BlendMode blendMode;
+
+            template<class TArchive>
+            void
+            serialize(TArchive& ar);
+        };
+
         struct SamplerDescriptor {
             wgpu::AddressMode addressModeU = wgpu::AddressMode::ClampToEdge;
             wgpu::AddressMode addressModeV = wgpu::AddressMode::ClampToEdge;
@@ -33,18 +55,6 @@ namespace lemon::res {
             serialize(TArchive& ar);
         };
 
-        enum class BaseType { Shader, Material };
-        enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
-        enum class Domain { Surface, PostProcess, UserInterface };
-        enum class ShadingModel { Lit, Unlit };
-        enum class BlendMode { Opaque, Masked, Translucent };
-
-        // Note: New types can only be added at the back of the type list of these variants,
-        // otherwise serialization will break.
-        using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
-                                          glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
-        using DefinitionValue = std::variant<int32_t, uint32_t, float, bool, std::string>;
-
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource traits
         /////////////////////////////////////////////////////////////////////////////////////
@@ -52,11 +62,10 @@ namespace lemon::res {
         struct Metadata : ResourceMetadataBase {
             BaseType baseType;
             std::string basePath;
-            Usage usage;
-            Domain domain;
-            ShadingModel shadingModel;
-            BlendMode blendMode;
-            std::unordered_map<std::string, DefinitionValue> definitions;
+
+            DomainDescriptor domain;
+
+            std::unordered_map<std::string, material::MaterialConfiguration::Value> definitions;
             std::unordered_map<std::string, SamplerDescriptor> samplers;
             std::unordered_map<std::string, std::string> textures;
             std::unordered_map<std::string, UniformValue> uniforms;
@@ -73,9 +82,12 @@ namespace lemon::res {
         /////////////////////////////////////////////////////////////////////////////////////
 
     private:
-        Metadata metadata;
+        DomainDescriptor domain;
         std::optional<material::MaterialBlueprint> blueprint;
         material::MaterialConfiguration config;
+        std::unordered_map<StringID, SamplerDescriptor> samplers;
+        std::unordered_map<StringID, ResourceLocation> textures;
+        std::unordered_map<StringID, UniformValue> uniforms;
 
     public:
         MaterialResource();
@@ -84,12 +96,32 @@ namespace lemon::res {
         VoidTask<ResourceLoadingError>
         load(ResourceMetadata&& meta) override;
 
-        uint64_t
-        computeShaderHash(const material::MaterialConfiguration& pipelineConfig) const;
+        inline const std::optional<material::MaterialBlueprint>&
+        getBlueprint() const
+        {
+            return blueprint;
+        }
 
-        // TODO: Move this method to somewhere in render namespace.
-        AtomicCacheRef<render::ShaderProgram>
-        getShader(const material::MaterialConfiguration& pipelineConfig);
+        inline const material::MaterialConfiguration&
+        getConfig() const
+        {
+            return config;
+        }
+
+        inline const DomainDescriptor&
+        getDomainDescriptor() const
+        {
+            return domain;
+        }
+
+        const SamplerDescriptor*
+        getSamplerDescriptor(StringID id) const;
+
+        const ResourceLocation*
+        getTextureLocation(StringID id) const;
+
+        const UniformValue*
+        getUniformValue(StringID id) const;
     };
 } // namespace lemon::res
 

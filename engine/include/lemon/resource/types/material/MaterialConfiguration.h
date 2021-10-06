@@ -1,18 +1,26 @@
 #pragma once
 
+#include <variant>
+#include <type_traits>
 #include <lemon/resource/types/material/common.h>
 #include <lemon/shared/Hash.h>
 
 namespace lemon::res::material {
     class MaterialConfiguration {
-        ComposerDefinitions definitions;
+        ComposerDefinitions definitions{};
 
     public:
+        using Value = std::variant<int32_t, uint32_t, float, bool, std::string>;
+
         template<typename TData>
         inline void
         define(const std::string& name, TData data)
         {
-            definitions[name] = data;
+            if constexpr (std::is_base_of_v<Value, TData>) {
+                std::visit([&](auto& v) { definitions[name] = v; }, data);
+            } else {
+                definitions[name] = data;
+            }
         }
 
         template<typename TData>

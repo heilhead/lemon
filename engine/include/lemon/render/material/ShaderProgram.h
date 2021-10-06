@@ -10,6 +10,7 @@
 namespace lemon::render {
     class ShaderProgram {
         friend class ShaderCompiler;
+        friend class MaterialManager;
 
         using ResourceDescriptor = shader::ResourceBindingDescriptor;
 
@@ -38,6 +39,11 @@ namespace lemon::render {
 
         inline bool
         isValid() const
+        {
+            return valid;
+        }
+
+        inline operator bool() const
         {
             return valid;
         }
