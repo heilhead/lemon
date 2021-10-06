@@ -30,7 +30,8 @@ set(SOURCE_FILES
         src/lemon/render/RenderManager.cpp
         src/lemon/render/material/MaterialManager.cpp
         src/lemon/render/material/MaterialInstance.cpp
-        src/lemon/render/material/SurfaceMaterialInstance.cpp)
+        src/lemon/render/material/SurfaceMaterialInstance.cpp
+        src/lemon/resource/types/texture/PNGDecoder.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

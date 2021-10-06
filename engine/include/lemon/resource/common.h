@@ -21,6 +21,7 @@ namespace lemon::res {
         InitializationError,
         MetadataMissing,
         DataMissing,
+        DataDecodingError,
         DependencyError,
         DependencyMissing,
         ObjectMissing,

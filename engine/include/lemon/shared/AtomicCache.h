@@ -38,12 +38,12 @@ namespace lemon {
             }
         }
 
-        ResourceRef(const ResourceRef<TData>& other) noexcept : ResourceRef(nullptr)
+        ResourceRef(const ResourceRef& other) noexcept : ResourceRef(nullptr)
         {
             *this = other;
         }
 
-        ResourceRef(ResourceRef<TData>&& other) noexcept : ResourceRef(nullptr)
+        ResourceRef(ResourceRef&& other) noexcept : ResourceRef(nullptr)
         {
             *this = std::move(other);
         }
@@ -77,13 +77,13 @@ namespace lemon {
         }
 
         inline bool
-        operator==(const ResourceRef<TData>& other) const noexcept
+        operator==(const ResourceRef& other) const noexcept
         {
             return ptr == other.ptr;
         }
 
-        ResourceRef<TData>&
-        operator=(const ResourceRef<TData>& other) noexcept
+        ResourceRef&
+        operator=(const ResourceRef& other) noexcept
         {
             if (ptr != nullptr) {
                 release();
@@ -98,8 +98,8 @@ namespace lemon {
             return *this;
         }
 
-        inline ResourceRef<TData>&
-        operator=(ResourceRef<TData>&& other) noexcept
+        inline ResourceRef&
+        operator=(ResourceRef&& other) noexcept
         {
             if (ptr != nullptr) {
                 release();

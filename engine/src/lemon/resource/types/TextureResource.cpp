@@ -1,14 +1,41 @@
 #include <lemon/resource/ResourceMetadata.h>
+#include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/TextureResource.h>
+#include <lemon/resource/types/texture/common.h>
+#include <lemon/resource/types/texture/PNGDecoder.h>
+#include <lemon/shared/filesystem.h>
+#include <lemon/shared/assert.h>
 #include <lemon/utils/utils.h>
 
+using namespace lemon::io;
 using namespace lemon::res;
+using namespace lemon::res::texture;
 using namespace lemon::utils;
 
 VoidTask<ResourceLoadingError>
-loadTexture(TextureResource& mat, ResourceMetadata& meta)
+loadTexture(const std::filesystem::path& filePath, TextureResource::Decoder decoder,
+            InputColorChannels channels, uint8_t depth, ImageData& outData)
 {
-    co_return std::nullopt;
+    auto bytes = co_await IOTask(coReadBinaryFile(filePath));
+    if (!bytes) {
+        co_return ResourceLoadingError::DataMissing;
+    }
+
+    switch (decoder) {
+    case TextureResource::Decoder::PNG: {
+        auto decodingError = decodePNG(bytes.value(), channels, depth, outData);
+
+        if (decodingError) {
+            co_return ResourceLoadingError::DataDecodingError;
+        }
+
+        break;
+    }
+    default:
+        LEMON_TODO();
+    }
+
+    co_return {};
 }
 
 TextureResource::TextureResource()
@@ -24,8 +51,13 @@ TextureResource::~TextureResource()
 VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata&& meta)
 {
-    auto* pMetadata = meta.get<Metadata>();
-    lemon::utils::log("TextureResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
-                      " name: ", meta.name);
-    return loadTexture(*this, meta);
+    auto* pMeta = meta.get<Metadata>();
+    auto filePath = ResourceManager::get()->resolvePath(meta.name);
+    auto loadingError = co_await loadTexture(filePath, pMeta->decoder, pMeta->inputChannels,
+                                             pMeta->inputChannelDepth, imageData);
+    if (loadingError) {
+        co_return loadingError;
+    }
+
+    co_return {};
 }

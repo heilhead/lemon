@@ -31,14 +31,14 @@ namespace lemon {
             allocate(length);
         }
 
-        DataBuffer(DataBuffer&& other) noexcept : DataBuffer()
-        {
-            *this = std::move(other);
-        }
-
         DataBuffer(const DataBuffer& other) noexcept : DataBuffer()
         {
             *this = other;
+        }
+
+        DataBuffer(DataBuffer&& other) noexcept : DataBuffer()
+        {
+            *this = std::move(other);
         }
 
         ~DataBuffer()
@@ -54,7 +54,12 @@ namespace lemon {
 
     public:
         uint8_t*
-        operator*()
+        operator*() const
+        {
+            return data;
+        }
+
+        operator uint8_t*() const
         {
             return data;
         }
@@ -66,9 +71,11 @@ namespace lemon {
                 release();
             }
 
-            allocate(other.length);
-            auto err = memcpy_s(data, length, other.data, length);
-            LEMON_ASSERT(!err);
+            if (other.length != 0) {
+                allocate(other.length);
+                auto err = memcpy_s(data, length, other.data, length);
+                LEMON_ASSERT(!err);
+            }
 
             return *this;
         }
@@ -92,6 +99,20 @@ namespace lemon {
         size() const
         {
             return length;
+        }
+
+        void
+        copy(const uint8_t* pData, size_t size)
+        {
+            if (data != nullptr) {
+                release();
+            }
+
+            if (size > 0) {
+                allocate(size);
+                auto err = memcpy_s(data, size, pData, size);
+                LEMON_ASSERT(!err);
+            }
         }
 
         void

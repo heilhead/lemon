@@ -112,9 +112,9 @@ createMetadata()
 
                 auto tex = createTexture();
                 tex->decoder = TextureResource::Decoder::PNG;
-                tex->format = wgpu::TextureFormat::RGBA8UnormSrgb;
-                tex->width = 512;
-                tex->height = 512;
+                tex->inputChannels = texture::InputColorChannels::RGBA;
+                tex->inputChannelDepth = 8;
+                tex->GPUFormat = wgpu::TextureFormat::RGBA8UnormSrgb;
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
 

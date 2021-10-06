@@ -2,6 +2,7 @@ TextureResource:
   common:
     references:
       []
-  format: RGBA8UnormSrgb
-  width: 512
-  height: 512
+  decoder: PNG
+  inputChannels: RGBA
+  inputChannelDepth: 8
+  GPUFormat: RGBA8UnormSrgb
