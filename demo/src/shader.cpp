@@ -23,6 +23,7 @@
 
 using namespace lemon::res;
 using namespace lemon::render;
+using namespace lemon;
 
 void
 testShader()
@@ -33,31 +34,38 @@ testShader()
 
     auto* pScheduler = Scheduler::get();
     auto* pResMan = ResourceManager::get();
-    
-    ResourceLocation matLoc("misc\\T_Basketball_D.png");
-    auto result = pScheduler->block(pResMan->loadResource<TextureResource>(matLoc));
+    auto* pMatMan = MaterialManager::get();
 
-    //ResourceLocation matLoc("a\\M_A");
-    //auto result = pScheduler->block(pResMan->loadResource<MaterialResource>(matLoc));
-    //if (result) {
-    //    material::MaterialConfiguration config;
-    //    config.define("TEXCOORD1", false);
-    //    auto& material = **result;
-    //    
-    //    auto* sampler = material.getSamplerDescriptor(lemon::sid("mySampler1"));
-    //    LEMON_ASSERT(sampler != nullptr);
+    // ResourceLocation matLoc("misc\\T_Basketball_D.png");
+    // auto result = pScheduler->block(pResMan->loadResource<TextureResource>(matLoc));
 
-    //    auto* texture = material.getTextureLocation(lemon::sid("normal"));
-    //    LEMON_ASSERT(texture != nullptr);
+    ResourceLocation matLoc("misc\\M_Basketball");
+    auto result = pScheduler->block(pResMan->loadResource<MaterialResource>(matLoc));
+    if (result) {
+        material::MaterialConfiguration config;
+        config.define("TEXCOORD1", false);
+        auto& material = **result;
 
-    //    auto* uniform = material.getUniformValue(lemon::sid("lemonData.lemonVecData"));
-    //    LEMON_ASSERT(uniform != nullptr);
+        auto* sampler = material.getSamplerDescriptor(lemon::sid("surfaceSampler"));
+        LEMON_ASSERT(sampler != nullptr);
 
-    //    auto shader = MaterialManager::get()->getShader(material, config);
-    //    auto& refl = shader->getReflection();
-    //    auto bgl = MaterialManager::get()->getBindGroupLayout(*shader);
-    //    lemon::utils::log("material loaded");
-    //} else {
-    //    lemon::utils::logErr("material failed to load: ", (int)result.error());
-    //}
+        auto* textureLoc = material.getTextureLocation(lemon::sid("surfaceTexture"));
+        LEMON_ASSERT(textureLoc != nullptr);
+
+        auto texResult = pScheduler->block(pResMan->loadResource<TextureResource>(*textureLoc));
+        LEMON_ASSERT(texResult);
+
+        auto& texture = **texResult;
+
+        // auto* uniform = material.getUniformValue(lemon::sid("lemonData.lemonVecData"));
+        // LEMON_ASSERT(uniform != nullptr);
+
+        auto shader = pMatMan->getShader(material, config);
+        auto gpuTex = pMatMan->getTexture(texture);
+        auto& refl = shader->getReflection();
+        auto bgl = pMatMan->getBindGroupLayout(material, *shader);
+        logger::log("material loaded");
+    } else {
+        logger::err("material failed to load: ", (int)result.error());
+    }
 }

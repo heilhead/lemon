@@ -47,6 +47,7 @@ namespace lemon::res {
 
     private:
         texture::ImageData imageData;
+        wgpu::TextureFormat GPUFormat;
 
     public:
         TextureResource();
@@ -56,9 +57,15 @@ namespace lemon::res {
         load(ResourceMetadata&& meta) override;
 
         inline const texture::ImageData&
-        getImageData()
+        getImageData() const
         {
             return imageData;
+        }
+
+        inline const wgpu::TextureFormat&
+        getGPUFormat() const
+        {
+            return GPUFormat;
         }
     };
 } // namespace lemon::res

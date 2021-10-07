@@ -5,6 +5,7 @@
 #include <lemon/resource/types/texture/PNGDecoder.h>
 #include <lemon/shared/filesystem.h>
 #include <lemon/shared/assert.h>
+#include <lemon/tasks/filesystem.h>
 #include <lemon/utils/utils.h>
 
 using namespace lemon::io;
@@ -40,18 +41,20 @@ loadTexture(const std::filesystem::path& filePath, TextureResource::Decoder deco
 
 TextureResource::TextureResource()
 {
-    lemon::utils::log("TextureResource::TextureResource()");
+    logger::log("TextureResource::TextureResource()");
 }
 
 TextureResource::~TextureResource()
 {
-    lemon::utils::log("TextureResource::~TextureResource()");
+    logger::log("TextureResource::~TextureResource()");
 }
 
 VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata&& meta)
 {
     auto* pMeta = meta.get<Metadata>();
+    GPUFormat = pMeta->GPUFormat;
+
     auto filePath = ResourceManager::get()->resolvePath(meta.name);
     auto loadingError = co_await loadTexture(filePath, pMeta->decoder, pMeta->inputChannels,
                                              pMeta->inputChannelDepth, imageData);

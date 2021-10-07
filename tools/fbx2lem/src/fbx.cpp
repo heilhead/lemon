@@ -174,7 +174,7 @@ struct BuildMeshData {
             components |= MeshComponents::JointInfluence;
         }
 
-        lemon::utils::log("mesh components: ", magic_enum::flags::enum_name(components));
+        logger::log("mesh components: ", magic_enum::flags::enum_name(components));
 
         material = mesh->mMaterialIndex;
 
@@ -294,13 +294,12 @@ struct BuildModel {
         for (int i = 0; i < scene->mNumMeshes; i++) {
             auto* mesh = scene->mMeshes[i];
             if (mesh->mPrimitiveTypes != aiPrimitiveType_TRIANGLE) {
-                lemon::utils::logErr("mesh ", i,
-                                     " contains unsupported primitive type: ", mesh->mPrimitiveTypes);
+                logger::err("mesh ", i, " contains unsupported primitive type: ", mesh->mPrimitiveTypes);
                 lemon::utils::halt(nullptr);
             }
 
-            lemon::utils::log("exporting mesh [", i, "] vertices: ", mesh->mNumVertices,
-                              " skinned: ", mesh->HasBones() ? "yes" : "no");
+            logger::log("exporting mesh [", i, "] vertices: ", mesh->mNumVertices,
+                        " skinned: ", mesh->HasBones() ? "yes" : "no");
 
             addMesh(mesh);
         }
@@ -317,7 +316,7 @@ struct BuildModel {
     void
     addNode(const aiNode* node)
     {
-        lemon::utils::log("exporting node [", node->mName.C_Str(), "] meshes: ", node->mNumMeshes);
+        logger::log("exporting node [", node->mName.C_Str(), "] meshes: ", node->mNumMeshes);
 
         ModelNode data;
         data.transform = glm::mat4(1.0);
@@ -373,8 +372,8 @@ lemon::converter::convert(std::filesystem::path inFile, std::filesystem::path ou
                          aiProcess_ImproveCacheLocality | aiProcess_RemoveRedundantMaterials |
                          aiProcess_OptimizeMeshes | aiProcess_FindInstances | aiProcess_OptimizeGraph;
 
-    lemon::utils::log("building model: [", outFile, "]");
-    lemon::utils::log("source: [", inFile, "]");
+    logger::log("building model: [", outFile, "]");
+    logger::log("source: [", inFile, "]");
 
     MeshComponents components = MeshComponents::Position | MeshComponents::Normal;
 

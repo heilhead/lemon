@@ -33,7 +33,7 @@ printDeviceError(WGPUErrorType errorType, const char* message, void*)
         return;
     }
 
-    utils::logErr("WebGPU device error: ", errorTypeName, ": ", message);
+    logger::err("WebGPU device error: ", errorTypeName, ": ", message);
 }
 
 GPUDevice::GPUDevice(Platform* platform, Window* window)
@@ -43,18 +43,18 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
 
     dawn_native::Adapter backendAdapter;
     {
-        utils::log("discovering adapters...");
+        logger::log("discovering adapters...");
 
         auto adapters = dawn.GetAdapters();
         for (dawn_native::Adapter& adapter : adapters) {
             wgpu::AdapterProperties properties;
             adapter.GetProperties(&properties);
 
-            utils::log("found adapter: ", properties.name, " backend: ", properties.backendType);
+            logger::log("found adapter: ", properties.name, " backend: ", properties.backendType);
 
             if (properties.backendType == wgpu::BackendType::D3D12) {
                 backendAdapter = adapter;
-                utils::log("using adapter: ", properties.name, " backend: ", properties.backendType);
+                logger::log("using adapter: ", properties.name, " backend: ", properties.backendType);
                 break;
             }
         }

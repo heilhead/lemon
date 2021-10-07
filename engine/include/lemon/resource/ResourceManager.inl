@@ -7,6 +7,7 @@
 #include <lemon/scheduler.h>
 #include <lemon/utils/utils.h>
 #include <lemon/shared/assert.h>
+#include <lemon/tasks/filesystem.h>
 
 using namespace lemon::scheduler;
 using namespace lemon::utils;
@@ -52,11 +53,11 @@ namespace lemon::res {
             auto& fileName = location.getFileName();
             LEMON_ASSERT(fileName != "");
 
-            lemon::utils::log("loading resource: ", fileName);
+            logger::log("loading resource: ", fileName);
 
             auto [pContract, bCreated] = manager->getStore().findOrInsert(location.handle);
             if (bCreated) {
-                lemon::utils::log("created resource: ", fileName);
+                logger::log("created resource: ", fileName);
 
                 pContract->setLifetime(lifetime);
 
@@ -79,7 +80,7 @@ namespace lemon::res {
 
                 std::vector<ResourceContract::ResolutionType<ResourceInstance>> resolvedDeps =
                     co_await folly::coro::collectAllRange(futRefs | ranges::views::move);
-                lemon::utils::log("dependencies finished: ", resolvedDeps.size());
+                logger::log("dependencies finished: ", resolvedDeps.size());
 
                 // Use `unique_ptr` here so that it's easier to destroy the data if bailing on error.
                 auto pRes = std::make_unique<TResource>();
@@ -87,7 +88,7 @@ namespace lemon::res {
 
                 for (auto& dep : resolvedDeps) {
                     if (!dep) {
-                        lemon::utils::logErr("dependency error: ", (int)dep.error());
+                        logger::err("dependency error: ", (int)dep.error());
                         co_return tl::make_unexpected(ResourceLoadingError::DependencyError);
                     } else {
                         pRes->addDependency(*dep);
@@ -96,14 +97,14 @@ namespace lemon::res {
 
                 std::optional<ResourceLoadingError> loadErr = co_await pRes->load(std::move(metadata));
                 if (loadErr) {
-                    lemon::utils::logErr("resource load error: ", (int)*loadErr);
+                    logger::err("resource load error: ", (int)*loadErr);
                     co_return tl::make_unexpected(*loadErr);
                 }
 
                 if (location.object.isValid()) {
                     auto* pSubObject = pRes->getObject(location.object);
                     if (pSubObject == nullptr) {
-                        lemon::utils::logErr("resource load error: subobject not available");
+                        logger::err("resource load error: subobject not available");
                         co_return tl::make_unexpected(ResourceLoadingError::ObjectMissing);
                     }
                 }
@@ -118,7 +119,7 @@ namespace lemon::res {
 
                 co_return pRawRes;
             } else {
-                lemon::utils::log("found existing resource: ", fileName);
+                logger::log("found existing resource: ", fileName);
 
                 // Wait for another thread to finish initializing the data.
                 co_await pContract->getBaton();
@@ -182,8 +183,8 @@ namespace lemon::res {
             // subobject.
             ResourceLocation location(ref);
 
-            lemon::utils::log("resourceFactory: classID=", ResourceManager::getClassID<TResource>(),
-                              " location.file=", location.getFileName());
+            logger::log("resourceFactory: classID=", ResourceManager::getClassID<TResource>(),
+                        " location.file=", location.getFileName());
 
             co_return(co_await res_detail::coLoadResourceImpl<TResource>(location, lifetime))
                 .map([](TResource* v) { return reinterpret_cast<ResourceInstance*>(v); });

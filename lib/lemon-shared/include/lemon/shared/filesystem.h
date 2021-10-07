@@ -1,16 +1,9 @@
 #pragma once
 
 #include <filesystem>
-#include <cassert>
-#include <cstdint>
-#include <fstream>
-#include <variant>
 #include <string>
 #include <tl/expected.hpp>
 #include <lemon/shared/DataBuffer.h>
-#include <lemon/scheduler.h>
-
-using namespace lemon::scheduler;
 
 namespace lemon::io {
     enum class Error {
@@ -32,10 +25,4 @@ namespace lemon::io {
 
     tl::expected<std::string, Error>
     readTextFile(const std::filesystem::path& filePath);
-
-    Task<HeapBuffer, Error>
-    coReadBinaryFile(const std::filesystem::path& filePath);
-
-    Task<std::string, Error>
-    coReadTextFile(const std::filesystem::path& filePath);
 } // namespace lemon::io

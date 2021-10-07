@@ -1,0 +1,31 @@
+MaterialResource:
+  common:
+    references:
+      []
+  baseType: Shader
+  basePath: internal\shaders\BaseSurfacePBR.wgsl
+  domain:
+    type: Surface
+    usage: StaticMesh|SkeletalMesh
+    shadingModel: Lit
+    blendMode: Opaque
+  definitions:
+    []
+  samplers:
+    - key: surfaceSampler
+      value:
+        addressModeU: ClampToEdge
+        addressModeV: ClampToEdge
+        addressModeW: ClampToEdge
+        magFilter: Nearest
+        minFilter: Nearest
+        mipmapFilter: Nearest
+        lodMinClamp: 0
+        lodMaxClamp: 1000
+        compare: Undefined
+        maxAnisotropy: 1
+  textures:
+    - key: surfaceTexture
+      value: misc\T_Basketball_D.png
+  uniforms:
+    []

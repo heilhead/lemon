@@ -41,12 +41,12 @@ loadShaderBlueprint(std::string& bplPath)
 
 MaterialResource::MaterialResource()
 {
-    lemon::utils::log("MaterialResource::MaterialResource()");
+    logger::log("MaterialResource::MaterialResource()");
 }
 
 MaterialResource::~MaterialResource()
 {
-    lemon::utils::log("MaterialResource::~MaterialResource()");
+    logger::log("MaterialResource::~MaterialResource()");
 }
 
 VoidTask<ResourceLoadingError>

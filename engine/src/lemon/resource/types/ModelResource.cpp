@@ -24,12 +24,12 @@ loadData(std::filesystem::path& file)
 
 ModelResource::ModelResource()
 {
-    lemon::utils::log("ModelResource::ModelResource()");
+    logger::log("ModelResource::ModelResource()");
 }
 
 ModelResource::~ModelResource()
 {
-    lemon::utils::log("ModelResource::~ModelResource()");
+    logger::log("ModelResource::~ModelResource()");
 }
 
 VoidTask<ResourceLoadingError>
@@ -37,8 +37,8 @@ ModelResource::load(ResourceMetadata&& meta)
 {
     auto* pMetadata = meta.get<Metadata>();
 
-    lemon::utils::log("ModelResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
-                      " name: ", meta.name);
+    logger::log("ModelResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
+                " name: ", meta.name);
     auto dataFile = ResourceManager::get()->resolvePath(meta.name);
     auto result = co_await IOTask(loadData(dataFile));
     if (result) {
@@ -48,12 +48,12 @@ ModelResource::load(ResourceMetadata&& meta)
             ResourceObjectHandle handle(node.name);
             createObject<Model>(handle, data.get(), &node);
 
-            lemon::utils::log("LemonModel object created: ", getObject<Model>(handle)->getName());
+            logger::log("LemonModel object created: ", getObject<Model>(handle)->getName());
         }
 
-        lemon::utils::log("LemonModel nodes: ", data->nodes.size(), " meshes: ", data->meshes.size());
+        logger::log("LemonModel nodes: ", data->nodes.size(), " meshes: ", data->meshes.size());
     } else {
-        lemon::utils::logErr("LemonModel load error: ", EnumTraits::name(result.error()));
+        logger::err("LemonModel load error: ", EnumTraits::name(result.error()));
     }
 
     co_return {};

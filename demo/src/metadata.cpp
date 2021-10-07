@@ -118,10 +118,6 @@ createMetadata()
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
 
-                // mat->common.references.push_back(RawResourceReference{
-                //     .location = texPath.string(),
-                //     .type = ResourceManager::getClassID<TextureResource>(),
-                // });
                 mat->textures.insert({textureTypes[k], texPath.string()});
             }
 
@@ -181,6 +177,32 @@ createMetadata()
         });
         path bunPath = "RB_BC";
         saveMetadata<BundleResource>(std::move(bun), bunPath);
+    }
+
+    {
+        auto tex = createTexture();
+        tex->decoder = TextureResource::Decoder::PNG;
+        tex->inputChannels = texture::InputColorChannels::RGBA;
+        tex->inputChannelDepth = 8;
+        tex->GPUFormat = wgpu::TextureFormat::RGBA8UnormSrgb;
+
+        path texPath = "misc\\T_Basketball_D.png";
+
+        saveMetadata<TextureResource>(std::move(tex), texPath);
+
+        auto mat = createMaterial();
+        mat->baseType = MaterialResource::BaseType::Shader;
+        mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
+        mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
+        mat->domain.type = MaterialResource::Domain::Surface;
+        mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
+        mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
+        mat->samplers.insert({"surfaceSampler", lemon::res::MaterialResource::SamplerDescriptor()});
+        mat->textures.insert({"surfaceTexture", texPath.string()});
+
+        path matPath = "misc\\M_Basketball";
+
+        saveMetadata<MaterialResource>(std::move(mat), matPath);
     }
 
     {

@@ -11,7 +11,7 @@ std::unique_ptr<Engine> gEngine = nullptr;
 void
 printGLFWError(int code, const char* message)
 {
-    utils::logErr("GLFW error: ", code, " - ", message);
+    logger::err("GLFW error: ", code, " - ", message);
 }
 
 Engine::Engine()
@@ -32,15 +32,15 @@ Engine::init(std::string& assetPath)
     schedMan = std::make_unique<scheduler::Scheduler>();
     resMan = std::make_unique<res::ResourceManager>(assetPath);
 
-    utils::log("initialization complete!");
+    logger::log("initialization complete!");
 }
 
 void
 Engine::loop(const std::function<LoopControl(float)>& callback)
 {
-    utils::log("entering event loop");
+    logger::log("entering event loop");
     device->getWindow()->loop([&](float dt) { return callback(dt); });
-    utils::log("exiting event loop");
+    logger::log("exiting event loop");
 }
 
 void

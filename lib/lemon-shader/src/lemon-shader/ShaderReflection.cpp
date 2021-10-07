@@ -90,6 +90,7 @@ createBindingReflection(const tint::Program& program, const BindingPoint& bindin
                        [&](auto* memberSem) -> StructMember {
                            StructMember member;
                            member.name = symbols.NameFor(memberSem->Name());
+                           member.id = lemon::sid(member.name);
                            member.offset = memberSem->Offset();
                            member.size = memberSem->Size();
                            member.align = memberSem->Align();
@@ -102,6 +103,7 @@ createBindingReflection(const tint::Program& program, const BindingPoint& bindin
     }
 
     result.name = symbols.NameFor(var->Declaration()->symbol());
+    result.id = lemon::sid(result.name);
 
     return result;
 }

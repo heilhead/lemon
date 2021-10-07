@@ -114,10 +114,10 @@ ModelMesh::updateVertexFormat()
 
 LemonModel::LemonModel()
 {
-    utils::log(__FUNCTION__);
+    logger::log(__FUNCTION__);
 }
 
 LemonModel::~LemonModel()
 {
-    utils::log(__FUNCTION__);
+    logger::log(__FUNCTION__);
 }

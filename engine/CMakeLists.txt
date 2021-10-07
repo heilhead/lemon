@@ -1,37 +1,36 @@
 project(lemon-core)
 
 set(SOURCE_FILES
-        src/lemon/engine.cpp
-        src/lemon/device/Window.cpp
-        src/lemon/resource/ResourceInstance.cpp
-        src/lemon/resource/ResourceManager.cpp
-        src/lemon/resource/ResourceStore.cpp
-        src/lemon/resource/ResourceContract.cpp
-        src/lemon/resource/ResourceLocation.cpp
-        src/lemon/resource/types/MaterialResource.cpp
-        src/lemon/resource/types/TextureResource.cpp
-        src/lemon/resource/types/BundleResource.cpp
-        src/lemon/resource/types/ModelResource.cpp
-        src/lemon/resource/types/model/LemonModel.cpp
-        src/lemon/resource/common.cpp
-        src/lemon/shared/filesystem.cpp
-        src/lemon/utils/utils.cpp
-        src/lemon/scheduler/Scheduler.cpp
-        src/lemon/scheduler/utils.cpp
-        src/lemon/shared/HashStringStore.cpp
-        src/lemon/render/utils.cpp
-        src/lemon/render/material/ShaderCompiler.cpp
-        src/lemon/render/material/ShaderProgram.cpp
-        src/lemon/device/Platform.cpp
-        src/lemon/render/ConstantBuffer.cpp
-        src/lemon/device/GPUDevice.cpp
-        src/lemon/device/Device.cpp
-        src/lemon/resource/types/material/MaterialComposer.cpp
-        src/lemon/render/RenderManager.cpp
-        src/lemon/render/material/MaterialManager.cpp
-        src/lemon/render/material/MaterialInstance.cpp
-        src/lemon/render/material/SurfaceMaterialInstance.cpp
-        src/lemon/resource/types/texture/PNGDecoder.cpp)
+        "src/lemon/engine.cpp"
+        "src/lemon/device/Window.cpp"
+        "src/lemon/resource/ResourceInstance.cpp"
+        "src/lemon/resource/ResourceManager.cpp"
+        "src/lemon/resource/ResourceStore.cpp"
+        "src/lemon/resource/ResourceContract.cpp"
+        "src/lemon/resource/ResourceLocation.cpp"
+        "src/lemon/resource/types/MaterialResource.cpp"
+        "src/lemon/resource/types/TextureResource.cpp"
+        "src/lemon/resource/types/BundleResource.cpp"
+        "src/lemon/resource/types/ModelResource.cpp"
+        "src/lemon/resource/types/model/LemonModel.cpp"
+        "src/lemon/resource/common.cpp"
+        "src/lemon/scheduler/Scheduler.cpp"
+        "src/lemon/scheduler/utils.cpp"
+        "src/lemon/render/utils.cpp"
+        "src/lemon/render/material/ShaderCompiler.cpp"
+        "src/lemon/render/material/ShaderProgram.cpp"
+        "src/lemon/device/Platform.cpp"
+        "src/lemon/render/ConstantBuffer.cpp"
+        "src/lemon/device/GPUDevice.cpp"
+        "src/lemon/device/Device.cpp"
+        "src/lemon/resource/types/material/MaterialComposer.cpp"
+        "src/lemon/render/RenderManager.cpp"
+        "src/lemon/render/material/MaterialManager.cpp"
+        "src/lemon/render/material/MaterialInstance.cpp"
+        "src/lemon/render/material/SurfaceMaterialInstance.cpp"
+        "src/lemon/resource/types/texture/PNGDecoder.cpp"
+        "src/lemon/render/material/BufferBinding.cpp"
+        "src/lemon/tasks/filesystem.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -81,6 +80,7 @@ target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon::dawn_static
         lemon::shader
+        lemon::shared
         glm::glm
         Folly::folly
         tl::expected

@@ -39,4 +39,4 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/lib/tint)
 
 find_package(magic_enum CONFIG REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC libtint PRIVATE magic_enum::magic_enum)
+target_link_libraries(${PROJECT_NAME} PUBLIC libtint PRIVATE lemon::shared magic_enum::magic_enum)

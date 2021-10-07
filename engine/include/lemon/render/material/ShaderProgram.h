@@ -33,9 +33,9 @@ namespace lemon::render {
         uint64_t reflectionHash;
 
     public:
-        ShaderProgram() : moduleHash{0} {}
+        ShaderProgram() : moduleHash{0}, reflectionHash{0} {}
 
-        ShaderProgram(uint64_t moduleHash) : moduleHash{moduleHash} {}
+        ShaderProgram(uint64_t moduleHash) : moduleHash{moduleHash}, reflectionHash{0} {}
 
         inline bool
         isValid() const

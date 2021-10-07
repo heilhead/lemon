@@ -1,19 +1,21 @@
 #include <lemon/resource/ResourceContract.h>
 #include <lemon/resource/ResourceStore.h>
 #include <utility>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 using namespace lemon::scheduler;
 
-ResourceStore::~ResourceStore() {
+ResourceStore::~ResourceStore()
+{
     for (auto& [k, v] : map) {
         remove(k);
     }
 };
 
 ResourceContract*
-ResourceStore::find(ResourceHandle id) {
+ResourceStore::find(ResourceHandle id)
+{
     auto it = map.find(id);
     if (it == map.end()) {
         return nullptr;
@@ -27,7 +29,8 @@ ResourceStore::find(ResourceHandle id) {
 }
 
 std::pair<ResourceContract*, bool>
-ResourceStore::findOrInsert(ResourceHandle handle) {
+ResourceStore::findOrInsert(ResourceHandle handle)
+{
     folly::PackedSyncPtr<ResourceContract> pNewContract{};
     pNewContract.init();
     pNewContract.lock();
@@ -49,10 +52,11 @@ ResourceStore::findOrInsert(ResourceHandle handle) {
 }
 
 void
-ResourceStore::remove(ResourceHandle handle) {
+ResourceStore::remove(ResourceHandle handle)
+{
     auto it = map.find(handle);
     if (it == map.end()) {
-        lemon::utils::logErr("failed to remove resource: handle ", handle.get(), " not found");
+        logger::err("failed to remove resource: handle ", handle.get(), " not found");
         return;
     }
 

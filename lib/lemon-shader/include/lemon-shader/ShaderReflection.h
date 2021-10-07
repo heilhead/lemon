@@ -4,10 +4,12 @@
 #include <vector>
 #include <memory>
 #include <tint/tint.h>
+#include <lemon/shared/Hash.h>
 
 namespace lemon {
     namespace shader {
         struct StructMember {
+            lemon::StringID id;
             std::string name;
             uint32_t offset;
             uint32_t size;
@@ -102,6 +104,8 @@ namespace lemon {
         /// Note: This is extracted from `tint` inspector code, with some additions.
         /// Container for information about how a resource is bound.
         struct ResourceBindingDescriptor {
+            /// Hashed string ID.
+            lemon::StringID id;
             /// Declaration variable name.
             std::string name;
             /// Pipeline stages that use the resource.

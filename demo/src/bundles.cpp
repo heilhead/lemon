@@ -6,9 +6,11 @@
 #include <folly/experimental/coro/BlockingWait.h>
 
 using namespace lemon::res;
+using namespace lemon;
 
 void
-testBundleLoading() {
+testBundleLoading()
+{
     std::unique_ptr<ResourceManager> resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
 
     ResourceLocation location("RB_ABC");
@@ -17,23 +19,23 @@ testBundleLoading() {
         folly::coro::blockingWait(resMan->loadResource<BundleResource>(location, ResourceLifetime::Static));
 
     if (result) {
-        lemon::utils::log("bundle successfully loaded: ", location.getFileName());
+        logger::log("bundle successfully loaded: ", location.getFileName());
     } else {
-        lemon::utils::logErr("bundle failed to load: ", location.getFileName(),
-                             " error: ", (int)result.error());
+        logger::err("bundle failed to load: ", location.getFileName(), " error: ", (int)result.error());
     }
 
     auto bUnloaded = resMan->unloadResource(location);
 
     if (bUnloaded) {
-        lemon::utils::log("bundle successfully unloaded: ", location.getFileName());
+        logger::log("bundle successfully unloaded: ", location.getFileName());
     } else {
-        lemon::utils::logErr("bundle failed to unload");
+        logger::err("bundle failed to unload");
     }
 }
 
 void
-testModelLoading() {
+testModelLoading()
+{
     std::unique_ptr<ResourceManager> resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
 
     ResourceLocation location(R"(ozz-sample\MannequinSkeleton.lem:SK_Mannequin)");
@@ -42,24 +44,23 @@ testModelLoading() {
         folly::coro::blockingWait(resMan->loadResource<ModelResource>(location, ResourceLifetime::Static));
 
     if (result) {
-        lemon::utils::log("model successfully loaded: ", location.getFileName());
+        logger::log("model successfully loaded: ", location.getFileName());
 
         auto* model = (*result)->getObject<ModelResource::Model>(location);
         if (model != nullptr) {
-            lemon::utils::logErr("model object: ", location.object, " name: ", model->getName());
+            logger::err("model object: ", location.object, " name: ", model->getName());
         } else {
-            lemon::utils::logErr("failed to access model object: ", location.object);
+            logger::err("failed to access model object: ", location.object);
         }
     } else {
-        lemon::utils::logErr("model failed to load: ", location.getFileName(),
-                             " error: ", (int)result.error());
+        logger::err("model failed to load: ", location.getFileName(), " error: ", (int)result.error());
     }
 
     auto bUnloaded = resMan->unloadResource(location);
 
     if (bUnloaded) {
-        lemon::utils::log("model successfully unloaded: ", location.getFileName());
+        logger::log("model successfully unloaded: ", location.getFileName());
     } else {
-        lemon::utils::logErr("model failed to unload");
+        logger::err("model failed to unload");
     }
 }

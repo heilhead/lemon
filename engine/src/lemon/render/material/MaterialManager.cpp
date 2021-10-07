@@ -1,5 +1,8 @@
 #include <lemon/render/material/MaterialManager.h>
 #include <lemon/render/RenderManager.h>
+#include <lemon/render/utils.h>
+#include <lemon/resource/types/MaterialResource.h>
+#include <lemon/resource/types/TextureResource.h>
 #include <lemon/shared/assert.h>
 
 using namespace lemon::res;
@@ -118,14 +121,12 @@ convertViewDimension(TextureDimension value)
     }
 }
 
-// TODO: Reflection data is likely not enough here. Consider passing some of the `MaterialResource`
-// descriptors, e.g. `SamplerDescriptor`.
 wgpu::BindGroupLayout
-createBindGroupLayout(uint8_t bindGroupIndex, const ShaderProgram* pProgram)
+createBindGroupLayout(const MaterialResource& material, const ShaderProgram& program, uint8_t bindGroupIndex)
 {
     folly::small_vector<wgpu::BindGroupLayoutEntry, 8> entries;
 
-    for (auto& resDesc : pProgram->getReflection()) {
+    for (auto& resDesc : program.getReflection()) {
         if (resDesc.bindGroup != bindGroupIndex) {
             continue;
         }
@@ -146,6 +147,7 @@ createBindGroupLayout(uint8_t bindGroupIndex, const ShaderProgram* pProgram)
             entry.texture.multisampled = false;
             break;
         case ResourceType::kSampler:
+            // TODO: Use `SamplerDescriptor` to figure out sampling parameters.
             entry.sampler.type = wgpu::SamplerBindingType::Filtering;
             break;
         default:
@@ -163,13 +165,58 @@ createBindGroupLayout(uint8_t bindGroupIndex, const ShaderProgram* pProgram)
 }
 
 ResourceRef<wgpu::BindGroupLayout>
-MaterialManager::getBindGroupLayout(const ShaderProgram& program)
+MaterialManager::getBindGroupLayout(const MaterialResource& material, const ShaderProgram& program)
 {
     if (!program) {
         return nullptr;
     }
 
     return std::move(bindGroupLayoutCache.get(program.reflectionHash, [&]() {
-        return new wgpu::BindGroupLayout(std::move(createBindGroupLayout(kUserBindGroupIndex, &program)));
+        return new wgpu::BindGroupLayout(
+            std::move(createBindGroupLayout(material, program, kUserBindGroupIndex)));
     }));
+}
+
+wgpu::Texture
+createTexture(const TextureResource& textureRes)
+{
+    auto& imgData = textureRes.getImageData();
+
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
+    descriptor.size.width = imgData.width;
+    descriptor.size.height = imgData.height;
+    descriptor.size.depthOrArrayLayers = 1;
+    descriptor.sampleCount = 1;
+    descriptor.format = textureRes.getGPUFormat();
+    descriptor.mipLevelCount = 1;
+    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
+
+    auto& device = RenderManager::get()->getDevice();
+
+    auto texture = device.CreateTexture(&descriptor);
+
+    wgpu::Buffer stagingBuffer = createBufferFromData(
+        device, imgData.data, static_cast<uint32_t>(imgData.data.size()), wgpu::BufferUsage::CopySrc);
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        createImageCopyBuffer(stagingBuffer, 0, imgData.stride * imgData.width);
+    wgpu::ImageCopyTexture imageCopyTexture = createImageCopyTexture(texture, 0, {0, 0, 0});
+    wgpu::Extent3D copySize = {imgData.width, imgData.height, 1};
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
+
+    wgpu::CommandBuffer copy = encoder.Finish();
+    device.GetQueue().Submit(1, &copy);
+
+    return texture;
+}
+
+ResourceRef<wgpu::Texture>
+MaterialManager::getTexture(const TextureResource& texture)
+{
+    uint64_t id = 0;
+
+    return std::move(
+        textureCache.get(0, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); }));
 }

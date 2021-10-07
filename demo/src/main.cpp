@@ -28,6 +28,7 @@
 
 using namespace lemon::scheduler;
 using namespace lemon::res;
+using namespace lemon;
 
 void
 run()
@@ -51,9 +52,9 @@ run()
     auto meta = resMan->loadMetadata<MaterialResource>(location);
     if (meta) {
         auto* matData = (*meta).get<MaterialResource::Metadata>();
-        lemon::utils::log("load metadata: success");
+        logger::log("load metadata: success");
     } else {
-        lemon::utils::logErr("load metadata: error");
+        logger::err("load metadata: error");
     }
 }
 

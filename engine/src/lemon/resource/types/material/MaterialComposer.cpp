@@ -41,7 +41,7 @@ MaterialComposer::loadTemplate(std::filesystem::path& path)
     } else {
         std::string strErr = "Failed to resolve shader include: [" + path.string() +
                              "] error: " + std::to_string((int)res.error());
-        lemon::utils::logErr(strErr);
+        logger::err(strErr);
         return tplEnv.parse(strErr);
     }
 }
