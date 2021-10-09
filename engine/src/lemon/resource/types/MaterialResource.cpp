@@ -5,7 +5,7 @@
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/RenderManager.h>
 #include <lemon/device/Device.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/shared/assert.h>
 
 using namespace lemon::utils;

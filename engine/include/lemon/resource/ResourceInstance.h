@@ -4,7 +4,8 @@
 #include <lemon/scheduler.h>
 #include <folly/small_vector.h>
 #include <lemon/resource/common.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
+#include <lemon/shared/NonCopyable.h>
 
 using namespace lemon::scheduler;
 
@@ -41,7 +42,7 @@ namespace lemon::res {
      *  - have generation counter
      *  - add pruning based on generations to `ResourceStore`
      */
-    class ResourceInstance {
+    class ResourceInstance : private NonMovable {
         friend class ResourceManager;
 
     public:

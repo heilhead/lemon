@@ -1,7 +1,7 @@
 #include <lemon/device/GPUDevice.h>
 #include <lemon/device/Platform.h>
 #include <lemon/device/Window.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <cassert>
 #include <dawn/dawn_proc.h>
 #include <dawn/webgpu_cpp_print.h>

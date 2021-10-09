@@ -2,7 +2,7 @@
 #include <lemon/resource/types/ModelResource.h>
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceManager.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 
 using namespace lemon::res;
 using namespace lemon::utils;

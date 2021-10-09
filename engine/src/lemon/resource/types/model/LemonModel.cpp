@@ -1,5 +1,5 @@
 #include <lemon/resource/types/model/LemonModel.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/shared/assert.h>
 
 using namespace lemon;

@@ -2,10 +2,11 @@
 
 #include <cassert>
 #include <lemon/shared.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/shared/filesystem.h>
 #include <lemon/engine.h>
 #include <lemon/render/RenderManager.h>
+#include <lemon/render/material/MaterialUniformData.h>
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
@@ -46,24 +47,29 @@ testShader()
         config.define("TEXCOORD1", false);
         auto& material = **result;
 
-        auto* sampler = material.getSamplerDescriptor(lemon::sid("surfaceSampler"));
-        LEMON_ASSERT(sampler != nullptr);
+        // auto* sampler = material.getSamplerDescriptor(lemon::sid("surfaceSampler"));
+        // LEMON_ASSERT(sampler != nullptr);
 
-        auto* textureLoc = material.getTextureLocation(lemon::sid("surfaceTexture"));
-        LEMON_ASSERT(textureLoc != nullptr);
+        // auto* textureLoc = material.getTextureLocation(lemon::sid("surfaceTexture"));
+        // LEMON_ASSERT(textureLoc != nullptr);
 
-        auto texResult = pScheduler->block(pResMan->loadResource<TextureResource>(*textureLoc));
-        LEMON_ASSERT(texResult);
+        // auto texResult = pScheduler->block(pResMan->loadResource<TextureResource>(*textureLoc));
+        // LEMON_ASSERT(texResult);
 
-        auto& texture = **texResult;
+        // auto& texture = **texResult;
 
         // auto* uniform = material.getUniformValue(lemon::sid("lemonData.lemonVecData"));
         // LEMON_ASSERT(uniform != nullptr);
 
         auto shader = pMatMan->getShader(material, config);
-        auto gpuTex = pMatMan->getTexture(texture);
-        auto& refl = shader->getReflection();
-        auto bgl = pMatMan->getBindGroupLayout(material, *shader);
+        // auto gpuTex = pMatMan->getTexture(texture);
+        // auto& refl = shader->getReflection();
+        auto kaMatLayout = pMatMan->getMaterialLayout(material, *shader);
+        auto& matLayout = *kaMatLayout;
+
+        MaterialUniformData uniData(kaMatLayout);
+        uniData.setData(lemon::sid("lemonData.lemonVecData"), glm::vec4(1.f, 1.f, 1.f, 1.f));
+
         logger::log("material loaded");
     } else {
         logger::err("material failed to load: ", (int)result.error());

@@ -3,6 +3,7 @@
 #include <lemon/serialization.h>
 #include <lemon/resource/common.h>
 #include <lemon/shared/assert.h>
+#include <lemon/shared/NonCopyable.h>
 #include <filesystem>
 
 namespace lemon::res {
@@ -30,7 +31,7 @@ namespace lemon::res {
         }
     };
 
-    struct ResourceMetadataBase {
+    struct ResourceMetadataBase : private NonMovable {
         CommonResourceMetadata common;
 
         virtual ~ResourceMetadataBase() = default;

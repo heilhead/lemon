@@ -5,7 +5,7 @@
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/scheduler.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/shared/assert.h>
 #include <lemon/tasks/filesystem.h>
 

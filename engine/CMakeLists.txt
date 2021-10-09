@@ -29,8 +29,9 @@ set(SOURCE_FILES
         "src/lemon/render/material/MaterialInstance.cpp"
         "src/lemon/render/material/SurfaceMaterialInstance.cpp"
         "src/lemon/resource/types/texture/PNGDecoder.cpp"
-        "src/lemon/render/material/BufferBinding.cpp"
-        "src/lemon/tasks/filesystem.cpp")
+        "src/lemon/render/material/MaterialUniformData.cpp"
+        "src/lemon/tasks/filesystem.cpp"
+        "src/lemon/render/material/MaterialLayout.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -61,6 +62,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT INJA_NOEXCEPTION)
+target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:LEMON_DEBUG>")
 
 CPMAddPackage(
 	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"

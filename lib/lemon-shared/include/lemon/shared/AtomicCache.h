@@ -10,19 +10,19 @@
 namespace lemon {
     /// <summary>
     /// Thread-safe atomic reference counted resource handle for use with `AtomicCache`.
-    /// 
+    ///
     /// Notes:
-    /// 
+    ///
     /// - The data being pointed to by this handle is assumed to be read-only. It must
     ///   be fully initialized when inserted into the `AtomicCache`, and remain immutable
     ///   until deleted. If mutability is a requirement, a separate locking mechanism
     ///   must be implemented within the data itself.
-    /// 
-    /// - `ResourceRef` objects must not outlive the `AtomicCache` containing the data.
+    ///
+    /// - `KeepAlive` objects must not outlive the `AtomicCache` containing the data.
     /// </summary>
     /// <typeparam name="TData">Resource data type</typeparam>
     template<typename TData>
-    class ResourceRef {
+    class KeepAlive {
     public:
         // Only the lower 15 bits are available, so use `int16_t` max value as a limit.
         static constexpr uint16_t kRefCountLimit = std::numeric_limits<int16_t>::max();
@@ -31,24 +31,24 @@ namespace lemon {
         // The lifetime matches `AtomicCache` lifetime.
         folly::PackedSyncPtr<TData>* ptr{nullptr};
 
-        ResourceRef(folly::PackedSyncPtr<TData>* ptr = nullptr) noexcept : ptr{ptr}
+        KeepAlive(folly::PackedSyncPtr<TData>* ptr = nullptr) : ptr{ptr}
         {
             if (ptr != nullptr) {
                 acquire();
             }
         }
 
-        ResourceRef(const ResourceRef& other) noexcept : ResourceRef(nullptr)
+        KeepAlive(const KeepAlive& other) noexcept : KeepAlive(nullptr)
         {
             *this = other;
         }
 
-        ResourceRef(ResourceRef&& other) noexcept : ResourceRef(nullptr)
+        KeepAlive(KeepAlive&& other) noexcept : KeepAlive(nullptr)
         {
             *this = std::move(other);
         }
 
-        ~ResourceRef()
+        ~KeepAlive()
         {
             if (ptr != nullptr) {
                 release();
@@ -56,7 +56,7 @@ namespace lemon {
         }
 
         inline const TData&
-        get() const noexcept
+        get() const
         {
             LEMON_ASSERT(ptr != nullptr);
             auto* pData = ptr->get();
@@ -65,53 +65,57 @@ namespace lemon {
         }
 
         inline const TData&
-        operator*() const noexcept
+        operator*() const
         {
             return get();
         }
 
         inline const TData*
-        operator->() const noexcept
+        operator->() const
         {
             return &get();
         }
 
         inline bool
-        operator==(const ResourceRef& other) const noexcept
+        operator==(const KeepAlive& other) const
         {
             return ptr == other.ptr;
         }
 
-        ResourceRef&
-        operator=(const ResourceRef& other) noexcept
+        KeepAlive&
+        operator=(const KeepAlive& other) noexcept
         {
-            if (ptr != nullptr) {
-                release();
-            }
+            if (this != &other) {
+                if (ptr != nullptr) {
+                    release();
+                }
 
-            ptr = other.ptr;
+                ptr = other.ptr;
 
-            if (ptr != nullptr) {
-                acquire();
+                if (ptr != nullptr) {
+                    acquire();
+                }
             }
 
             return *this;
         }
 
-        inline ResourceRef&
-        operator=(ResourceRef&& other) noexcept
+        inline KeepAlive&
+        operator=(KeepAlive&& other) noexcept
         {
-            if (ptr != nullptr) {
-                release();
-            }
+            if (this != &other) {
+                if (ptr != nullptr) {
+                    release();
+                }
 
-            ptr = other.ptr;
-            other.ptr = nullptr;
+                ptr = other.ptr;
+                other.ptr = nullptr;
+            }
 
             return *this;
         }
 
-        operator bool() const noexcept
+        operator bool() const
         {
             if (ptr == nullptr) {
                 return false;
@@ -175,25 +179,25 @@ namespace lemon {
     /// Thread-safe hashmap-based storage for cacheable objects of arbitrary types.
     /// The underlying data structure is `folly::AtomicHashMap`, which has a few
     /// important restrictions:
-    /// 
+    ///
     /// - `TKey` must be of an atomic integral type - either `uint32_t` or `uint64_t`.
-    /// 
+    ///
     /// - An estimated maximum number of elements is expected to be known at compile-time.
     ///   Attempting to insert an item into cache with no space left will result in an
     ///   exception being thrown.
-    /// 
+    ///
     /// Notes:
-    /// 
+    ///
     /// - The cache expects data to be allocated on the heap elsewhere, and only stores
     ///   a pointer to the data inside its own storage. The initialization function must
     ///   take care of allocating the data.
-    /// 
-    /// - The returned resource handle is `ResourceRef`, which is an atomic reference
+    ///
+    /// - The returned resource handle is `KeepAlive`, which is an atomic reference
     ///   counted pointer. Once all of the handles pointing to the data are destroyed,
     ///   the data is destroyed too.
-    /// 
+    ///
     /// - All of the data stored in `AtomicCache` map is destroyed along with it. For this
-    ///   reason, no `ResourceRef` can outlive the `AtomicCache` as they'll be left with
+    ///   reason, no `KeepAlive` can outlive the `AtomicCache` as they'll be left with
     ///   a dangling pointer.
     /// </summary>
     /// <typeparam name="TData">Resource data type</typeparam>
@@ -205,7 +209,7 @@ namespace lemon {
         folly::AtomicHashMap<TKey, folly::PackedSyncPtr<TData>> data;
 
     public:
-        using Ref = ResourceRef<TData>;
+        using Ref = KeepAlive<TData>;
 
         AtomicCache(size_t sizeEst = kSizeEst) : data{kSizeEst} {}
 

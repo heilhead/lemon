@@ -6,7 +6,7 @@
 #include <lemon/shared/filesystem.h>
 #include <lemon/shared/assert.h>
 #include <lemon/tasks/filesystem.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 
 using namespace lemon::io;
 using namespace lemon::res;

@@ -185,5 +185,7 @@ ShaderReflection::getBindingReflection() const
         }
     }
 
+    std::sort(result.begin(), result.end());
+
     return result;
 }

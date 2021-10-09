@@ -12,9 +12,9 @@ namespace lemon::render {
         friend class ShaderCompiler;
         friend class MaterialManager;
 
+    public:
         using ResourceDescriptor = shader::ResourceBindingDescriptor;
 
-    public:
         struct DiagnosticMessage {
             std::string message;
             WGPUCompilationMessageType type;

@@ -45,7 +45,7 @@ computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint, const Mat
     return hash;
 }
 
-ResourceRef<ShaderProgram>
+KeepAlive<ShaderProgram>
 MaterialManager::getShader(const MaterialResource& material, const MaterialConfiguration& config)
 {
     auto& blueprint = material.getBlueprint();
@@ -65,115 +65,15 @@ MaterialManager::getShader(const MaterialResource& material, const MaterialConfi
     }));
 }
 
-wgpu::ShaderStage
-convertShaderStage(PipelineStage value)
-{
-    wgpu::ShaderStage result = wgpu::ShaderStage::None;
-
-    if ((bool)(value & PipelineStage::kVertex)) {
-        result |= wgpu::ShaderStage::Vertex;
-    }
-
-    if ((bool)(value & PipelineStage::kFragment)) {
-        result |= wgpu::ShaderStage::Fragment;
-    }
-
-    if ((bool)(value & PipelineStage::kCompute)) {
-        result |= wgpu::ShaderStage::Compute;
-    }
-
-    return result;
-}
-
-wgpu::TextureSampleType
-convertSampleType(SampledKind value)
-{
-    switch (value) {
-    case SampledKind::kFloat:
-        return wgpu::TextureSampleType::Float;
-    case SampledKind::kSInt:
-        return wgpu::TextureSampleType::Sint;
-    case SampledKind::kUInt:
-        return wgpu::TextureSampleType::Uint;
-    default:
-        return wgpu::TextureSampleType::Undefined;
-    }
-}
-
-wgpu::TextureViewDimension
-convertViewDimension(TextureDimension value)
-{
-    switch (value) {
-    case TextureDimension::k1d:
-        return wgpu::TextureViewDimension::e1D;
-    case TextureDimension::k2d:
-        return wgpu::TextureViewDimension::e2D;
-    case TextureDimension::k2dArray:
-        return wgpu::TextureViewDimension::e2DArray;
-    case TextureDimension::k3d:
-        return wgpu::TextureViewDimension::e3D;
-    case TextureDimension::kCube:
-        return wgpu::TextureViewDimension::Cube;
-    case TextureDimension::kCubeArray:
-        return wgpu::TextureViewDimension::CubeArray;
-    default:
-        return wgpu::TextureViewDimension::Undefined;
-    }
-}
-
-wgpu::BindGroupLayout
-createBindGroupLayout(const MaterialResource& material, const ShaderProgram& program, uint8_t bindGroupIndex)
-{
-    folly::small_vector<wgpu::BindGroupLayoutEntry, 8> entries;
-
-    for (auto& resDesc : program.getReflection()) {
-        if (resDesc.bindGroup != bindGroupIndex) {
-            continue;
-        }
-
-        wgpu::BindGroupLayoutEntry entry;
-        entry.binding = resDesc.binding;
-        entry.visibility = convertShaderStage(resDesc.stage);
-
-        switch (resDesc.resourceType) {
-        case ResourceType::kUniformBuffer:
-            entry.buffer.type = wgpu::BufferBindingType::Uniform;
-            entry.buffer.hasDynamicOffset = true;
-            entry.buffer.minBindingSize = resDesc.size;
-            break;
-        case ResourceType::kSampledTexture:
-            entry.texture.sampleType = convertSampleType(resDesc.sampledKind);
-            entry.texture.viewDimension = convertViewDimension(resDesc.dim);
-            entry.texture.multisampled = false;
-            break;
-        case ResourceType::kSampler:
-            // TODO: Use `SamplerDescriptor` to figure out sampling parameters.
-            entry.sampler.type = wgpu::SamplerBindingType::Filtering;
-            break;
-        default:
-            LEMON_TODO();
-        }
-
-        entries.emplace_back(entry);
-    }
-
-    wgpu::BindGroupLayoutDescriptor desc;
-    desc.entryCount = entries.size();
-    desc.entries = entries.data();
-
-    return RenderManager::get()->getDevice().CreateBindGroupLayout(&desc);
-}
-
-ResourceRef<wgpu::BindGroupLayout>
-MaterialManager::getBindGroupLayout(const MaterialResource& material, const ShaderProgram& program)
+KeepAlive<MaterialLayout>
+MaterialManager::getMaterialLayout(const MaterialResource& material, const ShaderProgram& program)
 {
     if (!program) {
         return nullptr;
     }
 
-    return std::move(bindGroupLayoutCache.get(program.reflectionHash, [&]() {
-        return new wgpu::BindGroupLayout(
-            std::move(createBindGroupLayout(material, program, kUserBindGroupIndex)));
+    return std::move(materialLayoutCache.get(program.reflectionHash, [&]() {
+        return new MaterialLayout(material, program, kUserBindGroupIndex);
     }));
 }
 
@@ -212,7 +112,7 @@ createTexture(const TextureResource& textureRes)
     return texture;
 }
 
-ResourceRef<wgpu::Texture>
+KeepAlive<wgpu::Texture>
 MaterialManager::getTexture(const TextureResource& texture)
 {
     uint64_t id = 0;

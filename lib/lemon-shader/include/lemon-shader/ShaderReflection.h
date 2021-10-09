@@ -131,6 +131,14 @@ namespace lemon {
             ImageFormat imageFormat;
             /// Struct member information.
             std::vector<StructMember> members;
+
+            constexpr bool
+            operator<(const ResourceBindingDescriptor& other) const
+            {
+                auto lhs = (uint64_t)bindGroup << 32 | (uint64_t)binding;
+                auto rhs = (uint64_t)other.bindGroup << 32 | (uint64_t)other.binding;
+                return lhs < rhs;
+            }
         };
 
         class ShaderReflection {

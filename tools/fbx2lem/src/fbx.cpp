@@ -10,7 +10,7 @@
 #include <glm/glm.hpp>
 
 #include <lemon/resources.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>

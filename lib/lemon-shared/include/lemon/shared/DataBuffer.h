@@ -23,15 +23,18 @@ namespace lemon {
     class DataBuffer {
         using Allocator = T;
 
+        uint8_t* data;
+        size_t length;
+
     public:
         DataBuffer() : data{nullptr}, length{0} {}
 
-        explicit DataBuffer(size_t length) noexcept : DataBuffer()
+        explicit DataBuffer(size_t length) : DataBuffer()
         {
             allocate(length);
         }
 
-        DataBuffer(const DataBuffer& other) noexcept : DataBuffer()
+        DataBuffer(const DataBuffer& other) : DataBuffer()
         {
             *this = other;
         }
@@ -48,10 +51,6 @@ namespace lemon {
             }
         }
 
-    private:
-        uint8_t* data;
-        size_t length;
-
     public:
         uint8_t*
         operator*() const
@@ -67,14 +66,16 @@ namespace lemon {
         DataBuffer&
         operator=(const DataBuffer& other)
         {
-            if (data != nullptr) {
-                release();
-            }
+            if (this != &other) {
+                if (data != nullptr) {
+                    release();
+                }
 
-            if (other.length != 0) {
-                allocate(other.length);
-                auto err = memcpy_s(data, length, other.data, length);
-                LEMON_ASSERT(!err);
+                if (other.length != 0) {
+                    allocate(other.length);
+                    auto err = memcpy_s(data, length, other.data, length);
+                    LEMON_ASSERT(!err);
+                }
             }
 
             return *this;
@@ -83,14 +84,16 @@ namespace lemon {
         DataBuffer&
         operator=(DataBuffer&& other) noexcept
         {
-            if (data != nullptr) {
-                release();
-            }
+            if (this != &other) {
+                if (data != nullptr) {
+                    release();
+                }
 
-            data = other.data;
-            length = other.length;
-            other.data = nullptr;
-            other.length = 0;
+                data = other.data;
+                length = other.length;
+                other.data = nullptr;
+                other.length = 0;
+            }
 
             return *this;
         }

@@ -12,7 +12,7 @@ namespace lemon::res::material {
     class MaterialBlueprint {
         friend struct folly::hasher<MaterialBlueprint>;
 
-        using TemplateRef = ResourceRef<tl::expected<inja::Template, CompositionError>>;
+        using TemplateRef = KeepAlive<tl::expected<inja::Template, CompositionError>>;
 
         TemplateRef tplRef;
         inja::Environment* env;

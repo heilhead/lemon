@@ -1,7 +1,7 @@
 #include "bundles.h"
 #include <memory>
 #include <lemon/resources.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 #include <folly/experimental/coro/BlockingWait.h>
 

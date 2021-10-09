@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <folly/Hash.h>
 
 namespace lemon {
@@ -63,10 +64,22 @@ namespace lemon {
         return folly::hash::fnva64_buf(str, std::char_traits<char>::length(str));
     }
 
+    constexpr StringID
+    sid(const char* str, size_t sz)
+    {
+        return folly::hash::fnva64_buf(str, sz);
+    }
+
     inline StringID
     sid(const std::string& str)
     {
         return sid(str.c_str());
+    }
+
+    inline StringID
+    sid(const std::string_view& view)
+    {
+        return sid(view.data(), view.size());
     }
 
     template<typename... Value>

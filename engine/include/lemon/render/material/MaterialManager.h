@@ -2,6 +2,7 @@
 
 #include <lemon/render/material/SurfaceMaterialInstance.h>
 #include <lemon/render/material/ShaderCompiler.h>
+#include <lemon/render/material/MaterialLayout.h>
 #include <lemon/shared/AtomicCache.h>
 
 namespace lemon::res {
@@ -15,11 +16,9 @@ namespace lemon::res {
 
 namespace lemon::render {
     class MaterialManager {
-        static constexpr uint8_t kUserBindGroupIndex = 1;
-
         ShaderCompiler shaderCompiler;
         AtomicCache<ShaderProgram> shaderProgramCache{256};
-        AtomicCache<wgpu::BindGroupLayout> bindGroupLayoutCache{128};
+        AtomicCache<MaterialLayout> materialLayoutCache{128};
         AtomicCache<wgpu::Texture> textureCache{128};
 
     public:
@@ -32,13 +31,13 @@ namespace lemon::render {
             return shaderCompiler;
         }
 
-        ResourceRef<ShaderProgram>
+        KeepAlive<ShaderProgram>
         getShader(const res::MaterialResource& material, const res::material::MaterialConfiguration& config);
 
-        ResourceRef<wgpu::BindGroupLayout>
-        getBindGroupLayout(const res::MaterialResource& material, const ShaderProgram& program);
+        KeepAlive<MaterialLayout>
+        getMaterialLayout(const res::MaterialResource& material, const ShaderProgram& program);
 
-        ResourceRef<wgpu::Texture>
+        KeepAlive<wgpu::Texture>
         getTexture(const res::TextureResource& texture);
 
         static MaterialManager*

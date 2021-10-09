@@ -1,10 +1,10 @@
 //# extends "BaseSurface.wgsl"
 
 //# block surface_params
-[[group(1), binding(0)]]
+[[group(1), binding(2)]]
 var surfaceSampler: sampler;
 
-[[group(1), binding(1)]]
+[[group(2), binding(0)]]
 var surfaceTexture: texture_2d<f32>;
 
 type ArrayType = [[stride(16)]] array<i32, 4>;
@@ -16,7 +16,7 @@ struct LemonData {
     lemonArr: ArrayType;
 };
 
-[[group(1), binding(2)]]
+[[group(1), binding(1)]]
 var<uniform> lemonData: LemonData;
 //# endblock
 

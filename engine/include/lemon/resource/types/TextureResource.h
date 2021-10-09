@@ -4,7 +4,7 @@
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/types/texture/common.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 #include <dawn/webgpu_cpp.h>
 

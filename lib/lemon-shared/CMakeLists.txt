@@ -5,10 +5,12 @@ project(lemon-shared)
 set(SOURCE_FILES
     "src/lemon/shared/filesystem.cpp"
     "src/lemon/shared/HashStringStore.cpp"
-    "src/lemon/utils/utils.cpp")
+    "src/lemon/shared/utils.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::shared ALIAS ${PROJECT_NAME})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:LEMON_DEBUG>")
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

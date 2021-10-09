@@ -5,10 +5,11 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/material/MaterialComposer.h>
+#include <lemon/render/material/common.h>
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 #include <lemon/shared/AtomicCache.h>
 #include <dawn/webgpu_cpp.h>
@@ -16,16 +17,15 @@
 namespace lemon::res {
     class MaterialResource : public ResourceInstance {
     public:
+        // Note: New types can only be added at the back of the type list of these variants,
+        // otherwise serialization will break.
+        using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
+                                          glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
         enum class BaseType { Shader, Material };
         enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
         enum class Domain { Surface, PostProcess, UserInterface };
         enum class ShadingModel { Lit, Unlit };
         enum class BlendMode { Opaque, Masked, Translucent };
-
-        // Note: New types can only be added at the back of the type list of these variants,
-        // otherwise serialization will break.
-        using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
-                                          glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
 
         struct DomainDescriptor {
             Usage usage;

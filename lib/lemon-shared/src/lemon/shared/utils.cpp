@@ -1,5 +1,5 @@
 #include <lemon/shared/logger.h>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 
 using namespace lemon;
 

@@ -5,7 +5,7 @@
 #include "ozz/animation/runtime/skeleton.h"
 #include "ozz/animation/runtime/animation.h"
 
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 #include <lemon/engine.h>
 #include <lemon/device/Device.h>
 #include <lemon/shared/filesystem.h>

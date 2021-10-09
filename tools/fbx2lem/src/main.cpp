@@ -2,13 +2,14 @@
 #include <string>
 #include <cxxopts.hpp>
 #include <filesystem>
-#include <lemon/utils/utils.h>
+#include <lemon/shared/utils.h>
 //#include <folly/experimental/coro/BlockingWait.h>
 
 #include "fbx.h"
 
 cxxopts::ParseResult
-initOptions(int argc, char** argv) {
+initOptions(int argc, char** argv)
+{
     using namespace cxxopts;
 
     Options opts("fbx2lem", "Convert FBX models to LEM format");
@@ -31,7 +32,8 @@ initOptions(int argc, char** argv) {
 }
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char* argv[])
+{
     auto opts = initOptions(argc, argv);
 
     std::filesystem::path inFile;

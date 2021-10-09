@@ -91,7 +91,7 @@ createMetadata()
             mat->definitions.insert({"SCROLL_SPEED_V", 1.0f});
             mat->definitions.insert({"ENABLE_ARBITRARY_FLAG", true});
 
-            using UniformValue = lemon::res::MaterialResource::UniformValue;
+            using UniformValue = MaterialResource::UniformValue;
 
             {
                 mat->uniforms.insert({"lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}});
