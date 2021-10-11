@@ -1,6 +1,6 @@
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/RenderManager.h>
-#include <lemon-shader/reflection.h>
+#include <lemon/shader/reflection.h>
 
 using namespace lemon::render;
 using namespace lemon::shader;

@@ -4,7 +4,7 @@
 #include <folly/hash/Hash.h>
 #include <lemon/resource/common.h>
 #include <lemon/shared/HashStringStore.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
 namespace lemon::res {
     static const char* kLocationObjectDelimiter = ":";
@@ -17,7 +17,8 @@ namespace lemon::res {
         ResourceLocation(const std::string& inLocation, std::string& inObject);
 
         inline const std::string&
-        getFileName() const {
+        getFileName() const
+        {
             LEMON_ASSERT(handle.isValid());
             auto* ptr = gLookupMap.find(handle);
             LEMON_ASSERT(ptr != nullptr);
@@ -25,7 +26,8 @@ namespace lemon::res {
         }
 
         inline const std::string&
-        getObjectName() const {
+        getObjectName() const
+        {
             LEMON_ASSERT(object.isValid());
             auto* ptr = gLookupMap.find(object);
             LEMON_ASSERT(ptr != nullptr);
@@ -37,7 +39,8 @@ namespace lemon::res {
 
     private:
         inline static uint64_t
-        createHash(const std::string& str) {
+        createHash(const std::string& str)
+        {
             return gLookupMap.insert(str);
         }
     };

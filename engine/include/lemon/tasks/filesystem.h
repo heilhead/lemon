@@ -5,7 +5,7 @@
 #include <lemon/shared/filesystem.h>
 
 namespace lemon::io {
-    scheduler::Task<HeapBuffer, Error>
+    scheduler::Task<UnalignedMemory, Error>
     coReadBinaryFile(const std::filesystem::path& filePath);
 
     scheduler::Task<std::string, Error>

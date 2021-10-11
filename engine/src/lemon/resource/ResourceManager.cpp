@@ -3,7 +3,7 @@
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/BundleResource.h>
 #include <lemon/resource/types/ModelResource.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 
@@ -138,7 +138,7 @@ ResourceManager::getFactoryFn(ResourceClassID id)
 
 FactoryResultType
 lemon::res::res_detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
-                                      ResourceLifetime lifetime)
+                                          ResourceLifetime lifetime)
 {
     auto factory = ResourceManager::get()->getFactoryFn(classID);
     if (!factory) {

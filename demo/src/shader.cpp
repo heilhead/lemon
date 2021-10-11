@@ -20,7 +20,7 @@
 #include <dawn/dawn_proc.h>
 #include <dawn_native/D3D12Backend.h>
 
-#include <lemon-shader/ShaderReflection.h>
+#include <lemon/shader/reflection.h>
 
 using namespace lemon::res;
 using namespace lemon::render;
@@ -40,10 +40,20 @@ testShader()
     // ResourceLocation matLoc("misc\\T_Basketball_D.png");
     // auto result = pScheduler->block(pResMan->loadResource<TextureResource>(matLoc));
 
+    /*
+    
+    MaterialSharedResources::MaterialSharedResources
+    1. create default bind group
+    2. create main & depth pipelines
+
+    ?. handle errors in pipeline creation, e.g. `assert(program)`
+    
+    */
+
     ResourceLocation matLoc("misc\\M_Basketball");
     auto result = pScheduler->block(pResMan->loadResource<MaterialResource>(matLoc));
     if (result) {
-        material::MaterialConfiguration config;
+        render::MaterialConfiguration config;
         config.define("TEXCOORD1", false);
         auto& material = **result;
 
@@ -67,8 +77,10 @@ testShader()
         auto kaMatLayout = pMatMan->getMaterialLayout(material, *shader);
         auto& matLayout = *kaMatLayout;
 
+        constexpr auto lemonVecData = lemon::sid("lemonData.lemonVecData");
+
         MaterialUniformData uniData(kaMatLayout);
-        uniData.setData(lemon::sid("lemonData.lemonVecData"), glm::vec4(1.f, 1.f, 1.f, 1.f));
+        uniData.setData(lemonVecData, glm::vec4(1.f, 1.f, 1.f, 1.f));
 
         logger::log("material loaded");
     } else {

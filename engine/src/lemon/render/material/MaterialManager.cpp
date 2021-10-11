@@ -3,7 +3,7 @@
 #include <lemon/render/utils.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 using namespace lemon::res::material;
@@ -32,7 +32,8 @@ MaterialManager::get()
 }
 
 uint64_t
-computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint, const MaterialConfiguration& config)
+computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint,
+                    const render::MaterialConfiguration& config)
 {
     lemon::Hash hash;
 
@@ -46,7 +47,7 @@ computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint, const Mat
 }
 
 KeepAlive<ShaderProgram>
-MaterialManager::getShader(const MaterialResource& material, const MaterialConfiguration& config)
+MaterialManager::getShader(const MaterialResource& material, const render::MaterialConfiguration& config)
 {
     auto& blueprint = material.getBlueprint();
     if (!blueprint) {
@@ -54,7 +55,7 @@ MaterialManager::getShader(const MaterialResource& material, const MaterialConfi
     }
 
     // Copy config.
-    MaterialConfiguration finalConfig = material.getConfig();
+    render::MaterialConfiguration finalConfig = material.getConfig();
     finalConfig.merge(config);
     uint64_t hash = computeMaterialHash(blueprint, finalConfig);
 
@@ -77,8 +78,23 @@ MaterialManager::getMaterialLayout(const MaterialResource& material, const Shade
     }));
 }
 
+MaterialInstance
+MaterialManager::getMaterialInstance(const res::MaterialResource& material,
+                                     const MeshVertexFormat& vertexFormat)
+{
+    MaterialResourceDescriptor desc;
+    desc.pResource = &material;
+    desc.meshComponents = vertexFormat.getComponents();
+
+    auto id = lemon::hash(desc);
+    auto kaSharedResources = std::move(
+        sharedResourcesCache.get(id, [&]() { return new MaterialSharedResources(material, vertexFormat); }));
+
+    return MaterialInstance(kaSharedResources);
+}
+
 wgpu::Texture
-createTexture(const TextureResource& textureRes)
+MaterialManager::createTexture(const TextureResource& textureRes)
 {
     auto& imgData = textureRes.getImageData();
 
@@ -92,22 +108,20 @@ createTexture(const TextureResource& textureRes)
     descriptor.mipLevelCount = 1;
     descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
 
-    auto& device = RenderManager::get()->getDevice();
-
-    auto texture = device.CreateTexture(&descriptor);
+    auto texture = pDevice->CreateTexture(&descriptor);
 
     wgpu::Buffer stagingBuffer = createBufferFromData(
-        device, imgData.data, static_cast<uint32_t>(imgData.data.size()), wgpu::BufferUsage::CopySrc);
+        *pDevice, imgData.data, static_cast<uint32_t>(imgData.data.size()), wgpu::BufferUsage::CopySrc);
     wgpu::ImageCopyBuffer imageCopyBuffer =
         createImageCopyBuffer(stagingBuffer, 0, imgData.stride * imgData.width);
     wgpu::ImageCopyTexture imageCopyTexture = createImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {imgData.width, imgData.height, 1};
 
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = pDevice->CreateCommandEncoder();
     encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
 
     wgpu::CommandBuffer copy = encoder.Finish();
-    device.GetQueue().Submit(1, &copy);
+    pDevice->GetQueue().Submit(1, &copy);
 
     return texture;
 }
@@ -115,8 +129,41 @@ createTexture(const TextureResource& textureRes)
 KeepAlive<wgpu::Texture>
 MaterialManager::getTexture(const TextureResource& texture)
 {
-    uint64_t id = 0;
+    uint64_t id = lemon::hash(texture);
 
     return std::move(
-        textureCache.get(0, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); }));
+        textureCache.get(id, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); }));
+}
+
+KeepAlive<wgpu::Sampler>
+MaterialManager::getSampler(const SamplerDescriptor& inDesc)
+{
+    wgpu::SamplerDescriptor desc;
+    desc.addressModeU = inDesc.addressModeU;
+    desc.addressModeV = inDesc.addressModeV;
+    desc.addressModeW = inDesc.addressModeW;
+    desc.magFilter = inDesc.magFilter;
+    desc.minFilter = inDesc.minFilter;
+    desc.mipmapFilter = inDesc.mipmapFilter;
+    desc.lodMinClamp = inDesc.lodMinClamp;
+    desc.lodMaxClamp = inDesc.lodMaxClamp;
+    desc.compare = inDesc.compare;
+    desc.maxAnisotropy = inDesc.maxAnisotropy;
+
+    return std::move(getSampler(desc));
+}
+
+KeepAlive<wgpu::Sampler>
+MaterialManager::getSampler(const wgpu::SamplerDescriptor& desc)
+{
+    uint64_t id = lemon::hash(desc);
+
+    return std::move(
+        samplerCache.get(id, [&]() { return new wgpu::Sampler(std::move(pDevice->CreateSampler(&desc))); }));
+}
+
+void
+MaterialManager::init(wgpu::Device& device)
+{
+    pDevice = &device;
 }

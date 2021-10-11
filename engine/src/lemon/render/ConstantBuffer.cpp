@@ -1,9 +1,11 @@
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/utils.h>
+#include <lemon/shared/math.h>
 
+using namespace lemon;
 using namespace lemon::render;
 
-ConstantBuffer::ConstantBuffer(size_t inSize)
+ConstantBuffer::ConstantBuffer(size_t inSize) : data{}, buffer{}
 {
     size = inSize;
     offset = 0;
@@ -16,11 +18,22 @@ ConstantBuffer::init(wgpu::Device& device)
     wgpu::BufferDescriptor descriptor;
     descriptor.size = size;
     descriptor.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
-    buffer = device.CreateBuffer(&descriptor);
+    buffer = std::move(device.CreateBuffer(&descriptor));
+}
 
-    auto layout = makeBindGroupLayout(device, {{0, wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Vertex,
-                                                wgpu::BufferBindingType::Uniform, true}});
-    bg = makeBindGroup(device, layout, {{0, buffer, 0, 256}});
+uint32_t
+ConstantBuffer::write(const uint8_t* inData, size_t inSize)
+{
+    LEMON_ASSERT(offset + inSize <= size);
+
+    auto dataOffset = offset;
+    auto err = memcpy_s(data.get(offset), inSize, inData, inSize);
+
+    LEMON_ASSERT(!err, "failed to write constant buffer data");
+
+    offset += math::alignUp(inSize, (size_t)kMinUniformBufferOffsetAlignment);
+
+    return dataOffset;
 }
 
 void
@@ -32,5 +45,5 @@ ConstantBuffer::reset()
 void
 ConstantBuffer::upload(wgpu::Device& device) const
 {
-    device.GetQueue().WriteBuffer(buffer, 0, data.get<void>(), offset);
+    device.GetQueue().WriteBuffer(buffer, 0, data, offset);
 }

@@ -2,7 +2,7 @@
 #include <lemon/render/material/MaterialLayout.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <folly/small_vector.h>
-#include <lemon-shader/ShaderReflection.h>
+#include <lemon/shader/reflection.h>
 
 using namespace lemon::render;
 using namespace lemon::shader;
@@ -22,7 +22,7 @@ MaterialUniformLayout::MaterialUniformLayout(const ShaderProgram& program, uint3
             continue;
         }
 
-        LEMON_ASSERT_MSG(res.members.size() <= kMaterialMaxUniformMembers, "too many uniform properties");
+        LEMON_ASSERT(res.members.size() <= kMaterialMaxUniformMembers, "too many uniform properties");
 
         auto& uniform = uniforms[uniformCount];
         uniform.id = res.id;
@@ -40,7 +40,7 @@ MaterialUniformLayout::MaterialUniformLayout(const ShaderProgram& program, uint3
             itemCount++;
             uniform.memberCount++;
 
-            LEMON_ASSERT_MSG(itemCount <= kMaxItems, "too many uniform bindings");
+            LEMON_ASSERT(itemCount <= kMaxItems, "too many uniform bindings");
         }
 
         totalSize += res.size;

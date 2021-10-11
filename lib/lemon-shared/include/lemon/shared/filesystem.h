@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <tl/expected.hpp>
-#include <lemon/shared/DataBuffer.h>
+#include <lemon/shared/Memory.h>
 
 namespace lemon::io {
     enum class Error {
@@ -20,7 +20,7 @@ namespace lemon::io {
         NoData = 4,
     };
 
-    tl::expected<lemon::HeapBuffer, Error>
+    tl::expected<lemon::UnalignedMemory, Error>
     readBinaryFile(const std::filesystem::path& filePath);
 
     tl::expected<std::string, Error>

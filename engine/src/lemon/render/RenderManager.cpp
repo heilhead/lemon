@@ -1,5 +1,4 @@
 #include <lemon/render/RenderManager.h>
-#include <lemon/shared/assert.h>
 
 using namespace lemon::render;
 
@@ -20,4 +19,13 @@ RenderManager*
 RenderManager::get()
 {
     return gInstance;
+}
+
+void
+RenderManager::init(wgpu::Device& device)
+{
+    pDevice = &device;
+    cbuffer.init(device);
+    pipelineManager.init(device);
+    materialManager.init(device);
 }

@@ -1,29 +1,31 @@
 #pragma once
 
-#include <lemon/shared/DataBuffer.h>
+#include <lemon/shared/Memory.h>
 #include <cereal/cereal.hpp>
 
 namespace cereal {
-    template<class TArchive, typename TAlloc>
+    template<class TArchive, size_t Alignment>
     inline void
-    save(TArchive& ar, const lemon::DataBuffer<TAlloc>& data) {
+    save(TArchive& ar, const lemon::AlignedMemory<Alignment>& data)
+    {
         size_t size = data.size();
         ar(size);
 
         if (size > 0) {
-            ar.saveBinary(data.get<void>(), size);
+            ar.saveBinary(data, size);
         }
     }
 
-    template<class TArchive, typename TAlloc>
+    template<class TArchive, size_t Alignment>
     inline void
-    load(TArchive& ar, lemon::DataBuffer<TAlloc>& data) {
+    load(TArchive& ar, lemon::AlignedMemory<Alignment>& data)
+    {
         size_t size;
         ar(size);
 
         if (size > 0) {
             data.allocate(size);
-            ar.loadBinary(data.get<void>(), size);
+            ar.loadBinary(data, size);
         }
     }
 } // namespace cereal

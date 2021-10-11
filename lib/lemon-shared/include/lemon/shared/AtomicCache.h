@@ -3,7 +3,7 @@
 #include <functional>
 #include <limits>
 #include <optional>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <folly/AtomicHashMap.h>
 #include <folly/PackedSyncPtr.h>
 
@@ -38,14 +38,14 @@ namespace lemon {
             }
         }
 
-        KeepAlive(const KeepAlive& other) noexcept : KeepAlive(nullptr)
+        KeepAlive(const KeepAlive& other) : KeepAlive(nullptr)
         {
-            *this = other;
+            copyAssign(other);
         }
 
         KeepAlive(KeepAlive&& other) noexcept : KeepAlive(nullptr)
         {
-            *this = std::move(other);
+            moveAssign(std::move(other));
         }
 
         ~KeepAlive()
@@ -86,15 +86,7 @@ namespace lemon {
         operator=(const KeepAlive& other) noexcept
         {
             if (this != &other) {
-                if (ptr != nullptr) {
-                    release();
-                }
-
-                ptr = other.ptr;
-
-                if (ptr != nullptr) {
-                    acquire();
-                }
+                copyAssign(other);
             }
 
             return *this;
@@ -104,12 +96,7 @@ namespace lemon {
         operator=(KeepAlive&& other) noexcept
         {
             if (this != &other) {
-                if (ptr != nullptr) {
-                    release();
-                }
-
-                ptr = other.ptr;
-                other.ptr = nullptr;
+                moveAssign(std::move(other));
             }
 
             return *this;
@@ -172,6 +159,31 @@ namespace lemon {
             }
 
             ptr->unlock();
+        }
+
+        inline void
+        copyAssign(const KeepAlive& other)
+        {
+            if (ptr != nullptr) {
+                release();
+            }
+
+            ptr = other.ptr;
+
+            if (ptr != nullptr) {
+                acquire();
+            }
+        }
+
+        inline void
+        moveAssign(KeepAlive&& other)
+        {
+            if (ptr != nullptr) {
+                release();
+            }
+
+            ptr = other.ptr;
+            other.ptr = nullptr;
         }
     };
 

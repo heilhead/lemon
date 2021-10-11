@@ -8,6 +8,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/variant.hpp>
+#include <cereal/types/utility.hpp>
 #include <magic_enum.hpp>
 #include <lemon/serialization/common.h>
 

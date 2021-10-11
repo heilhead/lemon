@@ -2,6 +2,7 @@
 #include <string>
 #include <cxxopts.hpp>
 #include <filesystem>
+#include <thread>
 #include <lemon/shared/utils.h>
 //#include <folly/experimental/coro/BlockingWait.h>
 

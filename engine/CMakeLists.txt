@@ -31,7 +31,7 @@ set(SOURCE_FILES
         "src/lemon/resource/types/texture/PNGDecoder.cpp"
         "src/lemon/render/material/MaterialUniformData.cpp"
         "src/lemon/tasks/filesystem.cpp"
-        "src/lemon/render/material/MaterialLayout.cpp")
+        "src/lemon/render/material/MaterialLayout.cpp" "src/lemon/render/PipelineManager.cpp" "src/lemon/render/MeshVertexFormat.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

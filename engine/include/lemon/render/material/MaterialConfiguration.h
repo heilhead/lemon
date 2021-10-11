@@ -2,10 +2,12 @@
 
 #include <variant>
 #include <type_traits>
-#include <lemon/resource/types/material/common.h>
+#include <inja/inja.hpp>
 #include <lemon/shared/Hash.h>
 
-namespace lemon::res::material {
+namespace lemon::render {
+    using ComposerDefinitions = inja::json;
+
     class MaterialConfiguration {
         ComposerDefinitions definitions{};
 
@@ -48,11 +50,11 @@ namespace lemon::res::material {
 } // namespace lemon::res::material
 
 template<>
-struct folly::hasher<lemon::res::material::MaterialConfiguration> {
+struct folly::hasher<lemon::render::MaterialConfiguration> {
     using folly_is_avalanching = std::true_type;
 
     size_t
-    operator()(const lemon::res::material::MaterialConfiguration& data) const
+    operator()(const lemon::render::MaterialConfiguration& data) const
     {
         return nlohmann::detail::hash(data.getDefinitions());
     }

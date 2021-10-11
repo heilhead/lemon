@@ -6,11 +6,13 @@
 #include <cstdint>
 #include <algorithm>
 #include <limits>
+#include <concepts>
 
 #include <glm/glm.hpp>
 
 #include <lemon/resources.h>
 #include <lemon/shared/utils.h>
+#include <lemon/shared/logger.h>
 #include <lemon/scheduler.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
@@ -23,10 +25,12 @@
 #include <assimp/Logger.hpp>
 #include <assimp/DefaultLogger.hpp>
 
+using namespace lemon;
+using namespace lemon::render;
 using namespace lemon::res::model;
 
-template<class T>
-std::enable_if_t<std::is_integral_v<T>, T>
+template<std::integral T>
+T
 fpack(float v)
 {
     return static_cast<T>(std::numeric_limits<T>::max() * v);

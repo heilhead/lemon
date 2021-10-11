@@ -3,25 +3,15 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
-#include <lemon/shared/DataBuffer.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/Memory.h>
+#include <lemon/shared/logger.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
 #include <lemon/serialization/DataBuffer.h>
 #include <lemon/render.h>
+#include <lemon/render/MeshVertexFormat.h>
 
 namespace lemon::res::model {
-    enum class MeshIndexFormat { U16 = 2, U32 = 4 };
-
-    enum class MeshComponents {
-        Position = 1 << 0,
-        Normal = 1 << 1,
-        Tangent = 1 << 2,
-        UV0 = 1 << 3,
-        UV1 = 1 << 4,
-        JointInfluence = 1 << 5
-    };
-
     struct MeshPackedVertex {
         glm::f32vec3 position;
         glm::i8vec4 normal;
@@ -32,12 +22,14 @@ namespace lemon::res::model {
         glm::u8vec4 jointWeight;
 
         static size_t
-        getSize(MeshComponents components);
+        getSize(render::MeshComponents components);
 
         template<class Archive>
         inline void
-        save(Archive& ar, MeshComponents components) const
+        save(Archive& ar, render::MeshComponents components) const
         {
+            using namespace lemon::render;
+
             if ((bool)(components & MeshComponents::Position)) {
                 LEMON_SERIALIZE(ar, position);
             }
@@ -65,39 +57,17 @@ namespace lemon::res::model {
         }
     };
 
-    struct MeshGPUVertexFormat {
-        static constexpr uint8_t kMaxAttributes = 7;
-
-        std::array<wgpu::VertexAttribute, kMaxAttributes> attributes;
-        uint64_t stride = 0;
-        uint8_t attributeCount = 0;
-
-    private:
-        uint8_t locationCount = 0;
-
-    public:
-        void
-        add(wgpu::VertexFormat format);
-
-        void
-        skip();
-
-        void
-        reset();
-    };
-
     struct ModelMesh {
     public:
         uint8_t material;
 
-        MeshComponents components;
-
-        MeshGPUVertexFormat vertexFormat;
+        render::MeshComponents components;
+        render::MeshVertexFormat vertexFormat;
         wgpu::IndexFormat indexFormat;
         size_t indexCount;
 
-        HeapBuffer vertexData;
-        HeapBuffer indexData;
+        UnalignedMemory vertexData;
+        UnalignedMemory indexData;
 
         std::optional<std::vector<glm::mat4>> joints{};
 
@@ -106,6 +76,8 @@ namespace lemon::res::model {
         inline void
         load(Archive& ar)
         {
+            using namespace lemon::render;
+
             MeshIndexFormat lIdxFormat;
 
             LEMON_SERIALIZE(ar, material);

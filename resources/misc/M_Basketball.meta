@@ -12,8 +12,8 @@ MaterialResource:
   definitions:
     []
   samplers:
-    - key: surfaceSampler
-      value:
+    - first: surfaceSampler
+      second:
         addressModeU: ClampToEdge
         addressModeV: ClampToEdge
         addressModeW: ClampToEdge
@@ -25,7 +25,7 @@ MaterialResource:
         compare: Undefined
         maxAnisotropy: 1
   textures:
-    - key: surfaceTexture
-      value: misc\T_Basketball_D.png
+    - first: surfaceTexture
+      second: misc\T_Basketball_D.png
   uniforms:
     []

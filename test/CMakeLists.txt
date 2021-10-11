@@ -4,7 +4,7 @@ include(${LEMON_CPM_CMAKE_PATH})
 
 add_executable(${PROJECT_NAME}
         "src/main.cpp"
-        "src/AtomicCache.cpp")
+        "src/AtomicCache.cpp" "src/Memory.cpp")
 
 find_package(Catch2 CONFIG REQUIRED)
 

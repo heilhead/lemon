@@ -1,9 +1,9 @@
 #pragma once
 
 #include <lemon/resource/types/material/common.h>
-#include <lemon/resource/types/material/MaterialConfiguration.h>
+#include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/shared/Hash.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <lemon/shared/AtomicCache.h>
 #include <inja/inja.hpp>
 #include <inja/environment.hpp>
@@ -26,7 +26,7 @@ namespace lemon::res::material {
         }
 
         inline std::string
-        renderShaderSource(const MaterialConfiguration& config) const
+        renderShaderSource(const render::MaterialConfiguration& config) const
         {
             LEMON_ASSERT(tplRef);
             LEMON_ASSERT(tplRef->has_value());

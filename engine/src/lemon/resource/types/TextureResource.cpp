@@ -4,7 +4,7 @@
 #include <lemon/resource/types/texture/common.h>
 #include <lemon/resource/types/texture/PNGDecoder.h>
 #include <lemon/shared/filesystem.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <lemon/tasks/filesystem.h>
 #include <lemon/shared/utils.h>
 
@@ -61,6 +61,8 @@ TextureResource::load(ResourceMetadata&& meta)
     if (loadingError) {
         co_return loadingError;
     }
+
+    hash = lemon::hash(filePath.c_str());
 
     co_return {};
 }

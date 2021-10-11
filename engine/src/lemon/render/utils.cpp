@@ -117,7 +117,7 @@ lemon::render::makeBindGroup(const wgpu::Device& device, const wgpu::BindGroupLa
 {
     std::vector<wgpu::BindGroupEntry> entries;
     for (const BindingInitializationHelper& helper : entriesInitializer) {
-        entries.push_back(helper.GetAsBinding());
+        entries.push_back(helper.getAsBinding());
     }
 
     wgpu::BindGroupDescriptor descriptor;

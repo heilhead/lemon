@@ -87,3 +87,25 @@ namespace lemon::res {
         return hash;
     }
 } // namespace lemon::res
+
+template<>
+struct folly::hasher<lemon::res::ResourceObjectHandle> {
+    using folly_is_avalanching = std::true_type;
+
+    size_t
+    operator()(const lemon::res::ResourceObjectHandle& data) const
+    {
+        return data.get();
+    }
+};
+
+template<>
+struct folly::hasher<lemon::res::ResourceHandle> {
+    using folly_is_avalanching = std::true_type;
+
+    size_t
+    operator()(const lemon::res::ResourceHandle& data) const
+    {
+        return data.get();
+    }
+};

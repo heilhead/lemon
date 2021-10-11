@@ -10,21 +10,21 @@ MaterialResource:
     shadingModel: Lit
     blendMode: Opaque
   definitions:
-    - key: SCROLL_SPEED_U
-      value:
+    - first: MATERIAL_SCROLL_SPEED_U
+      second:
         index: 2
         data: 0.5
-    - key: SCROLL_SPEED_V
-      value:
+    - first: MATERIAL_SCROLL_SPEED_V
+      second:
         index: 2
         data: 1
-    - key: ENABLE_ARBITRARY_FLAG
-      value:
+    - first: MATERIAL_ENABLE_ARBITRARY_FLAG
+      second:
         index: 3
         data: true
   samplers:
-    - key: mySampler1
-      value:
+    - first: mySampler1
+      second:
         addressModeU: ClampToEdge
         addressModeV: ClampToEdge
         addressModeW: ClampToEdge
@@ -35,8 +35,8 @@ MaterialResource:
         lodMaxClamp: 1000
         compare: Undefined
         maxAnisotropy: 1
-    - key: mySampler2
-      value:
+    - first: mySampler2
+      second:
         addressModeU: ClampToEdge
         addressModeV: ClampToEdge
         addressModeW: ClampToEdge
@@ -48,23 +48,15 @@ MaterialResource:
         compare: Undefined
         maxAnisotropy: 1
   textures:
-    - key: albedo
-      value: a\c\T_A.png
-    - key: normal
-      value: a\c\T_B.png
-    - key: roughness
-      value: a\c\T_C.png
+    - first: albedo
+      second: a\c\T_A.png
+    - first: normal
+      second: a\c\T_B.png
+    - first: roughness
+      second: a\c\T_C.png
   uniforms:
-    - key: lemonData.lemonVecData
-      value:
-        index: 8
-        data:
-          value0: 1.5
-          value1: 2.5
-          value2: 3.5
-          value3: 4.5
-    - key: lemonData.lemonMat
-      value:
+    - first: lemonData.lemonMat
+      second:
         index: 9
         data:
           value0:
@@ -87,8 +79,16 @@ MaterialResource:
             value1: 0
             value2: 0
             value3: 1
-    - key: lemonData.lemonArr
-      value:
+    - first: lemonData.lemonVecData
+      second:
+        index: 8
+        data:
+          value0: 1.5
+          value1: 2.5
+          value2: 3.5
+          value3: 4.5
+    - first: lemonData.lemonArr
+      second:
         index: 2
         data:
           value0: 1

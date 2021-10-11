@@ -7,6 +7,7 @@
 #include <lemon/resource/types/material/MaterialComposer.h>
 #include <lemon/render/material/common.h>
 #include <lemon/render/material/ShaderProgram.h>
+#include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
 #include <lemon/shared/utils.h>
@@ -15,6 +16,25 @@
 #include <dawn/webgpu_cpp.h>
 
 namespace lemon::res {
+    namespace material {
+        struct SamplerDescriptor {
+            wgpu::AddressMode addressModeU = wgpu::AddressMode::ClampToEdge;
+            wgpu::AddressMode addressModeV = wgpu::AddressMode::ClampToEdge;
+            wgpu::AddressMode addressModeW = wgpu::AddressMode::ClampToEdge;
+            wgpu::FilterMode magFilter = wgpu::FilterMode::Nearest;
+            wgpu::FilterMode minFilter = wgpu::FilterMode::Nearest;
+            wgpu::FilterMode mipmapFilter = wgpu::FilterMode::Nearest;
+            float lodMinClamp = 0.0f;
+            float lodMaxClamp = 1000.0f;
+            wgpu::CompareFunction compare = wgpu::CompareFunction::Undefined;
+            uint16_t maxAnisotropy = 1;
+
+            template<class TArchive>
+            void
+            serialize(TArchive& ar);
+        };
+    } // namespace material
+
     class MaterialResource : public ResourceInstance {
     public:
         // Note: New types can only be added at the back of the type list of these variants,
@@ -38,23 +58,6 @@ namespace lemon::res {
             serialize(TArchive& ar);
         };
 
-        struct SamplerDescriptor {
-            wgpu::AddressMode addressModeU = wgpu::AddressMode::ClampToEdge;
-            wgpu::AddressMode addressModeV = wgpu::AddressMode::ClampToEdge;
-            wgpu::AddressMode addressModeW = wgpu::AddressMode::ClampToEdge;
-            wgpu::FilterMode magFilter = wgpu::FilterMode::Nearest;
-            wgpu::FilterMode minFilter = wgpu::FilterMode::Nearest;
-            wgpu::FilterMode mipmapFilter = wgpu::FilterMode::Nearest;
-            float lodMinClamp = 0.0f;
-            float lodMaxClamp = 1000.0f;
-            wgpu::CompareFunction compare = wgpu::CompareFunction::Undefined;
-            uint16_t maxAnisotropy = 1;
-
-            template<class TArchive>
-            void
-            serialize(TArchive& ar);
-        };
-
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource traits
         /////////////////////////////////////////////////////////////////////////////////////
@@ -65,10 +68,10 @@ namespace lemon::res {
 
             DomainDescriptor domain;
 
-            std::unordered_map<std::string, material::MaterialConfiguration::Value> definitions;
-            std::unordered_map<std::string, SamplerDescriptor> samplers;
-            std::unordered_map<std::string, std::string> textures;
-            std::unordered_map<std::string, UniformValue> uniforms;
+            std::vector<std::pair<std::string, render::MaterialConfiguration::Value>> definitions;
+            std::vector<std::pair<std::string, material::SamplerDescriptor>> samplers;
+            std::vector<std::pair<std::string, std::string>> textures;
+            std::vector<std::pair<std::string, UniformValue>> uniforms;
 
             template<class TArchive>
             void
@@ -84,10 +87,10 @@ namespace lemon::res {
     private:
         DomainDescriptor domain;
         std::optional<material::MaterialBlueprint> blueprint;
-        material::MaterialConfiguration config;
-        std::unordered_map<StringID, SamplerDescriptor> samplers;
-        std::unordered_map<StringID, ResourceLocation> textures;
-        std::unordered_map<StringID, UniformValue> uniforms;
+        render::MaterialConfiguration config;
+        std::vector<std::pair<StringID, material::SamplerDescriptor>> samplers;
+        std::vector<std::pair<StringID, ResourceLocation>> textures;
+        std::vector<std::pair<StringID, UniformValue>> uniforms;
 
     public:
         MaterialResource();
@@ -102,7 +105,7 @@ namespace lemon::res {
             return blueprint;
         }
 
-        inline const material::MaterialConfiguration&
+        inline const render::MaterialConfiguration&
         getConfig() const
         {
             return config;
@@ -114,14 +117,23 @@ namespace lemon::res {
             return domain;
         }
 
-        const SamplerDescriptor*
-        getSamplerDescriptor(StringID id) const;
+        inline const std::vector<std::pair<StringID, material::SamplerDescriptor>>&
+        getSamplerDescriptors() const
+        {
+            return samplers;
+        }
 
-        const ResourceLocation*
-        getTextureLocation(StringID id) const;
+        inline const std::vector<std::pair<StringID, ResourceLocation>>&
+        getTextureLocations() const
+        {
+            return textures;
+        }
 
-        const UniformValue*
-        getUniformValue(StringID id) const;
+        inline const std::vector<std::pair<StringID, UniformValue>>&
+        getUniformValues() const
+        {
+            return uniforms;
+        }
     };
 } // namespace lemon::res
 

@@ -3,7 +3,7 @@
 namespace lemon::res {
     template<class TArchive>
     void
-    MaterialResource::SamplerDescriptor::serialize(TArchive& ar)
+    material::SamplerDescriptor::serialize(TArchive& ar)
     {
         LEMON_SERIALIZE(ar, addressModeU);
         LEMON_SERIALIZE(ar, addressModeV);
@@ -54,11 +54,11 @@ namespace lemon::res {
 } // namespace lemon::res
 
 template<>
-struct folly::hasher<lemon::res::MaterialResource::SamplerDescriptor> {
+struct folly::hasher<lemon::res::material::SamplerDescriptor> {
     using folly_is_avalanching = std::true_type;
 
     size_t
-    operator()(const lemon::res::MaterialResource::SamplerDescriptor& data) const
+    operator()(const lemon::res::material::SamplerDescriptor& data) const
     {
         return lemon::hash(data.addressModeU, data.addressModeV, data.addressModeW, data.magFilter,
                            data.minFilter, data.mipmapFilter, data.lodMinClamp, data.lodMaxClamp,

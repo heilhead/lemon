@@ -2,7 +2,7 @@
 
 #include <lemon/serialization.h>
 #include <lemon/resource/common.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <lemon/shared/NonCopyable.h>
 #include <filesystem>
 

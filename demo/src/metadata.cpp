@@ -85,25 +85,24 @@ createMetadata()
             mat->domain.type = MaterialResource::Domain::Surface;
             mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
             mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
-            mat->samplers.insert({"mySampler1", lemon::res::MaterialResource::SamplerDescriptor()});
-            mat->samplers.insert({"mySampler2", lemon::res::MaterialResource::SamplerDescriptor()});
-            mat->definitions.insert({"SCROLL_SPEED_U", 0.5f});
-            mat->definitions.insert({"SCROLL_SPEED_V", 1.0f});
-            mat->definitions.insert({"ENABLE_ARBITRARY_FLAG", true});
+            mat->samplers.emplace_back(std::make_pair("mySampler1", lemon::res::material::SamplerDescriptor()));
+            mat->samplers.emplace_back(std::make_pair("mySampler2", lemon::res::material::SamplerDescriptor()));
+            mat->definitions.emplace_back(std::make_pair("MATERIAL_SCROLL_SPEED_U", 0.5f));
+            mat->definitions.emplace_back(std::make_pair("MATERIAL_SCROLL_SPEED_V", 1.0f));
+            mat->definitions.emplace_back(std::make_pair("MATERIAL_ENABLE_ARBITRARY_FLAG", true));
 
             using UniformValue = MaterialResource::UniformValue;
 
             {
-                mat->uniforms.insert({"lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}});
+                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}));
             }
 
             {
-                mat->uniforms.insert(
-                    {"lemonData.lemonVecData", UniformValue{glm::f32vec4{1.5f, 2.5f, 3.5f, 4.5f}}});
+                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonVecData", UniformValue{glm::f32vec4{1.5f, 2.5f, 3.5f, 4.5f}}));
             }
 
             {
-                mat->uniforms.insert({"lemonData.lemonArr", UniformValue{glm::i32vec4{1, 2, 3, 4}}});
+                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonArr", UniformValue{glm::i32vec4{1, 2, 3, 4}}));
             }
 
             for (int k = 0; k < 3; k++) {
@@ -118,7 +117,7 @@ createMetadata()
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
 
-                mat->textures.insert({textureTypes[k], texPath.string()});
+                mat->textures.emplace_back(std::make_pair(textureTypes[k], texPath.string()));
             }
 
             path matPath = p1;
@@ -197,8 +196,8 @@ createMetadata()
         mat->domain.type = MaterialResource::Domain::Surface;
         mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
         mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
-        mat->samplers.insert({"surfaceSampler", lemon::res::MaterialResource::SamplerDescriptor()});
-        mat->textures.insert({"surfaceTexture", texPath.string()});
+        mat->samplers.emplace_back(std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
+        mat->textures.emplace_back(std::make_pair("surfaceTexture", texPath.string()));
 
         path matPath = "misc\\M_Basketball";
 

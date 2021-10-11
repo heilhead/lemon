@@ -87,5 +87,5 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
         swapChain.Configure(textureFormat, wgpu::TextureUsage::RenderAttachment, wndWidth, wndHeight);
     }
 
-    renderManager.setDevice(device);
+    renderManager.init(device);
 }

@@ -1,5 +1,5 @@
 #include <lemon/scheduler/Scheduler.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <folly/system/ThreadName.h>
 
 using namespace lemon::scheduler;

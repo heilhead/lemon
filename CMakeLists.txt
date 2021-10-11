@@ -17,9 +17,9 @@ add_subdirectory(lib/lemon-shared)
 add_subdirectory(lib/lemon-shader) # temporary!
 add_subdirectory(engine)
 add_subdirectory(demo)
-#add_subdirectory(tools)
+add_subdirectory(tools)
 
 #option(LEMON_BUILD_TESTS ON)
 #if (LEMON_BUILD_TESTS)
-#    add_subdirectory(test)
+   add_subdirectory(test)
 #endif ()

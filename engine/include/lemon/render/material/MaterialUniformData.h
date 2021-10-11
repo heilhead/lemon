@@ -1,28 +1,29 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
-#include <lemon/shared/DataBuffer.h>
+#include <lemon/shared/Memory.h>
 #include <lemon/shared/AtomicCache.h>
 #include <lemon/render/material/common.h>
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/material/MaterialLayout.h>
 
 namespace lemon::render {
-    // TODO: Figure out proper constraints for uniform data types. `std::is_copy_assignable` is not enough
-    // here.
-    template<typename T>
-    concept CopyableUniform = std::is_integral_v<T> || std::is_copy_assignable_v<T>;
-
     class MaterialUniformData {
-        KeepAlive<MaterialLayout> layout;
+        static constexpr size_t kUniformBufferDataAlignment = 4;
+
+        KeepAlive<MaterialLayout> layout{};
         uint32_t offsetCount = 0;
         uint32_t offsets[kMaterialMaxUniforms]{0};
-        HeapBuffer data;
+        AlignedMemory<kUniformBufferDataAlignment> data;
 
     public:
+        MaterialUniformData() {}
+
         MaterialUniformData(const KeepAlive<MaterialLayout>& inLayout);
 
-        template<CopyableUniform TData>
+        // TODO: Figure out proper constraints for uniform data types. `std::regular` is not enough here.
+        template<std::regular TData>
         void
         setData(StringID id, const TData& val)
         {
@@ -35,16 +36,15 @@ namespace lemon::render {
                     auto& member = uniform.members[m];
 
                     if (member.id == id) {
-                        if (sizeof(val) != member.size) {
+                        if (sizeof(val) == member.size) {
+                            // TODO: Check pointer alignment?
+                            auto* pDest = data.get<TData>(member.offset);
+                            *pDest = val;
+                        } else {
                             logger::warn(
                                 "failed to set uniform value: member size mismatch. expected: ", member.size,
                                 " actual: ", sizeof(val), " type: ", typeid(TData).name(), " id: ", id);
-                            return;
                         }
-
-                        auto* pData = *data;
-                        auto* pDest = reinterpret_cast<TData*>(pData + (ptrdiff_t)member.offset);
-                        *pDest = val;
 
                         return;
                     }
@@ -53,5 +53,11 @@ namespace lemon::render {
 
             logger::warn("failed to set uniform value: member not found. id: ", id);
         }
+
+        void
+        upload(class ConstantBuffer& buffer);
+
+        void
+        setLayout(const KeepAlive<MaterialLayout>& inLayout);
     };
 } // namespace lemon::render

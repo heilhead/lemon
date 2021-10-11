@@ -7,7 +7,7 @@
 #include <iomanip>
 
 namespace lemon::logger {
-    namespace {
+    namespace detail {
         inline std::ostream&
         getDefaultLogStream()
         {
@@ -35,33 +35,64 @@ namespace lemon::logger {
 
             outStream << stream.view();
         }
-    } // namespace
+
+        template<typename... Args>
+        inline void
+        assertionError(const char* expr, const char* file, int line, Args&&... args)
+        {
+            std::stringstream stream;
+            stream << "Assertion `" << expr << "` failed in " << file << " line " << line;
+
+            if constexpr (sizeof...(Args) > 0) {
+                stream << ": ";
+                (stream << ... << args);
+            }
+
+            printLog(getErrorLogStream(), "ASSERTION ERROR", stream.view());
+        }
+    } // namespace detail
 
     template<typename... Args>
     inline void
     trace(Args&&... args)
     {
-        printLog(getDefaultLogStream(), "TRACE", std::forward<Args>(args)...);
+        detail::printLog(detail::getDefaultLogStream(), "TRACE", std::forward<Args>(args)...);
     }
 
     template<typename... Args>
     inline void
     log(Args&&... args)
     {
-        printLog(getDefaultLogStream(), "LOG", std::forward<Args>(args)...);
+        detail::printLog(detail::getDefaultLogStream(), "LOG", std::forward<Args>(args)...);
     }
 
     template<typename... Args>
     inline void
     warn(Args&&... args)
     {
-        printLog(getDefaultLogStream(), "WARN", std::forward<Args>(args)...);
+        detail::printLog(detail::getDefaultLogStream(), "WARN", std::forward<Args>(args)...);
     }
 
     template<typename... Args>
     inline void
     err(Args&&... args)
     {
-        printLog(getErrorLogStream(), "ERROR", std::forward<Args>(args)...);
+        detail::printLog(detail::getErrorLogStream(), "ERROR", std::forward<Args>(args)...);
     }
 } // namespace lemon::logger
+
+#ifndef NDEBUG
+#define LEMON_ASSERT(expr, ...)                                                                              \
+    do {                                                                                                     \
+        if (!(expr)) {                                                                                       \
+            ::lemon::logger::detail::assertionError(#expr, __FILE__, __LINE__, __VA_ARGS__);                 \
+            ::std::terminate();                                                                              \
+        }                                                                                                    \
+    } while (false)
+#else
+#define LEMON_ASSERT(expr)                                                                                   \
+    do {                                                                                                     \
+    } while (false)
+#endif
+
+#define LEMON_TODO() LEMON_ASSERT(false, "not implemented")

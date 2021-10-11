@@ -30,7 +30,7 @@ namespace lemon::render {
         }
 
         wgpu::BindGroupEntry
-        GetAsBinding() const
+        getAsBinding() const
         {
             wgpu::BindGroupEntry result;
 

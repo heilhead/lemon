@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lemon/shared/DataBuffer.h>
+#include <lemon/shared/Memory.h>
 
 namespace lemon::res::texture {
     enum class DecodingError {
@@ -10,7 +10,7 @@ namespace lemon::res::texture {
     enum class InputColorChannels { R, RG, RGB, RGBA };
 
     struct ImageData {
-        HeapBuffer data;
+        UnalignedMemory data;
         uint32_t width;
         uint32_t height;
         uint8_t stride;

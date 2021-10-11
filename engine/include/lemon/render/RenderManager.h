@@ -1,13 +1,17 @@
 #pragma once
 
 #include <lemon/render/material/MaterialManager.h>
-#include <lemon/shared/assert.h>
+#include <lemon/render/ConstantBuffer.h>
+#include <lemon/render/PipelineManager.h>
+#include <lemon/shared/logger.h>
 #include <dawn/webgpu_cpp.h>
 
 namespace lemon::render {
     class RenderManager {
         wgpu::Device* pDevice;
+        ConstantBuffer cbuffer;
         MaterialManager materialManager;
+        PipelineManager pipelineManager;
 
     public:
         RenderManager();
@@ -16,10 +20,25 @@ namespace lemon::render {
         static RenderManager*
         get();
 
+        void
+        init(wgpu::Device& device);
+
         inline MaterialManager&
         getMaterialManager()
         {
             return materialManager;
+        }
+
+        inline PipelineManager&
+        getPipelineManager()
+        {
+            return pipelineManager;
+        }
+
+        inline ConstantBuffer&
+        getConstantBuffer()
+        {
+            return cbuffer;
         }
 
         inline wgpu::Device&
@@ -27,13 +46,6 @@ namespace lemon::render {
         {
             LEMON_ASSERT(pDevice != nullptr);
             return *pDevice;
-        }
-
-        // TODO: Remove this
-        inline void
-        setDevice(wgpu::Device& device)
-        {
-            pDevice = &device;
         }
     };
 } // namespace lemon::render

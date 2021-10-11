@@ -1,9 +1,10 @@
 #include <lemon/resource/ResourceLocation.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 
-ResourceLocation::ResourceLocation(const std::string& inLocation) {
+ResourceLocation::ResourceLocation(const std::string& inLocation)
+{
     size_t pos = inLocation.find(kLocationObjectDelimiter);
     if (pos != std::string::npos) {
         auto sFile = inLocation.substr(0, pos);
@@ -19,7 +20,8 @@ ResourceLocation::ResourceLocation(const std::string& inLocation) {
     }
 }
 
-ResourceLocation::ResourceLocation(const std::string& inLocation, std::string& inObject) {
+ResourceLocation::ResourceLocation(const std::string& inLocation, std::string& inObject)
+{
     LEMON_ASSERT(inLocation.find(kLocationObjectDelimiter) == std::string::npos);
     LEMON_ASSERT(inObject.find(kLocationObjectDelimiter) == std::string::npos);
 

@@ -2,10 +2,10 @@
 
 #include <cassert>
 #include <vector>
-#include <lemon-shader/ShaderReflection.h>
+#include <lemon/shader/reflection.h>
 #include <lemon/shared/Hash.h>
 #include <dawn/webgpu_cpp.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
 namespace lemon::render {
     class ShaderProgram {

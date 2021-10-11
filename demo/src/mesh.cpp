@@ -62,7 +62,6 @@ private:
     wgpu::Buffer sharedUniformBuffer;
 
     ConstantBuffer cbuffer;
-    ConstantBufferBindingLayout cbufLayout;
 
     const model::ModelMesh* mesh;
 
@@ -157,9 +156,9 @@ public:
         //{
         wgpu::VertexBufferLayout vertexLayout;
         vertexLayout.stepMode = wgpu::VertexStepMode::Vertex;
-        vertexLayout.arrayStride = mesh->vertexFormat.stride;
-        vertexLayout.attributeCount = mesh->vertexFormat.attributeCount;
-        vertexLayout.attributes = &mesh->vertexFormat.attributes[0];
+        vertexLayout.arrayStride = mesh->vertexFormat.getStride();
+        vertexLayout.attributeCount = mesh->vertexFormat.getAttributeCount();
+        vertexLayout.attributes = mesh->vertexFormat.getAttributes();
 
         auto& vertexState = desc.vertex;
         vertexState.bufferCount = 1;
@@ -264,9 +263,9 @@ public:
 
         mesh = model->getMeshes()[0];
 
-        vertexBuffer = createBufferFromData(device, mesh->vertexData.get<void>(), mesh->vertexData.size(),
+        vertexBuffer = createBufferFromData(device, mesh->vertexData, mesh->vertexData.size(),
                                             wgpu::BufferUsage::Vertex);
-        indexBuffer = createBufferFromData(device, mesh->indexData.get<void>(), mesh->indexData.size(),
+        indexBuffer = createBufferFromData(device, mesh->indexData, mesh->indexData.size(),
                                            wgpu::BufferUsage::Index);
 
         cbuffer.init(device);

@@ -1,12 +1,12 @@
 #include <lemon/resource/types/texture/PNGDecoder.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <lodepng.h>
 
 using namespace lemon;
 using namespace lemon::res::texture;
 
 std::optional<DecodingError>
-lemon::res::texture::decodePNG(const HeapBuffer& inBytes, InputColorChannels channels, uint8_t depth,
+lemon::res::texture::decodePNG(const UnalignedMemory& inBytes, InputColorChannels channels, uint8_t depth,
                                ImageData& outData)
 {
     LodePNGColorType colorType;

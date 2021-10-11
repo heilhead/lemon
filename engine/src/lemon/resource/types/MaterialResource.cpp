@@ -6,8 +6,9 @@
 #include <lemon/render/RenderManager.h>
 #include <lemon/device/Device.h>
 #include <lemon/shared/utils.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 
+using namespace lemon;
 using namespace lemon::utils;
 using namespace lemon::device;
 using namespace lemon::res;
@@ -15,7 +16,7 @@ using namespace lemon::res::material;
 using namespace lemon::render;
 
 uint64_t
-computeHash(const std::optional<MaterialBlueprint>& blueprint, const MaterialConfiguration& config)
+computeHash(const std::optional<MaterialBlueprint>& blueprint, const render::MaterialConfiguration& config)
 {
     lemon::Hash hash;
 
@@ -60,15 +61,15 @@ MaterialResource::load(ResourceMetadata&& md)
     }
 
     for (const auto& [k, v] : pMeta->samplers) {
-        samplers.insert({lemon::sid(k), v});
+        samplers.emplace_back(std::make_pair(lemon::sid(k), v));
     }
 
     for (const auto& [k, v] : pMeta->textures) {
-        textures.insert({lemon::sid(k), ResourceLocation(v)});
+        textures.emplace_back(std::make_pair(lemon::sid(k), ResourceLocation(v)));
     }
 
     for (const auto& [k, v] : pMeta->uniforms) {
-        uniforms.insert({lemon::sid(k), v});
+        uniforms.emplace_back(std::make_pair(lemon::sid(k), v));
     }
 
     if (pMeta->baseType == BaseType::Shader) {
@@ -83,37 +84,4 @@ MaterialResource::load(ResourceMetadata&& md)
     }
 
     co_return {};
-}
-
-const MaterialResource::SamplerDescriptor*
-MaterialResource::getSamplerDescriptor(StringID id) const
-{
-    auto search = samplers.find(id);
-    if (search == samplers.end()) {
-        return nullptr;
-    }
-
-    return &search->second;
-}
-
-const ResourceLocation*
-MaterialResource::getTextureLocation(StringID id) const
-{
-    auto search = textures.find(id);
-    if (search == textures.end()) {
-        return nullptr;
-    }
-
-    return &search->second;
-}
-
-const MaterialResource::UniformValue*
-MaterialResource::getUniformValue(StringID id) const
-{
-    auto search = uniforms.find(id);
-    if (search == uniforms.end()) {
-        return nullptr;
-    }
-
-    return &search->second;
 }

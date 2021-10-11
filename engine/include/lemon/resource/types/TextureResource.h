@@ -48,6 +48,7 @@ namespace lemon::res {
     private:
         texture::ImageData imageData;
         wgpu::TextureFormat GPUFormat;
+        uint64_t hash = 0;
 
     public:
         TextureResource();
@@ -67,5 +68,25 @@ namespace lemon::res {
         {
             return GPUFormat;
         }
+
+        // TODO: Currently, texture hash is based on the file path, completely ignoring other parameters,
+        // assuming there won't be different variations of the same texture (e.g. srgb/non-srgb versions).
+        // This will need to be improved in future.
+        inline const uint64_t
+        getHash() const
+        {
+            return hash;
+        }
     };
 } // namespace lemon::res
+
+template<>
+struct folly::hasher<lemon::res::TextureResource> {
+    using folly_is_avalanching = std::true_type;
+
+    size_t
+    operator()(const lemon::res::TextureResource& data) const
+    {
+        return data.getHash();
+    }
+};

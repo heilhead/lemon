@@ -6,7 +6,7 @@
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/scheduler.h>
 #include <lemon/shared/utils.h>
-#include <lemon/shared/assert.h>
+#include <lemon/shared/logger.h>
 #include <lemon/tasks/filesystem.h>
 
 using namespace lemon::scheduler;

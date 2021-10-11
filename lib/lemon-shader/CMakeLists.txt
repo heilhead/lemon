@@ -15,7 +15,9 @@ set(LEMON_CPM_CMAKE_PATH ${LEMON_ROOT}/buildtools/cmake/CPM.cmake)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(SOURCE_FILES src/lemon-shader/ShaderReflection.cpp)
+set(SOURCE_FILES
+    "src/lemon/shader/ShaderReflection.cpp"
+    "src/lemon/shader/reflection.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::shader ALIAS ${PROJECT_NAME})
