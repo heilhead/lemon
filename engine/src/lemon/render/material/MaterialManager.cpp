@@ -66,29 +66,57 @@ MaterialManager::getShader(const MaterialResource& material, const render::Mater
     }));
 }
 
+StringID
+computeMaterialLayoutID(const ShaderProgram& program, uint8_t bindGroupIndex)
+{
+    return lemon::hash(program.getReflectionHash(), bindGroupIndex);
+}
+
 KeepAlive<MaterialLayout>
-MaterialManager::getMaterialLayout(const MaterialResource& material, const ShaderProgram& program)
+MaterialManager::getMaterialLayout(const MaterialResource& material, const ShaderProgram& program,
+                                   uint8_t bindGroupIndex)
 {
     if (!program) {
         return nullptr;
     }
 
-    return std::move(materialLayoutCache.get(program.reflectionHash, [&]() {
-        return new MaterialLayout(material, program, kUserBindGroupIndex);
-    }));
+    auto id = computeMaterialLayoutID(program, bindGroupIndex);
+
+    return std::move(
+        materialLayoutCache.get(id, [&]() { return new MaterialLayout(material, program, bindGroupIndex); }));
+}
+
+KeepAlive<MaterialLayout>
+MaterialManager::getMaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex)
+{
+    if (!program) {
+        return nullptr;
+    }
+
+    auto id = computeMaterialLayoutID(program, bindGroupIndex);
+
+    return std::move(
+        materialLayoutCache.get(id, [&]() { return new MaterialLayout(program, bindGroupIndex); }));
 }
 
 MaterialInstance
 MaterialManager::getMaterialInstance(const res::MaterialResource& material,
                                      const MeshVertexFormat& vertexFormat)
 {
-    MaterialResourceDescriptor desc;
-    desc.pResource = &material;
-    desc.meshComponents = vertexFormat.getComponents();
+    const MaterialResourceDescriptor desc{.pResource = &material,
+                                          .meshComponents = vertexFormat.getComponents()};
 
     auto id = lemon::hash(desc);
-    auto kaSharedResources = std::move(
-        sharedResourcesCache.get(id, [&]() { return new MaterialSharedResources(material, vertexFormat); }));
+
+    auto kaSharedResources = std::move(sharedResourcesCache.get(id, [&]() {
+        auto* pMatShared = new MaterialSharedResources(material, vertexFormat);
+
+        // TODO: Sanity check `pMatShared` for validity.
+
+        PipelineManager::get()->assignPipelines(*pMatShared, vertexFormat);
+
+        return pMatShared;
+    }));
 
     return MaterialInstance(kaSharedResources);
 }

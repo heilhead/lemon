@@ -9,7 +9,7 @@
 
 namespace lemon {
     /// <summary>
-    /// Thread-safe atomic reference counted resource handle for use with `AtomicCache`.
+    /// Thread-safe atomic reference counted shared pointer to a resource owned by an `AtomicCache`.
     ///
     /// Notes:
     ///
@@ -18,7 +18,7 @@ namespace lemon {
     ///   until deleted. If mutability is a requirement, a separate locking mechanism
     ///   must be implemented within the data itself.
     ///
-    /// - `KeepAlive` objects must not outlive the `AtomicCache` containing the data.
+    /// - `KeepAlive` objects must not outlive the `AtomicCache` owning the data.
     /// </summary>
     /// <typeparam name="TData">Resource data type</typeparam>
     template<typename TData>
@@ -208,9 +208,9 @@ namespace lemon {
     ///   counted pointer. Once all of the handles pointing to the data are destroyed,
     ///   the data is destroyed too.
     ///
-    /// - All of the data stored in `AtomicCache` map is destroyed along with it. For this
-    ///   reason, no `KeepAlive` can outlive the `AtomicCache` as they'll be left with
-    ///   a dangling pointer.
+    /// - All of the data stored in `AtomicCache` is destroyed along with it. For this
+    ///   reason, no `KeepAlive` handles can outlive the `AtomicCache` as they'll be left
+    ///   with a dangling pointer.
     /// </summary>
     /// <typeparam name="TData">Resource data type</typeparam>
     /// <typeparam name="TKey">An atomic integer type: either `uint32_t` or `uint64_t`</typeparam>

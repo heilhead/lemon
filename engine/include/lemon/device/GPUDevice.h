@@ -3,6 +3,7 @@
 #include <dawn/webgpu_cpp.h>
 #include <dawn/dawn_wsi.h>
 #include <dawn_native/DawnNative.h>
+#include <dawn_native/D3D12Backend.h>
 #include <lemon/render/RenderManager.h>
 
 namespace lemon::device {
@@ -43,6 +44,13 @@ namespace lemon::device {
         {
             // TODO: Should this method even exist?
             return swapChainImpl;
+        }
+
+        inline wgpu::TextureFormat
+        getColorTargetFormat() const
+        {
+            return static_cast<wgpu::TextureFormat>(
+                dawn_native::d3d12::GetNativeSwapChainPreferredFormat(&swapChainImpl));
         }
     };
 } // namespace lemon::device

@@ -41,11 +41,8 @@ createMeshConfig(const MeshVertexFormat& fmt)
     config.define("MESH_ENABLE_TANGENT", bTangent);
     config.define("MESH_ENABLE_TANGENT_SPACE", bTangent && bNormal);
 
-    bool bUV0 = fmt.has(MeshComponents::UV0);
-    bool bUV1 = fmt.has(MeshComponents::UV1);
-
-    config.define("MESH_ENABLE_TEXTURE", bUV0);
-    config.define("MESH_ENABLE_TEXCOORD1", bUV1);
+    config.define("MESH_ENABLE_TEXTURE0", fmt.has(MeshComponents::UV0));
+    config.define("MESH_ENABLE_TEXTURE1", fmt.has(MeshComponents::UV1));
 
     config.define("MESH_ENABLE_SKIN", fmt.has(MeshComponents::JointInfluence));
 
@@ -55,36 +52,44 @@ createMeshConfig(const MeshVertexFormat& fmt)
 MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& matRes,
                                                  const MeshVertexFormat& vertexFormat)
 {
-    for (auto& [k, v] : matRes.getUniformValues()) {
-        std::visit([&](const auto& val) { uniformData.setData(k, val); }, v);
-    }
-
     auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();
     auto* pMaterialMan = MaterialManager::get();
     auto* pPipelineMan = PipelineManager::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
-    auto& device = pRenderMan->getDevice();
 
     auto meshConfig = createMeshConfig(vertexFormat);
 
     // Copy default configurations.
-    auto cfgMain = pPipelineMan->getSurfaceMainConfig();
+    auto cfgMain = pPipelineMan->getColorConfig();
     cfgMain.merge(meshConfig);
 
-    auto cfgDepth = pPipelineMan->getSurfaceDepthConfig();
+    auto cfgDepth = pPipelineMan->getDepthConfig();
     cfgDepth.merge(meshConfig);
 
-    kaMainProgram = pMaterialMan->getShader(matRes, cfgMain);
+    kaColorProgram = pMaterialMan->getShader(matRes, cfgMain);
     kaDepthProgram = pMaterialMan->getShader(matRes, cfgMain);
 
-    // The layout is based on the main program, assuming that it's the most complete version.
-    kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaMainProgram);
+    LEMON_ASSERT(*kaColorProgram, "failed to compile shader program");
+    LEMON_ASSERT(*kaDepthProgram, "failed to compile shader program");
+
+    // The layout is based on the color program, assuming that it's the most complete version.
+    kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaColorProgram, kMaterialBindGroupIndex);
+
+    uniformData.setLayout(kaLayout);
+
+    for (auto& [k, v] : matRes.getUniformValues()) {
+        std::visit([&](const auto& val) { uniformData.setData(k, val); }, v);
+    }
 
     {
         std::vector<wgpu::BindGroupEntry> entries;
 
-        for (auto& res : kaMainProgram.get().getReflection()) {
+        for (auto& res : kaColorProgram->getReflection()) {
+            if (res.bindGroup != kMaterialBindGroupIndex) {
+                continue;
+            }
+
             auto binding = res.binding;
             auto id = res.id;
 
@@ -92,12 +97,13 @@ MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& ma
             case ResourceType::kUniformBuffer: {
                 entries.emplace_back(
                     BindingInitializationHelper(binding, cbuffer.getBuffer(), 0, res.size).getAsBinding());
+
                 break;
             }
 
             case ResourceType::kSampler:
             case ResourceType::kComparisonSampler: {
-                auto search = findByID(matRes.getSamplerDescriptors(), id);
+                auto* search = findByID(matRes.getSamplerDescriptors(), id);
 
                 LEMON_ASSERT(search != nullptr,
                              "failed to create bind group: binding not found for sampler. id: ", id);
@@ -126,7 +132,7 @@ MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& ma
                              "failed to create bind group: texture resource not available. id: ", id);
 
                 auto kaTexture = pMaterialMan->getTexture(*pTextureRes);
-                auto view = (*kaTexture).CreateView();
+                auto view = kaTexture->CreateView();
 
                 entries.emplace_back(BindingInitializationHelper(binding, view).getAsBinding());
 
@@ -151,7 +157,7 @@ MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& ma
         descriptor.entryCount = entries.size();
         descriptor.entries = entries.data();
 
-        bindGroup = device.CreateBindGroup(&descriptor);
+        bindGroup = pRenderMan->getDevice().CreateBindGroup(&descriptor);
     }
 }
 

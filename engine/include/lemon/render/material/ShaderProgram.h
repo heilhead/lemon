@@ -29,13 +29,13 @@ namespace lemon::render {
         bool valid = false;
         std::vector<DiagnosticMessage> diagnostics;
         std::vector<ResourceDescriptor> reflection;
-        uint64_t moduleHash;
+        uint64_t programHash;
         uint64_t reflectionHash;
 
     public:
-        ShaderProgram() : moduleHash{0}, reflectionHash{0} {}
+        ShaderProgram() : programHash{0}, reflectionHash{0} {}
 
-        ShaderProgram(uint64_t moduleHash) : moduleHash{moduleHash}, reflectionHash{0} {}
+        ShaderProgram(uint64_t programHash) : programHash{programHash}, reflectionHash{0} {}
 
         inline bool
         isValid() const
@@ -64,6 +64,18 @@ namespace lemon::render {
         getReflection() const
         {
             return reflection;
+        }
+
+        inline uint64_t
+        getProgramHash() const
+        {
+            return programHash;
+        }
+
+        inline uint64_t
+        getReflectionHash() const
+        {
+            return reflectionHash;
         }
 
         uint64_t

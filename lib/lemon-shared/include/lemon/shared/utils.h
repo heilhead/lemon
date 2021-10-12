@@ -8,6 +8,9 @@ namespace lemon::utils {
     void
     halt(const char* message, int code = 1);
 
+    void
+    terminate();
+
     inline std::ostream&
     operator<<(std::ostream& os, std::optional<std::string> str) {
         if (str) {

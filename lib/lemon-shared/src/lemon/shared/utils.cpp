@@ -16,3 +16,9 @@ lemon::utils::halt(const char* message, int code)
 
     exit(code);
 }
+
+void
+lemon::utils::terminate()
+{
+    std::terminate();
+}

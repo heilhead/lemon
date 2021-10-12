@@ -62,6 +62,7 @@ void
 createMetadata()
 {
     using namespace std::filesystem;
+    using UniformValue = MaterialResource::UniformValue;
 
     std::vector<std::string> dirs = {"a", "b", "c"};
     std::vector<std::string> bundles = {"RB_A", "RB_B", "RB_C"};
@@ -85,25 +86,15 @@ createMetadata()
             mat->domain.type = MaterialResource::Domain::Surface;
             mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
             mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
-            mat->samplers.emplace_back(std::make_pair("mySampler1", lemon::res::material::SamplerDescriptor()));
-            mat->samplers.emplace_back(std::make_pair("mySampler2", lemon::res::material::SamplerDescriptor()));
+            mat->samplers.emplace_back(
+                std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
             mat->definitions.emplace_back(std::make_pair("MATERIAL_SCROLL_SPEED_U", 0.5f));
             mat->definitions.emplace_back(std::make_pair("MATERIAL_SCROLL_SPEED_V", 1.0f));
             mat->definitions.emplace_back(std::make_pair("MATERIAL_ENABLE_ARBITRARY_FLAG", true));
-
-            using UniformValue = MaterialResource::UniformValue;
-
-            {
-                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonMat", UniformValue{glm::f32mat4x4{}}));
-            }
-
-            {
-                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonVecData", UniformValue{glm::f32vec4{1.5f, 2.5f, 3.5f, 4.5f}}));
-            }
-
-            {
-                mat->uniforms.emplace_back(std::make_pair("lemonData.lemonArr", UniformValue{glm::i32vec4{1, 2, 3, 4}}));
-            }
+            mat->uniforms.emplace_back(
+                std::make_pair("packetParams.modelMatrix", UniformValue{glm::f32mat4x4{}}));
+            mat->uniforms.emplace_back(
+                std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
 
             for (int k = 0; k < 3; k++) {
                 path texPath = p2;
@@ -179,15 +170,25 @@ createMetadata()
     }
 
     {
-        auto tex = createTexture();
-        tex->decoder = TextureResource::Decoder::PNG;
-        tex->inputChannels = texture::InputColorChannels::RGBA;
-        tex->inputChannelDepth = 8;
-        tex->GPUFormat = wgpu::TextureFormat::RGBA8UnormSrgb;
+        auto texAO = createTexture();
+        texAO->decoder = TextureResource::Decoder::PNG;
+        texAO->inputChannels = texture::InputColorChannels::RGBA;
+        texAO->inputChannelDepth = 8;
+        texAO->GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-        path texPath = "misc\\T_Basketball_D.png";
+        path texAOPath = "misc\\T_Mannequin_AO.png";
 
-        saveMetadata<TextureResource>(std::move(tex), texPath);
+        saveMetadata<TextureResource>(std::move(texAO), texAOPath);
+
+        auto texN = createTexture();
+        texN->decoder = TextureResource::Decoder::PNG;
+        texN->inputChannels = texture::InputColorChannels::RGBA;
+        texN->inputChannelDepth = 8;
+        texN->GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
+
+        path texNPath = "misc\\T_Mannequin_N.png";
+
+        saveMetadata<TextureResource>(std::move(texN), texNPath);
 
         auto mat = createMaterial();
         mat->baseType = MaterialResource::BaseType::Shader;
@@ -196,10 +197,16 @@ createMetadata()
         mat->domain.type = MaterialResource::Domain::Surface;
         mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
         mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
-        mat->samplers.emplace_back(std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
-        mat->textures.emplace_back(std::make_pair("surfaceTexture", texPath.string()));
+        mat->samplers.emplace_back(
+            std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
+        mat->textures.emplace_back(std::make_pair("tAlbedo", texAOPath.string()));
+        mat->textures.emplace_back(std::make_pair("tNormal", texNPath.string()));
+        mat->uniforms.emplace_back(
+            std::make_pair("packetParams.modelMatrix", UniformValue{glm::f32mat4x4{}}));
+        mat->uniforms.emplace_back(
+            std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
 
-        path matPath = "misc\\M_Basketball";
+        path matPath = "misc\\M_Mannequin";
 
         saveMetadata<MaterialResource>(std::move(mat), matPath);
     }

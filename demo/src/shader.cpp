@@ -10,6 +10,7 @@
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/TextureResource.h>
+#include <lemon/resource/types/ModelResource.h>
 #include <lemon/shared/Hash.h>
 
 #include <inja/inja.hpp>
@@ -26,6 +27,34 @@ using namespace lemon::res;
 using namespace lemon::render;
 using namespace lemon;
 
+namespace shader_test {
+    const ModelResource::Model*
+    loadModel()
+    {
+        ResourceLocation location(R"(ozz-sample\MannequinSkeleton.lem:SK_Mannequin)");
+
+        auto result = Scheduler::get()->block(
+            ResourceManager::get()->loadResource<ModelResource>(location, ResourceLifetime::Static));
+
+        LEMON_ASSERT(result.has_value());
+
+        return (*result)->getObject<ModelResource::Model>(location.object);
+    }
+
+    const MaterialResource*
+    loadMaterial()
+    {
+        ResourceLocation location(R"(misc\\M_Basketball)");
+
+        auto result = Scheduler::get()->block(
+            ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
+
+        LEMON_ASSERT(result.has_value());
+
+        return *result;
+    }
+} // namespace shader_test
+
 void
 testShader()
 {
@@ -37,53 +66,22 @@ testShader()
     auto* pResMan = ResourceManager::get();
     auto* pMatMan = MaterialManager::get();
 
-    // ResourceLocation matLoc("misc\\T_Basketball_D.png");
-    // auto result = pScheduler->block(pResMan->loadResource<TextureResource>(matLoc));
+    auto* pMaterial = shader_test::loadMaterial();
+    auto* pModel = shader_test::loadModel();
 
-    /*
-    
-    MaterialSharedResources::MaterialSharedResources
-    1. create default bind group
-    2. create main & depth pipelines
+    LEMON_ASSERT(pMaterial != nullptr);
+    LEMON_ASSERT(pModel != nullptr);
 
-    ?. handle errors in pipeline creation, e.g. `assert(program)`
-    
-    */
+    auto& material = *pMaterial;
+    auto& model = *pModel;
 
-    ResourceLocation matLoc("misc\\M_Basketball");
-    auto result = pScheduler->block(pResMan->loadResource<MaterialResource>(matLoc));
-    if (result) {
-        render::MaterialConfiguration config;
-        config.define("TEXCOORD1", false);
-        auto& material = **result;
+    auto matInstance = pMatMan->getMaterialInstance(material, model.getMeshes()[0]->vertexFormat);
 
-        // auto* sampler = material.getSamplerDescriptor(lemon::sid("surfaceSampler"));
-        // LEMON_ASSERT(sampler != nullptr);
+    LEMON_ASSERT(matInstance.isValid());
 
-        // auto* textureLoc = material.getTextureLocation(lemon::sid("surfaceTexture"));
-        // LEMON_ASSERT(textureLoc != nullptr);
+    auto& pipeline = matInstance.getRenderPipeline();
 
-        // auto texResult = pScheduler->block(pResMan->loadResource<TextureResource>(*textureLoc));
-        // LEMON_ASSERT(texResult);
+    // constexpr auto lemonVecData = lemon::sid("lemonData.lemonVecData");
 
-        // auto& texture = **texResult;
-
-        // auto* uniform = material.getUniformValue(lemon::sid("lemonData.lemonVecData"));
-        // LEMON_ASSERT(uniform != nullptr);
-
-        auto shader = pMatMan->getShader(material, config);
-        // auto gpuTex = pMatMan->getTexture(texture);
-        // auto& refl = shader->getReflection();
-        auto kaMatLayout = pMatMan->getMaterialLayout(material, *shader);
-        auto& matLayout = *kaMatLayout;
-
-        constexpr auto lemonVecData = lemon::sid("lemonData.lemonVecData");
-
-        MaterialUniformData uniData(kaMatLayout);
-        uniData.setData(lemonVecData, glm::vec4(1.f, 1.f, 1.f, 1.f));
-
-        logger::log("material loaded");
-    } else {
-        logger::err("material failed to load: ", (int)result.error());
-    }
+    logger::log("finished!");
 }

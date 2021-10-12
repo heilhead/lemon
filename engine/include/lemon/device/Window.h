@@ -12,8 +12,8 @@ namespace lemon::device {
 
     struct WindowDescriptor {
         WindowKind kind{WindowKind::Window};
-        uint32_t width{640};
-        uint32_t height{480};
+        uint32_t width{1280};
+        uint32_t height{800};
     };
 
     class Window {

@@ -9,9 +9,9 @@ MaterialUniformData::MaterialUniformData(const KeepAlive<MaterialLayout>& inLayo
 }
 
 void
-MaterialUniformData::upload(ConstantBuffer& buffer)
+MaterialUniformData::merge(ConstantBuffer& buffer)
 {
-    auto& uniformLayout = layout->uniformLayout;
+    auto& uniformLayout = kaLayout->uniformLayout;
     auto dataOffset = 0u;
 
     for (int i = 0; i < uniformLayout.uniformCount; i++) {
@@ -24,7 +24,7 @@ MaterialUniformData::upload(ConstantBuffer& buffer)
 void
 MaterialUniformData::setLayout(const KeepAlive<MaterialLayout>& inLayout)
 {
-    layout = inLayout;
-    offsetCount = layout->uniformLayout.uniformCount;
-    data.allocate(layout->uniformLayout.totalSize);
+    kaLayout = inLayout;
+    offsetCount = kaLayout->uniformLayout.uniformCount;
+    data.allocate(kaLayout->uniformLayout.totalSize);
 }

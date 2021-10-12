@@ -40,8 +40,12 @@ namespace lemon::render {
         getShader(const res::MaterialResource& material, const render::MaterialConfiguration& config);
 
         KeepAlive<MaterialLayout>
-        getMaterialLayout(const res::MaterialResource& material, const ShaderProgram& program);
-        
+        getMaterialLayout(const res::MaterialResource& material, const ShaderProgram& program,
+                          uint8_t bindGroupIndex);
+
+        KeepAlive<MaterialLayout>
+        getMaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex);
+
         MaterialInstance
         getMaterialInstance(const res::MaterialResource& material, const MeshVertexFormat& vertexFormat);
 

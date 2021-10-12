@@ -38,7 +38,11 @@ namespace lemon::render {
         wgpu::BindGroupLayout bindGroupLayout;
         MaterialUniformLayout uniformLayout;
 
+        // Default constructor, intended for creating the material bind group layout.
         MaterialLayout(const lemon::res::MaterialResource& material, const ShaderProgram& program,
                        uint8_t bindGroupIndex);
+
+        // A special constructor to create the layout of surface shared bind group.
+        MaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex);
     };
 } // namespace lemon::render

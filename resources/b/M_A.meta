@@ -23,19 +23,7 @@ MaterialResource:
         index: 3
         data: true
   samplers:
-    - first: mySampler1
-      second:
-        addressModeU: ClampToEdge
-        addressModeV: ClampToEdge
-        addressModeW: ClampToEdge
-        magFilter: Nearest
-        minFilter: Nearest
-        mipmapFilter: Nearest
-        lodMinClamp: 0
-        lodMaxClamp: 1000
-        compare: Undefined
-        maxAnisotropy: 1
-    - first: mySampler2
+    - first: surfaceSampler
       second:
         addressModeU: ClampToEdge
         addressModeV: ClampToEdge
@@ -55,7 +43,7 @@ MaterialResource:
     - first: roughness
       second: b\a\T_C.png
   uniforms:
-    - first: lemonData.lemonMat
+    - first: packetParams.modelMatrix
       second:
         index: 9
         data:
@@ -79,19 +67,11 @@ MaterialResource:
             value1: 0
             value2: 0
             value3: 1
-    - first: lemonData.lemonVecData
+    - first: materialParams.tint
       second:
         index: 8
         data:
-          value0: 1.5
-          value1: 2.5
-          value2: 3.5
-          value3: 4.5
-    - first: lemonData.lemonArr
-      second:
-        index: 2
-        data:
           value0: 1
-          value1: 2
-          value2: 3
-          value3: 4
+          value1: 0.5
+          value2: 0.5
+          value3: 0.5

@@ -1,7 +1,6 @@
 MaterialResource:
   common:
-    references:
-      []
+    references: []
   baseType: Shader
   basePath: internal\shaders\BaseSurfacePBR.wgsl
   domain:
@@ -9,19 +8,7 @@ MaterialResource:
     usage: StaticMesh|SkeletalMesh
     shadingModel: Lit
     blendMode: Opaque
-  definitions:
-    - first: MATERIAL_SCROLL_SPEED_U
-      second:
-        index: 2
-        data: 0.5
-    - first: MATERIAL_SCROLL_SPEED_V
-      second:
-        index: 2
-        data: 1
-    - first: MATERIAL_ENABLE_ARBITRARY_FLAG
-      second:
-        index: 3
-        data: true
+  definitions: []
   samplers:
     - first: surfaceSampler
       second:
@@ -36,12 +23,10 @@ MaterialResource:
         compare: Undefined
         maxAnisotropy: 1
   textures:
-    - first: albedo
-      second: a\a\T_A.png
-    - first: normal
-      second: a\a\T_B.png
-    - first: roughness
-      second: a\a\T_C.png
+    - first: tAlbedo
+      second: misc\T_Mannequin_AO.png
+    - first: tNormal
+      second: misc\T_Mannequin_N.png
   uniforms:
     - first: packetParams.modelMatrix
       second:

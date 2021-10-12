@@ -25,7 +25,40 @@ MaterialResource:
         compare: Undefined
         maxAnisotropy: 1
   textures:
-    - first: surfaceTexture
-      second: misc\T_Basketball_D.png
+    - first: tAlbedo
+      second: misc\T_Mannequin_AO.png
+    - first: tNormal
+      second: misc\T_Mannequin_N.png
   uniforms:
-    []
+    - first: packetParams.modelMatrix
+      second:
+        index: 9
+        data:
+          value0:
+            value0: 1
+            value1: 0
+            value2: 0
+            value3: 0
+          value1:
+            value0: 0
+            value1: 1
+            value2: 0
+            value3: 0
+          value2:
+            value0: 0
+            value1: 0
+            value2: 1
+            value3: 0
+          value3:
+            value0: 0
+            value1: 0
+            value2: 0
+            value3: 1
+    - first: materialParams.tint
+      second:
+        index: 8
+        data:
+          value0: 1
+          value1: 0.5
+          value2: 0.5
+          value3: 0.5

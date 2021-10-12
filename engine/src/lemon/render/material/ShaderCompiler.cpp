@@ -19,6 +19,7 @@ ShaderCompiler::compile(uint64_t hash, const std::string& sourceCode)
     pProgram->shaderModule.GetCompilationInfo(compilationInfoCallback, pProgram.get());
 
     if (pProgram->isValid()) {
+        // TODO: Provide full shader file path, or remove the parameter.
         pProgram->createReflection("<unknown>", sourceCode);
     }
 

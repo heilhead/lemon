@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <lemon/render/material/MaterialUniformData.h>
 #include <lemon/render/MeshVertexFormat.h>
 #include <lemon/shared/NonCopyable.h>
@@ -12,6 +13,7 @@ namespace lemon::res {
 namespace lemon::render {
     class MeshVertexFormat;
     class ShaderProgram;
+    class MeshSurfacePipeline;
 
     struct MaterialResourceDescriptor {
         const res::MaterialResource* pResource;
@@ -20,20 +22,23 @@ namespace lemon::render {
 
     class MaterialSharedResources : NonMovable {
         friend class MaterialInstance;
+        friend class PipelineManager;
+        friend class MeshSurfacePipeline;
 
-        // wgpu::RenderPipeline mainPipeline;
-        // wgpu::RenderPipeline depthPipeline;
+        // Bind group is the only resource directly owned by `MaterialSharedResources`.
+        // The rest are stored elsewhere and reused between materials.
         wgpu::BindGroup bindGroup;
 
-        // Default uniform data.
+        // Uniform data containing the defaults. Copied to each `MaterialInstance` at creation.
         MaterialUniformData uniformData;
 
-        // Keep-alive references to hold the required resources.
+        // Keep-alive shared references to hold the required resources.
         folly::small_vector<KeepAlive<wgpu::Sampler>, 4> kaSamplers;
         folly::small_vector<KeepAlive<wgpu::Texture>, 8> kaTextures;
         KeepAlive<MaterialLayout> kaLayout;
-        KeepAlive<ShaderProgram> kaMainProgram;
+        KeepAlive<ShaderProgram> kaColorProgram;
         KeepAlive<ShaderProgram> kaDepthProgram;
+        KeepAlive<MeshSurfacePipeline> kaPipeline;
 
     public:
         MaterialSharedResources(const res::MaterialResource& matRes, const MeshVertexFormat& vertexFormat);
@@ -63,6 +68,43 @@ namespace lemon::render {
         isValid() const
         {
             return kaSharedResources;
+        }
+
+        inline const MeshSurfacePipeline&
+        getRenderPipeline() const
+        {
+            LEMON_ASSERT(isValid());
+            return *kaSharedResources->kaPipeline;
+        }
+
+        // TODO: Figure out a better interface.
+        template<std::integral TData>
+        inline void
+        setParameter(StringID id, const TData& val)
+        {
+            LEMON_ASSERT(isValid());
+            uniformData.setData(id, val);
+        }
+
+        inline const MaterialUniformData&
+        getUniformData() const
+        {
+            LEMON_ASSERT(isValid());
+            return uniformData;
+        }
+
+        inline MaterialUniformData&
+        getUniformData()
+        {
+            LEMON_ASSERT(isValid());
+            return uniformData;
+        }
+
+        inline const wgpu::BindGroup&
+        getBindGroup() const
+        {
+            LEMON_ASSERT(isValid());
+            return kaSharedResources->bindGroup;
         }
     };
 } // namespace lemon::render

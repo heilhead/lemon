@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <lemon/shared/utils.h>
 
 namespace lemon::logger {
     namespace detail {
@@ -37,18 +38,37 @@ namespace lemon::logger {
         }
 
         template<typename... Args>
-        inline void
+        void
         assertionError(const char* expr, const char* file, int line, Args&&... args)
         {
             std::stringstream stream;
-            stream << "Assertion `" << expr << "` failed in " << file << " line " << line;
+            stream << "Assertion ";
+
+            if (expr != nullptr) {
+                stream << "`" << expr << "` ";
+            }
+
+            stream << "failed in " << file << " line " << line;
 
             if constexpr (sizeof...(Args) > 0) {
                 stream << ": ";
                 (stream << ... << args);
             }
+            
+            printLog(getErrorLogStream(), "FATAL", stream.view());
 
-            printLog(getErrorLogStream(), "ASSERTION ERROR", stream.view());
+            utils::terminate();
+        }
+
+        template<typename... Args>
+        void
+        unreachable(const char* file, int line, Args&&... args)
+        {
+            if constexpr (sizeof...(Args) > 0) {
+                assertionError(nullptr, file, line, std::forward<Args>(args)...);
+            } else {
+                assertionError(nullptr, file, line, "not implemented");
+            }
         }
     } // namespace detail
 
@@ -86,7 +106,6 @@ namespace lemon::logger {
     do {                                                                                                     \
         if (!(expr)) {                                                                                       \
             ::lemon::logger::detail::assertionError(#expr, __FILE__, __LINE__, __VA_ARGS__);                 \
-            ::std::terminate();                                                                              \
         }                                                                                                    \
     } while (false)
 #else
@@ -95,4 +114,4 @@ namespace lemon::logger {
     } while (false)
 #endif
 
-#define LEMON_TODO() LEMON_ASSERT(false, "not implemented")
+#define LEMON_TODO(...) ::lemon::logger::detail::unreachable(__FILE__, __LINE__, __VA_ARGS__);

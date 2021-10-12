@@ -104,8 +104,10 @@ convertViewDimension(TextureDimension value)
     }
 }
 
+// N.B. `pMaterial` can be null as long as the layout doesn't refer to any material-specific resources, i.e.
+// samplers or textures. This is used to create the shared bind group layout with only uniform bindings.
 wgpu::BindGroupLayout
-createBindGroupLayout(const MaterialResource& material, const ShaderProgram& program, uint8_t bindGroupIndex)
+createBindGroupLayout(const MaterialResource* pMaterial, const ShaderProgram& program, uint8_t bindGroupIndex)
 {
     folly::small_vector<wgpu::BindGroupLayoutEntry, 8> entries;
 
@@ -125,11 +127,15 @@ createBindGroupLayout(const MaterialResource& material, const ShaderProgram& pro
             entry.buffer.minBindingSize = resDesc.size;
             break;
         case ResourceType::kSampledTexture:
+            LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
+
             entry.texture.sampleType = convertSampleType(resDesc.sampledKind);
             entry.texture.viewDimension = convertViewDimension(resDesc.dim);
             entry.texture.multisampled = false;
             break;
         case ResourceType::kSampler:
+            LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
+
             // TODO: Use `SamplerDescriptor` to figure out sampling parameters.
             entry.sampler.type = wgpu::SamplerBindingType::Filtering;
             break;
@@ -149,7 +155,14 @@ createBindGroupLayout(const MaterialResource& material, const ShaderProgram& pro
 
 MaterialLayout::MaterialLayout(const MaterialResource& material, const ShaderProgram& program,
                                uint8_t bindGroupIndex)
-    : bindGroupLayout{std::move(createBindGroupLayout(material, program, bindGroupIndex))},
+    : bindGroupLayout{std::move(createBindGroupLayout(&material, program, bindGroupIndex))},
       uniformLayout{program, bindGroupIndex}
+{
+}
+
+MaterialLayout::MaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex)
+    : bindGroupLayout{std::move(createBindGroupLayout(nullptr, program, bindGroupIndex))}, uniformLayout{
+                                                                                               program,
+                                                                                               bindGroupIndex}
 {
 }

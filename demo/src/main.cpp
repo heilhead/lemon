@@ -66,8 +66,8 @@ main(int argc, char* argv[])
     // createMetadata();
     // testBundleLoading();
     // testMeshLoading();
-    // testMeshRendering();
-    testShader();
+    testMeshRendering();
+    // testShader();
 
     return 0;
 }

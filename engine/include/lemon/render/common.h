@@ -24,7 +24,9 @@ namespace lemon::render {
             {wgpu::VertexFormat::Sint32x4, 16},
         };
     }
-
+    
+    static constexpr uint8_t kSharedBindGroupIndex = 0;
+    static constexpr uint8_t kMaterialBindGroupIndex = 1;
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
