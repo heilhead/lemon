@@ -28,7 +28,9 @@ Window::Window(WindowDescriptor desc)
 
 Window::~Window()
 {
-    glfwDestroyWindow(window);
+    // TODO: Should the window be destroyed here, or automatically from `glfwTerminate()` call? Destroying it
+    // here causes `glfwTerminate()` to throw.
+    // glfwDestroyWindow(window);
 }
 
 void

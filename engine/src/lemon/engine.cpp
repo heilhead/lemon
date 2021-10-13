@@ -46,6 +46,9 @@ Engine::loop(const std::function<LoopControl(float)>& callback)
 void
 Engine::shutdown()
 {
+    // Let the resources release any keep-alive handles before the stores are destroyed.
+    resMan->getStore().clear();
+
     glfwTerminate();
 }
 

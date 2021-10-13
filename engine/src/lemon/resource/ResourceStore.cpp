@@ -8,6 +8,12 @@ using namespace lemon::scheduler;
 
 ResourceStore::~ResourceStore()
 {
+    clear();
+};
+
+void
+ResourceStore::clear()
+{
     for (auto& [k, v] : map) {
         remove(k);
     }

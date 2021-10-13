@@ -24,5 +24,8 @@ namespace lemon::res {
 
         void
         remove(ResourceHandle id);
+
+        void
+        clear();
     };
 }; // namespace lemon::res

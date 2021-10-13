@@ -182,11 +182,9 @@ testMeshRendering()
 
     engine.init(assetPath);
 
-    MiniRender render;
-
-    render.init(Device::get()->getWindow());
-
     {
+        MiniRender render;
+        render.init(Device::get()->getWindow());
         engine.loop([&](float dt) {
             render.render();
             return LoopControl::Continue;
