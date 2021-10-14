@@ -6,6 +6,7 @@
 #include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/shared/AtomicCache.h>
+#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::res {
     class MaterialResource;
@@ -17,7 +18,7 @@ namespace lemon::res {
 } // namespace lemon::res
 
 namespace lemon::render {
-    class MaterialManager {
+    class MaterialManager : public UnsafeSingleton<MaterialManager> {
         wgpu::Device* pDevice;
         ShaderCompiler shaderCompiler;
         AtomicCache<ShaderProgram> shaderProgramCache{256};
@@ -28,7 +29,6 @@ namespace lemon::render {
 
     public:
         MaterialManager();
-        ~MaterialManager();
 
         inline ShaderCompiler&
         getShaderCompiler()
@@ -57,9 +57,6 @@ namespace lemon::render {
 
         KeepAlive<wgpu::Texture>
         getTexture(const res::TextureResource& texture);
-
-        static MaterialManager*
-        get();
 
         void
         init(wgpu::Device& device);

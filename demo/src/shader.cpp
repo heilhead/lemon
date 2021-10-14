@@ -1,6 +1,5 @@
 #include "shader.h"
 
-#include <cassert>
 #include <lemon/shared.h>
 #include <lemon/shared/utils.h>
 #include <lemon/shared/filesystem.h>

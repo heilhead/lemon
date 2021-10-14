@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <vector>
 #include <lemon/shader/reflection.h>
 #include <lemon/shared/Hash.h>

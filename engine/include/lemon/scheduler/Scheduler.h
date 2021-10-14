@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <lemon/scheduler/prelude.h>
+#include <lemon/shared/UnsafeSingleton.h>
 #include <folly/executors/IOThreadPoolExecutor.h>
 #include <folly/executors/CPUThreadPoolExecutor.h>
 #include <folly/experimental/coro/Task.h>
@@ -27,14 +28,10 @@ namespace lemon::scheduler {
         High = folly::Executor::HI_PRI
     };
 
-    class Scheduler {
+    class Scheduler : public UnsafeSingleton<Scheduler> {
     public:
         Scheduler(size_t threadsIO = std::thread::hardware_concurrency(),
                   size_t threadsCPU = std::thread::hardware_concurrency());
-        ~Scheduler();
-
-        static Scheduler*
-        get();
 
     private:
         folly::IOThreadPoolExecutor poolIO;

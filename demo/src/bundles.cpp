@@ -11,7 +11,7 @@ using namespace lemon;
 void
 testBundleLoading()
 {
-    std::unique_ptr<ResourceManager> resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
+    auto resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
 
     ResourceLocation location("RB_ABC");
 
@@ -36,7 +36,7 @@ testBundleLoading()
 void
 testModelLoading()
 {
-    std::unique_ptr<ResourceManager> resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
+    auto resMan = std::make_unique<ResourceManager>(R"(C:\git\lemon\resources)");
 
     ResourceLocation location(R"(ozz-sample\MannequinSkeleton.lem:SK_Mannequin)");
 

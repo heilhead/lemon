@@ -2,24 +2,7 @@
 
 using namespace lemon::render;
 
-static RenderManager* gInstance;
-
-RenderManager::RenderManager() : pDevice{nullptr}
-{
-    LEMON_ASSERT(gInstance == nullptr);
-    gInstance = this;
-}
-
-RenderManager::~RenderManager()
-{
-    gInstance = nullptr;
-}
-
-RenderManager*
-RenderManager::get()
-{
-    return gInstance;
-}
+RenderManager::RenderManager() : pDevice{nullptr} {}
 
 void
 RenderManager::init(wgpu::Device& device)

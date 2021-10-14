@@ -1,5 +1,4 @@
 #include <lemon/engine.h>
-#include <cassert>
 #include <lemon/device/Window.h>
 #include <lemon/prelude.h>
 

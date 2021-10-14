@@ -34,7 +34,11 @@ namespace lemon::logger {
 
             (stream << ... << args) << std::endl;
 
+#if __cplusplus >= 202002L
             outStream << stream.view();
+#else
+            outStream << stream.str();
+#endif
         }
 
         template<typename... Args>
@@ -54,8 +58,13 @@ namespace lemon::logger {
                 stream << ": ";
                 (stream << ... << args);
             }
-            
+
+#if __cplusplus >= 202002L
             printLog(getErrorLogStream(), "FATAL", stream.view());
+#else
+            // For now, maintain _some_ compatibility with std++17, as required by `lemon-shader`.
+            printLog(getErrorLogStream(), "FATAL", stream.str());
+#endif
 
             utils::terminate();
         }

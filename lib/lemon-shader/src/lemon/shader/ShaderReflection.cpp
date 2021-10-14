@@ -1,6 +1,6 @@
 #include <lemon/shader/ShaderReflection.h>
+#include <lemon/shared/logger.h>
 #include <cstdio>
-#include <cassert>
 #include <magic_enum.hpp>
 
 // Enable access to tint's internals
@@ -130,12 +130,12 @@ ShaderReflection::getDiagnostic() const
 std::vector<ResourceBindingDescriptor>
 ShaderReflection::getBindingReflection() const
 {
-    assert(isValid());
+    LEMON_ASSERT(isValid());
 
     tint::inspector::Inspector inspector(&program);
     auto entryPoints = inspector.GetEntryPoints();
 
-    assert(inspector.error().empty());
+    LEMON_ASSERT(inspector.error().empty());
 
     std::unordered_map<BindingPoint, VariableDescriptor> boundVars;
 
@@ -143,7 +143,7 @@ ShaderReflection::getBindingReflection() const
     // to set pipeline stage flags for each variable before the reflection step.
     for (auto& entryPoint : entryPoints) {
         auto* func = program.AST().Functions().Find(program.Symbols().Get(entryPoint.name));
-        assert(func != nullptr);
+        LEMON_ASSERT(func != nullptr);
 
         auto pipelineStage = getPipelineStage(entryPoint);
         auto* funcSem = program.Sem().Get(func);
@@ -168,12 +168,12 @@ ShaderReflection::getBindingReflection() const
     // Once we have full variable semantic details for each variable used, perform type reflection.
     for (auto& entryPoint : entryPoints) {
         auto bindings = inspector.GetResourceBindings(entryPoint.name);
-        assert(inspector.error().empty());
+        LEMON_ASSERT(inspector.error().empty());
 
         for (auto& binding : bindings) {
             BindingPoint bp = {binding.bind_group, binding.binding};
             auto varSearch = boundVars.find(bp);
-            assert(varSearch != boundVars.end());
+            LEMON_ASSERT(varSearch != boundVars.end());
 
             if (processed.find(bp) != processed.end()) {
                 continue;

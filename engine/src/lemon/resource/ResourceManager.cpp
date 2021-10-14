@@ -7,14 +7,11 @@
 
 using namespace lemon::res;
 
-static ResourceManager* gInstance;
 static constexpr size_t kDefaultStoreSize = 1024;
 
 ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
     : store{kDefaultStoreSize}, factories{}, materialComposer{rootPath}
 {
-    LEMON_ASSERT(gInstance == nullptr);
-    gInstance = this;
     root = rootPath;
 
     // Register base resource classes.
@@ -22,17 +19,6 @@ ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
     registerClass<MaterialResource>();
     registerClass<BundleResource>();
     registerClass<ModelResource>();
-}
-
-ResourceManager::~ResourceManager()
-{
-    gInstance = nullptr;
-}
-
-ResourceManager*
-ResourceManager::get()
-{
-    return gInstance;
 }
 
 std::filesystem::path

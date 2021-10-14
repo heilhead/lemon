@@ -14,8 +14,6 @@ using namespace lemon::render;
 using namespace lemon::shader;
 using namespace lemon::device;
 
-static PipelineManager* gInstance;
-
 MeshSurfacePipeline::MeshSurfacePipeline(const MaterialSharedResources& matShared,
                                          const MeshVertexFormat& vertexFormat)
 {
@@ -134,24 +132,10 @@ MeshSurfacePipeline::createDepthPipeline(const PipelineConfiguration& config)
 
 PipelineManager::PipelineManager() : pDevice{nullptr}
 {
-    LEMON_ASSERT(gInstance == nullptr);
-    gInstance = this;
-
     colorConfig.define("PIPELINE_DEPTH_ONLY", false);
 
     depthConfig = colorConfig;
     depthConfig.define("PIPELINE_DEPTH_ONLY", true);
-}
-
-PipelineManager::~PipelineManager()
-{
-    gInstance = nullptr;
-}
-
-PipelineManager*
-PipelineManager::get()
-{
-    return gInstance;
 }
 
 void
@@ -211,8 +195,7 @@ PipelineManager::assignPipelines(MaterialSharedResources& matShared, const MeshV
 }
 
 KeepAlive<MeshSurfacePipeline>
-PipelineManager::getPipeline(const MaterialSharedResources& matShared,
-                                    const MeshVertexFormat& vertexFormat)
+PipelineManager::getPipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat)
 {
     auto id = lemon::hash(matShared.kaColorProgram->getProgramHash(),
                           matShared.kaDepthProgram->getProgramHash(), vertexFormat.getComponents());

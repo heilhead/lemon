@@ -4,10 +4,11 @@
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/PipelineManager.h>
 #include <lemon/shared/logger.h>
+#include <lemon/shared/UnsafeSingleton.h>
 #include <dawn/webgpu_cpp.h>
 
 namespace lemon::render {
-    class RenderManager {
+    class RenderManager : public UnsafeSingleton<RenderManager> {
         wgpu::Device* pDevice;
         ConstantBuffer cbuffer;
         MaterialManager materialManager;
@@ -15,10 +16,6 @@ namespace lemon::render {
 
     public:
         RenderManager();
-        ~RenderManager();
-
-        static RenderManager*
-        get();
 
         void
         init(wgpu::Device& device);

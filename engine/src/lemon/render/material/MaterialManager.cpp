@@ -12,24 +12,7 @@ using namespace lemon::shader;
 using namespace lemon;
 using namespace magic_enum::bitwise_operators;
 
-static MaterialManager* gInstance;
-
-MaterialManager::MaterialManager()
-{
-    LEMON_ASSERT(gInstance == nullptr);
-    gInstance = this;
-}
-
-MaterialManager::~MaterialManager()
-{
-    gInstance = nullptr;
-}
-
-MaterialManager*
-MaterialManager::get()
-{
-    return gInstance;
-}
+MaterialManager::MaterialManager() {}
 
 uint64_t
 computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint,

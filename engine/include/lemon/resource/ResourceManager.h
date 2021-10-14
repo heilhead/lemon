@@ -6,8 +6,9 @@
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceStore.h>
-#include <lemon/shared/filesystem.h>
 #include <lemon/resource/types/material/MaterialComposer.h>
+#include <lemon/shared/filesystem.h>
+#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::res {
     struct ResourceContract;
@@ -20,26 +21,15 @@ namespace lemon::res {
     using FactoryResultType = folly::coro::Task<ResourceContract::ResolutionType<ResourceInstance>>;
     using ResourceFactoryFn = FactoryResultType (*)(const std::string& ref, ResourceLifetime lifetime);
 
-    class ResourceManager {
-    public:
-        explicit ResourceManager(std::filesystem::path&& rootPath);
-        ~ResourceManager();
-
-        /// <summary>
-        /// Returns the singleton instance of `ResourceManager` if there's one, or `nullptr` otherwise.
-        /// `ResourceManager` still needs to be manually instantiated somewhere for singleton to be used.
-        /// </summary>
-        /// <returns>Resource manager pointer, or `nullptr`</returns>
-        static ResourceManager*
-        get();
-
-    private:
+    class ResourceManager : public UnsafeSingleton<ResourceManager> {
         ResourceStore store;
         std::filesystem::path root;
         std::unordered_map<ResourceClassID, ResourceFactoryFn> factories;
         material::MaterialComposer materialComposer;
 
     public:
+        explicit ResourceManager(std::filesystem::path&& rootPath);
+
         /// <summary>
         /// Resolves `ResourceLocation` to the absolute file system path;
         /// </summary>

@@ -2,6 +2,7 @@
 
 #include <lemon/shared/logger.h>
 #include <lemon/shared/AtomicCache.h>
+#include <lemon/shared/UnsafeSingleton.h>
 #include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/render/material/MaterialUniformData.h>
 #include <dawn/webgpu_cpp.h>
@@ -47,7 +48,7 @@ namespace lemon::render {
     };
 
     // TODO: Respec this to `GeometryPipelineManager` or `SurfacePipelineManager`.
-    class PipelineManager {
+    class PipelineManager : public UnsafeSingleton<PipelineManager> {
         enum class PipelineType { Color, Depth };
 
         wgpu::Device* pDevice;
@@ -62,10 +63,6 @@ namespace lemon::render {
 
     public:
         PipelineManager();
-        ~PipelineManager();
-
-        static PipelineManager*
-        get();
 
         void
         init(wgpu::Device& device);
