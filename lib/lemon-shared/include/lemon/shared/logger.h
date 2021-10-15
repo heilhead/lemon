@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <gsl/gsl>
 #include <lemon/shared/Singleton.h>
 
 namespace lemon::logger {
@@ -34,15 +35,15 @@ namespace lemon::logger {
 
             template<typename... Args>
             void
-            printLog(std::ostream& outStream, const char* category, Args&&... args);
+            printLog(std::ostream& outStream, gsl::czstring<> category, Args&&... args);
 
             template<typename... Args>
             void
-            assertionError(const char* expr, const char* file, int line, Args&&... args);
+            assertionError(gsl::czstring<> expr, gsl::czstring<> file, int line, Args&&... args);
 
             template<typename... Args>
             void
-            unreachable(const char* file, int line, Args&&... args);
+            unreachable(gsl::czstring<> file, int line, Args&&... args);
         };
     } // namespace detail
 

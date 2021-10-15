@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gsl/gsl>
 #include <dawn/webgpu_cpp.h>
 #include <dawn/webgpu_cpp_print.h>
 #include <dawn/dawn_proc.h>
@@ -24,7 +25,7 @@ namespace lemon::render {
                            wgpu::TextureAspect aspect = wgpu::TextureAspect::All);
 
     wgpu::ShaderModule
-    createShaderModule(const wgpu::Device& device, const char* source);
+    createShaderModule(const wgpu::Device& device, gsl::czstring<> source);
 
     wgpu::BindGroupLayout
     makeBindGroupLayout(const wgpu::Device& device,

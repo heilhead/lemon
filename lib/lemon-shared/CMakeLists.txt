@@ -22,5 +22,6 @@ target_include_directories(${PROJECT_NAME}
 
 find_package(folly CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Folly::folly tl::expected)
+target_link_libraries(${PROJECT_NAME} PUBLIC Folly::folly tl::expected Microsoft.GSL::GSL)

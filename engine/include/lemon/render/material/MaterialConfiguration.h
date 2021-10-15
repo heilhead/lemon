@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <type_traits>
+#include <gsl/gsl>
 #include <inja/inja.hpp>
 #include <lemon/shared/Hash.h>
 
@@ -27,7 +28,7 @@ namespace lemon::render {
 
         template<typename TData>
         inline void
-        define(const char* name, TData data)
+        define(gsl::czstring<> name, TData data)
         {
             definitions[name] = data;
         }

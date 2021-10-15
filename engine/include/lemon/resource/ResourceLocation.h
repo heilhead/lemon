@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gsl/gsl>
 #include <filesystem>
 #include <folly/hash/Hash.h>
 #include <lemon/resource/common.h>
@@ -7,7 +8,7 @@
 #include <lemon/shared/logger.h>
 
 namespace lemon::res {
-    static const char* kLocationObjectDelimiter = ":";
+    static gsl::czstring<> kLocationObjectDelimiter = ":";
 
     struct ResourceLocation {
         ResourceHandle handle;

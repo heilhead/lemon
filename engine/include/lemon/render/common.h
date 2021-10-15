@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <gsl/gsl>
 #include <webgpu/webgpu_cpp.h>
 
 namespace lemon::render {
@@ -30,16 +31,17 @@ namespace lemon::render {
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
-    static constexpr const char* kShaderSurfaceSharedGroupBlueprint = "internal/shaders/BaseSurfaceShared.wgsl";
+    static constexpr gsl::czstring<> kShaderSurfaceSharedGroupBlueprint =
+        "internal/shaders/BaseSurfaceShared.wgsl";
 
-    static constexpr const char* kShaderDefinePipelineDepthOnly = "PIPELINE_DEPTH_ONLY";
-    static constexpr const char* kShaderDefineMeshNormal = "MESH_ENABLE_NORMAL";
-    static constexpr const char* kShaderDefineMeshTangent = "MESH_ENABLE_TANGENT";
-    static constexpr const char* kShaderDefineMeshTangentSpace = "MESH_ENABLE_TANGENT_SPACE";
-    static constexpr const char* kShaderDefineMeshTexture0 = "MESH_ENABLE_TEXTURE0";
-    static constexpr const char* kShaderDefineMeshTexture1 = "MESH_ENABLE_TEXTURE1";
-    static constexpr const char* kShaderDefineMeshSkinning = "MESH_ENABLE_SKINNING";
-    static constexpr const char* kShaderDefineMaterialLighting = "MATERIAL_ENABLE_LIGHTING";
+    static constexpr gsl::czstring<> kShaderDefinePipelineDepthOnly = "PIPELINE_DEPTH_ONLY";
+    static constexpr gsl::czstring<> kShaderDefineMeshNormal = "MESH_ENABLE_NORMAL";
+    static constexpr gsl::czstring<> kShaderDefineMeshTangent = "MESH_ENABLE_TANGENT";
+    static constexpr gsl::czstring<> kShaderDefineMeshTangentSpace = "MESH_ENABLE_TANGENT_SPACE";
+    static constexpr gsl::czstring<> kShaderDefineMeshTexture0 = "MESH_ENABLE_TEXTURE0";
+    static constexpr gsl::czstring<> kShaderDefineMeshTexture1 = "MESH_ENABLE_TEXTURE1";
+    static constexpr gsl::czstring<> kShaderDefineMeshSkinning = "MESH_ENABLE_SKINNING";
+    static constexpr gsl::czstring<> kShaderDefineMaterialLighting = "MATERIAL_ENABLE_LIGHTING";
 
     inline size_t
     getVertexFormatSize(wgpu::VertexFormat format)

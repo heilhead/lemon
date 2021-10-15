@@ -1,3 +1,4 @@
+#include <gsl/gsl>
 #include <lemon/device/GPUDevice.h>
 #include <lemon/device/Platform.h>
 #include <lemon/device/Window.h>
@@ -11,9 +12,9 @@ using namespace lemon::render;
 using namespace lemon;
 
 void
-printDeviceError(WGPUErrorType errorType, const char* message, void*)
+printDeviceError(WGPUErrorType errorType, gsl::czstring<> message, void*)
 {
-    const char* errorTypeName = "";
+    gsl::czstring<> errorTypeName = "";
     switch (errorType) {
     case WGPUErrorType_Validation:
         errorTypeName = "Validation";

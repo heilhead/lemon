@@ -31,7 +31,13 @@ set(SOURCE_FILES
         "src/lemon/resource/types/texture/PNGDecoder.cpp"
         "src/lemon/render/material/MaterialUniformData.cpp"
         "src/lemon/tasks/filesystem.cpp"
-        "src/lemon/render/material/MaterialLayout.cpp" "src/lemon/render/PipelineManager.cpp" "src/lemon/render/MeshVertexFormat.cpp")
+        "src/lemon/render/material/MaterialLayout.cpp"
+        "src/lemon/render/PipelineManager.cpp"
+        "src/lemon/render/MeshVertexFormat.cpp"
+        "src/lemon/device/Input.cpp"
+        "src/lemon/device/input/KeyboardListener.cpp"
+        "src/lemon/device/input/MouseListener.cpp"
+)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

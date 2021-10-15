@@ -32,7 +32,7 @@ lemon::logger::detail::Logger::getLogLevel()
 
 template<typename... Args>
 void
-lemon::logger::detail::Logger::printLog(std::ostream& outStream, const char* category, Args&&... args)
+lemon::logger::detail::Logger::printLog(std::ostream& outStream, gsl::czstring<> category, Args&&... args)
 {
     auto now = std::time(nullptr);
     auto* localNow = std::localtime(&now);
@@ -52,7 +52,8 @@ lemon::logger::detail::Logger::printLog(std::ostream& outStream, const char* cat
 
 template<typename... Args>
 void
-lemon::logger::detail::Logger::assertionError(const char* expr, const char* file, int line, Args&&... args)
+lemon::logger::detail::Logger::assertionError(gsl::czstring<> expr, gsl::czstring<> file, int line,
+                                              Args&&... args)
 {
     std::stringstream stream;
     stream << "Assertion ";
@@ -80,7 +81,7 @@ lemon::logger::detail::Logger::assertionError(const char* expr, const char* file
 
 template<typename... Args>
 void
-lemon::logger::detail::Logger::unreachable(const char* file, int line, Args&&... args)
+lemon::logger::detail::Logger::unreachable(gsl::czstring<> file, int line, Args&&... args)
 {
     if constexpr (sizeof...(Args) > 0) {
         assertionError(nullptr, file, line, std::forward<Args>(args)...);

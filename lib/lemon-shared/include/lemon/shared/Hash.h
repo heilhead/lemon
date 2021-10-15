@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <gsl/gsl>
 #include <folly/Hash.h>
 
 namespace lemon {
@@ -59,13 +60,13 @@ namespace lemon {
     };
 
     constexpr StringID
-    sid(const char* str)
+    sid(gsl::czstring<> str)
     {
         return folly::hash::fnva64_buf(str, std::char_traits<char>::length(str));
     }
 
     constexpr StringID
-    sid(const char* str, size_t sz)
+    sid(gsl::czstring<> str, size_t sz)
     {
         return folly::hash::fnva64_buf(str, sz);
     }

@@ -3,10 +3,11 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <gsl/gsl>
 
 namespace lemon::utils {
     void
-    halt(const char* message, int code = 1);
+    halt(gsl::czstring<> message, int code = 1);
 
     void
     terminate();

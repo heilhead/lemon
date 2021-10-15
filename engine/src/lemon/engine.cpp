@@ -1,3 +1,4 @@
+#include <gsl/gsl>
 #include <lemon/engine.h>
 #include <lemon/device/Window.h>
 #include <lemon/shared/utils.h>
@@ -6,7 +7,7 @@ using namespace lemon;
 using namespace lemon::device;
 
 void
-printGLFWError(int code, const char* message)
+printGLFWError(int code, gsl::czstring<> message)
 {
     logger::err("GLFW error: ", code, " - ", message);
 }
@@ -19,7 +20,7 @@ Engine::init(std::string& assetPath)
     if (!glfwInit()) {
         utils::halt("GLFW init failed");
     }
-    
+
     schedMan = std::make_unique<scheduler::Scheduler>();
     resMan = std::make_unique<res::ResourceManager>(assetPath);
     device = std::make_unique<device::Device>();

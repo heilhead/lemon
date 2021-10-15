@@ -2,4 +2,6 @@
 
 using namespace lemon::device;
 
-Device::Device() : platform{}, window{WindowDescriptor{}}, gpu{&platform, &window} {}
+Device::Device() : platform{}, window{WindowDescriptor{}}, gpu{&platform, &window}, input{window.getHandle()}
+{
+}

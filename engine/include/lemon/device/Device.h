@@ -3,12 +3,14 @@
 #include <lemon/device/GPUDevice.h>
 #include <lemon/device/Platform.h>
 #include <lemon/device/Window.h>
+#include <lemon/device/Input.h>
 #include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::device {
     class Device : public UnsafeSingleton<Device> {
         Platform platform;
         Window window;
+        Input input;
         GPUDevice gpu;
 
     public:
@@ -30,6 +32,12 @@ namespace lemon::device {
         getWindow()
         {
             return &window;
+        }
+
+        inline Input*
+        getInput()
+        {
+            return &input;
         }
     };
 } // namespace lemon::device

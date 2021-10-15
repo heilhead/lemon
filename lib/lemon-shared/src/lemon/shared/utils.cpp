@@ -4,7 +4,7 @@
 using namespace lemon;
 
 void
-lemon::utils::halt(const char* message, int code)
+lemon::utils::halt(gsl::czstring<> message, int code)
 {
     if (message != nullptr) {
         if (code > 0) {

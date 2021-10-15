@@ -1,3 +1,4 @@
+#include <gsl/gsl>
 #include <lemon/render/utils.h>
 
 using namespace lemon::render;
@@ -55,7 +56,7 @@ lemon::render::createImageCopyTexture(wgpu::Texture texture, uint32_t mipLevel, 
 }
 
 wgpu::ShaderModule
-lemon::render::createShaderModule(const wgpu::Device& device, const char* source)
+lemon::render::createShaderModule(const wgpu::Device& device, gsl::czstring<> source)
 {
     wgpu::ShaderModuleWGSLDescriptor wgslDesc;
     wgslDesc.source = source;

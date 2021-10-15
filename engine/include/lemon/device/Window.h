@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <folly/portability/Windows.h>
+#include <lemon/device/common.h>
 
 namespace lemon::device {
     enum class WindowKind { Window, Fullscreen, WindowedFullscreen };
@@ -17,24 +18,22 @@ namespace lemon::device {
     };
 
     class Window {
-    public:
-        explicit Window(WindowDescriptor desc);
-        ~Window();
-
-    protected:
         HWND hWnd;
-        GLFWwindow* window;
+        WindowHandle window;
         uint32_t width;
         uint32_t height;
 
     public:
-        [[nodiscard]] HWND
+        explicit Window(WindowDescriptor desc);
+        ~Window();
+
+        inline HWND
         getContextHandle() const
         {
             return hWnd;
         }
 
-        [[nodiscard]] std::pair<uint32_t, uint32_t>
+        inline std::pair<uint32_t, uint32_t>
         getSize() const
         {
             return {width, height};
@@ -42,5 +41,11 @@ namespace lemon::device {
 
         void
         loop(const std::function<LoopControl(float)>& callback) const;
+
+        inline WindowHandle
+        getHandle()
+        {
+            return window;
+        }
     };
 } // namespace lemon::device
