@@ -24,12 +24,12 @@ loadData(std::filesystem::path& file)
 
 ModelResource::ModelResource()
 {
-    logger::log("ModelResource::ModelResource()");
+    logger::trace(__FUNCTION__);
 }
 
 ModelResource::~ModelResource()
 {
-    logger::log("ModelResource::~ModelResource()");
+    logger::trace(__FUNCTION__);
 }
 
 VoidTask<ResourceLoadingError>

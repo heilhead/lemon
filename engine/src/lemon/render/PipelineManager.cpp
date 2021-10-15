@@ -5,11 +5,15 @@
 #include <lemon/render/material/MaterialManager.h>
 #include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/ShaderProgram.h>
+#include <lemon/resource/types/MaterialResource.h>
+#include <lemon/scheduler.h>
 #include <lemon/device/Device.h>
 #include <lemon/shared/logger.h>
 #include <folly/small_vector.h>
 
 using namespace lemon;
+using namespace lemon::res;
+using namespace lemon::scheduler;
 using namespace lemon::render;
 using namespace lemon::shader;
 using namespace lemon::device;
@@ -132,34 +136,54 @@ MeshSurfacePipeline::createDepthPipeline(const PipelineConfiguration& config)
 
 PipelineManager::PipelineManager() : pDevice{nullptr}
 {
-    colorConfig.define("PIPELINE_DEPTH_ONLY", false);
+    colorConfig.define(kShaderDefinePipelineDepthOnly, false);
 
     depthConfig = colorConfig;
-    depthConfig.define("PIPELINE_DEPTH_ONLY", true);
+    depthConfig.define(kShaderDefinePipelineDepthOnly, true);
 }
 
 void
 PipelineManager::init(wgpu::Device& device)
 {
     pDevice = &device;
+    initSharedBindGroup();
 }
 
 void
-PipelineManager::initSharedBindGroup(const KeepAlive<ShaderProgram>& kaColorProgram)
+PipelineManager::initSharedBindGroup()
 {
-    // TODO: Is it actually a good idea to create the shared bind group based on an arbitrary material's color
-    // program? Where does the lighting and skinning data binds?
-
     auto* pMaterialMan = MaterialManager::get();
     auto* pRenderMan = RenderManager::get();
+    auto* pScheduler = Scheduler::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
-    kaSharedBindGroupLayout =
-        std::move(pMaterialMan->getMaterialLayout(*kaColorProgram, kSharedBindGroupIndex));
+    auto blueprint = std::move(
+        pScheduler->block(IOTask(MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
+            .value());
+
+    // The program is temporary and should be destroyed once we're done here.
+    KeepAlive<ShaderProgram> kaProgram;
+
+    {
+        // Compose the most complete config so that we can find all possible bindings in the program
+        // reflection.
+        auto config = colorConfig;
+
+        MeshVertexFormat vertexFormat(MeshComponents::Position | MeshComponents::Normal |
+                                      MeshComponents::Tangent | MeshComponents::UV0 | MeshComponents::UV1 |
+                                      MeshComponents::JointInfluence);
+
+        config.merge(std::move(vertexFormat.getMeshConfig()));
+        config.define(kShaderDefineMaterialLighting, true);
+
+        kaProgram = std::move(pMaterialMan->getShader(blueprint, config));
+    }
+
+    kaSharedBindGroupLayout = std::move(pMaterialMan->getMaterialLayout(*kaProgram, kSharedBindGroupIndex));
 
     folly::small_vector<wgpu::BindGroupEntry, 4> entries;
 
-    for (auto& res : kaColorProgram->getReflection()) {
+    for (auto& res : kaProgram->getReflection()) {
         if (res.bindGroup != kSharedBindGroupIndex) {
             continue;
         }
@@ -200,12 +224,6 @@ PipelineManager::getPipeline(const MaterialSharedResources& matShared, const Mes
     auto id = lemon::hash(matShared.kaColorProgram->getProgramHash(),
                           matShared.kaDepthProgram->getProgramHash(), vertexFormat.getComponents());
 
-    return std::move(pipelineCache.get(id, [&]() {
-        // TODO: Find a better place to initialize the shared bind group.
-        if (!isSharedBindGroupReady()) {
-            initSharedBindGroup(matShared.kaColorProgram);
-        }
-
-        return new MeshSurfacePipeline(matShared, vertexFormat);
-    }));
+    return std::move(
+        pipelineCache.get(id, [&]() { return new MeshSurfacePipeline(matShared, vertexFormat); }));
 }

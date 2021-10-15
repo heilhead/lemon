@@ -8,7 +8,7 @@ lemon::utils::halt(const char* message, int code)
 {
     if (message != nullptr) {
         if (code > 0) {
-            logger::err(message);
+            logger::fatal(message);
         } else {
             logger::log(message);
         }

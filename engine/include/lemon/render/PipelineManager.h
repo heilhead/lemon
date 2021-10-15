@@ -101,14 +101,8 @@ namespace lemon::render {
         }
 
     private:
-        inline bool
-        isSharedBindGroupReady()
-        {
-            return kaSharedBindGroupLayout;
-        }
-
         void
-        initSharedBindGroup(const KeepAlive<ShaderProgram>& kaColorProgram);
+        initSharedBindGroup();
 
         KeepAlive<MeshSurfacePipeline>
         getPipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);

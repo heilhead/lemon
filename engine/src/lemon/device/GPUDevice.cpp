@@ -28,7 +28,7 @@ printDeviceError(WGPUErrorType errorType, const char* message, void*)
         errorTypeName = "Device lost";
         break;
     default:
-        assert(false);
+        LEMON_UNREACHABLE("invalid WebGPU error type: ", (int)errorType);
         return;
     }
 
@@ -58,7 +58,7 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
             }
         }
 
-        assert(backendAdapter && "no suitable adapter found");
+        LEMON_ASSERT(backendAdapter, "no suitable adapter found");
     }
 
     auto backendDevice = backendAdapter.CreateDevice();

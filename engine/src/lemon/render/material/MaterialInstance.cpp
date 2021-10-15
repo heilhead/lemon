@@ -27,28 +27,6 @@ findByID(const std::vector<std::pair<StringID, TData>>& data, StringID id)
     return nullptr;
 }
 
-MaterialConfiguration
-createMeshConfig(const MeshVertexFormat& fmt)
-{
-    MaterialConfiguration config;
-
-    LEMON_ASSERT(fmt.has(MeshComponents::Position), "invalid vertex format");
-
-    bool bNormal = fmt.has(MeshComponents::Normal);
-    bool bTangent = fmt.has(MeshComponents::Tangent);
-
-    config.define("MESH_ENABLE_NORMAL", bNormal);
-    config.define("MESH_ENABLE_TANGENT", bTangent);
-    config.define("MESH_ENABLE_TANGENT_SPACE", bTangent && bNormal);
-
-    config.define("MESH_ENABLE_TEXTURE0", fmt.has(MeshComponents::UV0));
-    config.define("MESH_ENABLE_TEXTURE1", fmt.has(MeshComponents::UV1));
-
-    config.define("MESH_ENABLE_SKIN", fmt.has(MeshComponents::JointInfluence));
-
-    return config;
-}
-
 MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& matRes,
                                                  const MeshVertexFormat& vertexFormat)
 {
@@ -58,7 +36,7 @@ MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& ma
     auto* pPipelineMan = PipelineManager::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
-    auto meshConfig = createMeshConfig(vertexFormat);
+    auto meshConfig = vertexFormat.getMeshConfig();
 
     // Copy default configurations.
     auto cfgMain = pPipelineMan->getColorConfig();

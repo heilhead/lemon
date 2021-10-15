@@ -1,7 +1,6 @@
 #pragma once
 
 #include <mutex>
-#include <lemon/shared/logger.h>
 #include <lemon/shared/NonCopyable.h>
 
 namespace lemon {

@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <dawn/webgpu_cpp.h>
+#include <lemon/render/material/MaterialConfiguration.h>
 
 namespace lemon::render {
     enum class MeshIndexFormat { U16 = 2, U32 = 4 };
@@ -27,6 +28,13 @@ namespace lemon::render {
         MeshComponents components = MeshComponents::None;
 
     public:
+        MeshVertexFormat() {}
+
+        explicit MeshVertexFormat(MeshComponents inComponents)
+        {
+            setComponents(inComponents);
+        }
+
         void
         setComponents(MeshComponents components);
 
@@ -56,6 +64,9 @@ namespace lemon::render {
 
         bool
         has(MeshComponents components) const;
+
+        MaterialConfiguration
+        getMeshConfig() const;
 
     private:
         void

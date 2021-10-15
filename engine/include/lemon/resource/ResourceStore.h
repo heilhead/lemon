@@ -8,14 +8,12 @@ namespace lemon::res {
     struct ResourceContract;
 
     class ResourceStore {
+        folly::AtomicHashMap<uint64_t, folly::PackedSyncPtr<ResourceContract>> map;
+
     public:
         explicit ResourceStore(size_t size) : map{size} {}
         ~ResourceStore();
 
-    private:
-        folly::AtomicHashMap<uint64_t, folly::PackedSyncPtr<ResourceContract>> map;
-
-    public:
         ResourceContract*
         find(ResourceHandle id);
 

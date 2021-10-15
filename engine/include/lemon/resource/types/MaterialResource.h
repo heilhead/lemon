@@ -134,6 +134,9 @@ namespace lemon::res {
         {
             return uniforms;
         }
+
+        static Task<material::MaterialBlueprint, ResourceLoadingError>
+        loadShaderBlueprint(const std::string& bplPath);
     };
 } // namespace lemon::res
 

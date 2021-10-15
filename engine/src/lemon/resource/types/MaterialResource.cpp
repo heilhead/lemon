@@ -29,25 +29,14 @@ computeHash(const std::optional<MaterialBlueprint>& blueprint, const render::Mat
     return hash;
 }
 
-Task<MaterialBlueprint, ResourceLoadingError>
-loadShaderBlueprint(std::string& bplPath)
-{
-    auto* pResMan = ResourceManager::get();
-    auto fullPath = pResMan->resolvePath(bplPath);
-    auto& composer = pResMan->getMaterialComposer();
-
-    co_return composer.getBlueprint(fullPath).map_error(
-        [](auto err) { return ResourceLoadingError::DataMissing; });
-}
-
 MaterialResource::MaterialResource()
 {
-    logger::log("MaterialResource::MaterialResource()");
+    logger::trace(__FUNCTION__);
 }
 
 MaterialResource::~MaterialResource()
 {
-    logger::log("MaterialResource::~MaterialResource()");
+    logger::trace(__FUNCTION__);
 }
 
 VoidTask<ResourceLoadingError>
@@ -55,6 +44,8 @@ MaterialResource::load(ResourceMetadata&& md)
 {
     auto* pMeta = md.get<Metadata>();
     domain = pMeta->domain;
+
+    config.define(kShaderDefineMaterialLighting, domain.shadingModel == ShadingModel::Lit);
 
     for (const auto& [k, v] : pMeta->definitions) {
         config.define(k, v);
@@ -84,4 +75,15 @@ MaterialResource::load(ResourceMetadata&& md)
     }
 
     co_return {};
+}
+
+Task<MaterialBlueprint, ResourceLoadingError>
+MaterialResource::loadShaderBlueprint(const std::string& bplPath)
+{
+    auto* pResMan = ResourceManager::get();
+    auto fullPath = pResMan->resolvePath(bplPath);
+    auto& composer = pResMan->getMaterialComposer();
+
+    co_return composer.getBlueprint(fullPath).map_error(
+        [](auto err) { return ResourceLoadingError::DataMissing; });
 }

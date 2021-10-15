@@ -19,10 +19,10 @@ Engine::init(std::string& assetPath)
     if (!glfwInit()) {
         utils::halt("GLFW init failed");
     }
-
-    device = std::make_unique<device::Device>();
+    
     schedMan = std::make_unique<scheduler::Scheduler>();
     resMan = std::make_unique<res::ResourceManager>(assetPath);
+    device = std::make_unique<device::Device>();
 
     logger::log("initialization complete!");
 }

@@ -1,10 +1,12 @@
 #include <lemon/render/MeshVertexFormat.h>
 #include <lemon/render.h>
 #include <lemon/shared/logger.h>
+#include <lemon/resource/types/MaterialResource.h>
 #include <magic_enum.hpp>
 
 using namespace magic_enum::bitwise_operators;
 using namespace lemon::render;
+using namespace lemon::res;
 
 void
 MeshVertexFormat::setComponents(MeshComponents inComponents)
@@ -86,4 +88,26 @@ MeshVertexFormat::reset()
     stride = 0;
     attributeCount = 0;
     locationCount = 0;
+}
+
+MaterialConfiguration
+MeshVertexFormat::getMeshConfig() const
+{
+    MaterialConfiguration config;
+
+    LEMON_ASSERT(has(MeshComponents::Position), "invalid vertex format");
+
+    bool bNormal = has(MeshComponents::Normal);
+    bool bTangent = has(MeshComponents::Tangent);
+
+    config.define(kShaderDefineMeshNormal, bNormal);
+    config.define(kShaderDefineMeshTangent, bTangent);
+    config.define(kShaderDefineMeshTangentSpace, bTangent && bNormal);
+
+    config.define(kShaderDefineMeshTexture0, has(MeshComponents::UV0));
+    config.define(kShaderDefineMeshTexture1, has(MeshComponents::UV1));
+
+    config.define(kShaderDefineMeshSkinning, has(MeshComponents::JointInfluence));
+
+    return config;
 }

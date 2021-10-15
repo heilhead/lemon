@@ -13,12 +13,12 @@ loadBundle(BundleResource& mat, ResourceMetadata& meta)
 
 BundleResource::BundleResource()
 {
-    logger::log("BundleResource::BundleResource()");
+    logger::trace(__FUNCTION__);
 }
 
 BundleResource::~BundleResource()
 {
-    logger::log("BundleResource::~BundleResource()");
+    logger::trace(__FUNCTION__);
 }
 
 VoidTask<ResourceLoadingError>

@@ -30,6 +30,17 @@ namespace lemon::render {
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
+    static constexpr const char* kShaderSurfaceSharedGroupBlueprint = "internal/shaders/BaseSurfaceShared.wgsl";
+
+    static constexpr const char* kShaderDefinePipelineDepthOnly = "PIPELINE_DEPTH_ONLY";
+    static constexpr const char* kShaderDefineMeshNormal = "MESH_ENABLE_NORMAL";
+    static constexpr const char* kShaderDefineMeshTangent = "MESH_ENABLE_TANGENT";
+    static constexpr const char* kShaderDefineMeshTangentSpace = "MESH_ENABLE_TANGENT_SPACE";
+    static constexpr const char* kShaderDefineMeshTexture0 = "MESH_ENABLE_TEXTURE0";
+    static constexpr const char* kShaderDefineMeshTexture1 = "MESH_ENABLE_TEXTURE1";
+    static constexpr const char* kShaderDefineMeshSkinning = "MESH_ENABLE_SKINNING";
+    static constexpr const char* kShaderDefineMaterialLighting = "MATERIAL_ENABLE_LIGHTING";
+
     inline size_t
     getVertexFormatSize(wgpu::VertexFormat format)
     {

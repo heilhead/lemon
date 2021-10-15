@@ -12,20 +12,14 @@ using namespace lemon::shader;
 using namespace lemon;
 using namespace magic_enum::bitwise_operators;
 
-MaterialManager::MaterialManager() {}
+MaterialManager::MaterialManager() : pDevice{nullptr} {}
 
 uint64_t
-computeMaterialHash(const std::optional<MaterialBlueprint>& blueprint,
-                    const render::MaterialConfiguration& config)
+computeMaterialHash(const MaterialBlueprint& blueprint, const render::MaterialConfiguration& config)
 {
     lemon::Hash hash;
-
     hash.append(config);
-
-    if (blueprint) {
-        hash.appendHash(blueprint->getHash());
-    }
-
+    hash.appendHash(blueprint.getHash());
     return hash;
 }
 
@@ -40,11 +34,19 @@ MaterialManager::getShader(const MaterialResource& material, const render::Mater
     // Copy config.
     render::MaterialConfiguration finalConfig = material.getConfig();
     finalConfig.merge(config);
+
+    return std::move(getShader(*blueprint, finalConfig));
+}
+
+KeepAlive<ShaderProgram>
+MaterialManager::getShader(const MaterialBlueprint& blueprint,
+                           const render::MaterialConfiguration& finalConfig)
+{
     uint64_t hash = computeMaterialHash(blueprint, finalConfig);
 
     return std::move(shaderProgramCache.get(hash, [&]() {
         // TODO: Handle compilation errors, e.g. `template variable not found`
-        auto sourceCode = blueprint->renderShaderSource(finalConfig);
+        auto sourceCode = blueprint.renderShaderSource(finalConfig);
         return shaderCompiler.compile(hash, sourceCode).release();
     }));
 }

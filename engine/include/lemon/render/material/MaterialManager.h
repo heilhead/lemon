@@ -13,8 +13,9 @@ namespace lemon::res {
     class TextureResource;
 
     namespace material {
+        class MaterialBlueprint;
         struct SamplerDescriptor;
-    }
+    } // namespace material
 } // namespace lemon::res
 
 namespace lemon::render {
@@ -38,6 +39,10 @@ namespace lemon::render {
 
         KeepAlive<ShaderProgram>
         getShader(const res::MaterialResource& material, const render::MaterialConfiguration& config);
+
+        KeepAlive<ShaderProgram>
+        getShader(const res::material::MaterialBlueprint& blueprint,
+                  const render::MaterialConfiguration& config);
 
         KeepAlive<MaterialLayout>
         getMaterialLayout(const res::MaterialResource& material, const ShaderProgram& program,

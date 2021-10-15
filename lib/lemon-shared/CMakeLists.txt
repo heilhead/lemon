@@ -6,7 +6,8 @@ set(SOURCE_FILES
     "src/lemon/shared/filesystem.cpp"
     "src/lemon/shared/HashStringStore.cpp"
     "src/lemon/shared/utils.cpp"
-    "src/lemon/shared/math.cpp")
+    "src/lemon/shared/math.cpp"
+    "src/lemon/shared/logger.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::shared ALIAS ${PROJECT_NAME})

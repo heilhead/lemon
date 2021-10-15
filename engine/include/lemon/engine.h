@@ -10,9 +10,9 @@
 
 namespace lemon {
     class Engine final : public UnsafeSingleton<Engine> {
-        std::unique_ptr<lemon::device::Device> device;
         std::unique_ptr<lemon::scheduler::Scheduler> schedMan;
         std::unique_ptr<lemon::res::ResourceManager> resMan;
+        std::unique_ptr<lemon::device::Device> device;
 
     public:
         void

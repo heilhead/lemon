@@ -41,12 +41,12 @@ loadTexture(const std::filesystem::path& filePath, TextureResource::Decoder deco
 
 TextureResource::TextureResource()
 {
-    logger::log("TextureResource::TextureResource()");
+    logger::trace(__FUNCTION__);
 }
 
 TextureResource::~TextureResource()
 {
-    logger::log("TextureResource::~TextureResource()");
+    logger::trace(__FUNCTION__);
 }
 
 VoidTask<ResourceLoadingError>
