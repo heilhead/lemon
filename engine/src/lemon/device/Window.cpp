@@ -1,7 +1,4 @@
 #include <lemon/device/Window.h>
-
-#define GLFW_EXPOSE_NATIVE_WIN32
-
 #include <GLFW/glfw3native.h>
 #include <chrono>
 #include <lemon/prelude.h>

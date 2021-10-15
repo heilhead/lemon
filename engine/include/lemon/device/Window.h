@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <cstdint>
 #include <functional>
-#include <windows.h>
+#include <folly/portability/Windows.h>
 
 namespace lemon::device {
     enum class WindowKind { Window, Fullscreen, WindowedFullscreen };

@@ -61,7 +61,7 @@ find_package(lodepng CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT INJA_NOEXCEPTION)
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT INJA_NOEXCEPTION GLFW_EXPOSE_NATIVE_WIN32)
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:LEMON_DEBUG>")
 
 CPMAddPackage(

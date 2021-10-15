@@ -123,4 +123,4 @@ namespace lemon::logger {
     } while (false)
 #endif
 
-#define LEMON_TODO(...) ::lemon::logger::detail::unreachable(__FILE__, __LINE__, __VA_ARGS__);
+#define LEMON_TODO(...) ::lemon::logger::detail::unreachable(__FILE__, __LINE__, __VA_ARGS__)
