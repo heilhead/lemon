@@ -6,13 +6,10 @@
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/scheduler.h>
 #include <lemon/device/Device.h>
+#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon {
-    class Engine final {
-    public:
-        Engine();
-
-    private:
+    class Engine final : public UnsafeSingleton<Engine> {
         std::unique_ptr<lemon::device::Device> device;
         std::unique_ptr<lemon::scheduler::Scheduler> schedMan;
         std::unique_ptr<lemon::res::ResourceManager> resMan;
@@ -26,8 +23,5 @@ namespace lemon {
 
         void
         shutdown();
-
-        static Engine*
-        get();
     };
 } // namespace lemon

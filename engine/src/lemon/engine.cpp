@@ -5,17 +5,10 @@
 using namespace lemon;
 using namespace lemon::device;
 
-std::unique_ptr<Engine> gEngine = nullptr;
-
 void
 printGLFWError(int code, const char* message)
 {
     logger::err("GLFW error: ", code, " - ", message);
-}
-
-Engine::Engine()
-{
-    assert(gEngine == nullptr);
 }
 
 void
@@ -49,14 +42,4 @@ Engine::shutdown()
     resMan->getStore().clear();
 
     glfwTerminate();
-}
-
-Engine*
-Engine::get()
-{
-    if (gEngine == nullptr) {
-        gEngine = std::make_unique<Engine>();
-    }
-
-    return gEngine.get();
 }

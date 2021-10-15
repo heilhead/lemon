@@ -110,17 +110,12 @@ namespace lemon::logger {
     }
 } // namespace lemon::logger
 
-#ifndef NDEBUG
-#define LEMON_ASSERT(expr, ...)                                                                              \
-    do {                                                                                                     \
-        if (!(expr)) {                                                                                       \
-            ::lemon::logger::detail::assertionError(#expr, __FILE__, __LINE__, __VA_ARGS__);                 \
-        }                                                                                                    \
-    } while (false)
+#ifdef NDEBUG
+#define LEMON_ASSERT(expression) ((void)0)
 #else
-#define LEMON_ASSERT(expr)                                                                                   \
-    do {                                                                                                     \
-    } while (false)
+#define LEMON_ASSERT(expression, ...)                                                                        \
+    (void)((!!(expression)) ||                                                                               \
+           (::lemon::logger::detail::assertionError(#expression, __FILE__, __LINE__, __VA_ARGS__), 0))
 #endif
 
 #define LEMON_TODO(...) ::lemon::logger::detail::unreachable(__FILE__, __LINE__, __VA_ARGS__)
