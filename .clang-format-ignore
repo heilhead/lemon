@@ -1,2 +1,3 @@
-lib/*
-/tools/*
+/buildtools
+/engine/lib
+/lib/*/lib

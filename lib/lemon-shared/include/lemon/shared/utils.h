@@ -12,7 +12,8 @@ namespace lemon::utils {
     terminate();
 
     inline std::ostream&
-    operator<<(std::ostream& os, std::optional<std::string> str) {
+    operator<<(std::ostream& os, std::optional<std::string> str)
+    {
         if (str) {
             return os << *str;
         } else {

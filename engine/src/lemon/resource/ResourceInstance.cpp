@@ -2,7 +2,8 @@
 
 using namespace lemon::res;
 
-ResourceInstance::~ResourceInstance() {
+ResourceInstance::~ResourceInstance()
+{
     for (ResourceObject* pObj : objects) {
         delete pObj;
     }
@@ -11,13 +12,15 @@ ResourceInstance::~ResourceInstance() {
 }
 
 void
-ResourceInstance::addDependency(ResourceInstance* pResource) {
+ResourceInstance::addDependency(ResourceInstance* pResource)
+{
     dependencies.push_back(pResource);
     pResource->addDependant(/*this*/);
 }
 
 void
-ResourceInstance::detachDependencies(std::vector<ResourceHandle>* unusedDeps) {
+ResourceInstance::detachDependencies(std::vector<ResourceHandle>* unusedDeps)
+{
     for (ResourceInstance* pResource : dependencies) {
         pResource->removeDependant(/*this*/);
 

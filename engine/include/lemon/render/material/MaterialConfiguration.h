@@ -47,7 +47,7 @@ namespace lemon::render {
             }
         }
     };
-} // namespace lemon::res::material
+} // namespace lemon::render
 
 template<>
 struct folly::hasher<lemon::render::MaterialConfiguration> {

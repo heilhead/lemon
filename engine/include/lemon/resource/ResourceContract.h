@@ -45,23 +45,27 @@ namespace lemon::res {
     public:
         template<typename T = void>
         inline PromiseType<T>&
-        getPromise() {
+        getPromise()
+        {
             return reinterpret_cast<PromiseType<T>&>(promise);
         }
 
         template<typename T = void>
         inline SemiFutureType<T>&
-        getFuture() {
+        getFuture()
+        {
             return reinterpret_cast<SemiFutureType<T>&>(future);
         }
 
         inline folly::coro::Baton&
-        getBaton() {
+        getBaton()
+        {
             return baton;
         }
 
         inline void
-        setLifetime(ResourceLifetime inLifetime) {
+        setLifetime(ResourceLifetime inLifetime)
+        {
             lifetime = (int8_t)inLifetime;
         }
     };

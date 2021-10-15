@@ -6,7 +6,8 @@
 namespace cereal {
     template<class TArchive, size_t NComponents, typename TComponent, glm::qualifier Q>
     inline void
-    serialize(TArchive& ar, glm::vec<NComponents, TComponent, Q>& v) {
+    serialize(TArchive& ar, glm::vec<NComponents, TComponent, Q>& v)
+    {
         if constexpr (NComponents == 1) {
             ar(v.x);
         } else if constexpr (NComponents == 2) {
@@ -22,7 +23,8 @@ namespace cereal {
 
     template<class TArchive, size_t NColumns, size_t NRows, typename TComponent, glm::qualifier Q>
     inline void
-    serialize(TArchive& ar, glm::mat<NColumns, NRows, TComponent, Q>& m) {
+    serialize(TArchive& ar, glm::mat<NColumns, NRows, TComponent, Q>& m)
+    {
         if constexpr (NColumns == 2) {
             ar(m[0], m[1]);
         } else if constexpr (NColumns == 3) {

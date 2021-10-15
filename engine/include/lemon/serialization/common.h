@@ -6,7 +6,8 @@
 namespace cereal {
     template<class TArchive, typename TData>
     inline void
-    save(TArchive& ar, const std::optional<TData>& v) {
+    save(TArchive& ar, const std::optional<TData>& v)
+    {
         bool bHasValue = v.has_value();
         ar(bHasValue);
 
@@ -18,7 +19,8 @@ namespace cereal {
 
     template<class TArchive, typename TData>
     inline void
-    load(TArchive& ar, std::optional<TData>& v) {
+    load(TArchive& ar, std::optional<TData>& v)
+    {
         bool bHasValue;
         ar(bHasValue);
 

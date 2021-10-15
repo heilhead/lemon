@@ -15,7 +15,7 @@ TEST_CASE("AlignedMemory")
 
         REQUIRE(mem.size() == testSize);
     }
-    
+
     {
         Mem mem1;
         mem1.allocate(testSize);
@@ -29,7 +29,7 @@ TEST_CASE("AlignedMemory")
 
         Mem mem3;
         mem3 = std::move(mem2);
-        
+
         // `mem2` was moved, should be empty now.
         REQUIRE(mem2.size() == 0);
         REQUIRE(mem3.size() == testSize);

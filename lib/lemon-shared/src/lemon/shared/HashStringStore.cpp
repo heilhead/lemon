@@ -4,14 +4,16 @@ using namespace lemon;
 
 HashStringStore::HashStringStore(size_t sizeEst) : map{sizeEst} {}
 
-HashStringStore::~HashStringStore() {
+HashStringStore::~HashStringStore()
+{
     for (auto& [k, v] : map) {
         delete v.get();
     }
 }
 
 void
-HashStringStore::insert(uint64_t hash, const std::string& str) {
+HashStringStore::insert(uint64_t hash, const std::string& str)
+{
     folly::PackedSyncPtr<const std::string> ptr{};
     ptr.init();
     ptr.lock();
@@ -25,7 +27,8 @@ HashStringStore::insert(uint64_t hash, const std::string& str) {
 }
 
 const std::string*
-HashStringStore::find(uint64_t hash) {
+HashStringStore::find(uint64_t hash)
+{
     auto it = map.find(hash);
     if (it == map.end()) {
         return nullptr;
