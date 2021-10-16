@@ -36,7 +36,7 @@ namespace lemon::res {
         /// <param name="location">Resource location</param>
         /// <returns>Absolute file system path</returns>
         std::filesystem::path
-        resolvePath(const struct ResourceLocation& location);
+        resolvePath(const ResourceLocation& location) const;
 
         /// <summary>
         /// Resolves a relative resource path to the absolute file system path;
@@ -44,7 +44,15 @@ namespace lemon::res {
         /// <param name="relPath">Relative resource path</param>
         /// <returns>Absolute file system path</returns>
         std::filesystem::path
-        resolvePath(const std::filesystem::path& relPath);
+        resolvePath(const std::string& relPath) const;
+
+        /// <summary>
+        /// Resolves a relative resource path to the absolute file system path;
+        /// </summary>
+        /// <param name="relPath">Relative resource path</param>
+        /// <returns>Absolute file system path</returns>
+        std::filesystem::path
+        resolvePath(const std::filesystem::path& relPath) const;
 
         /// <summary>
         /// Returns the underlying store. Used internally.
@@ -73,7 +81,7 @@ namespace lemon::res {
         /// <param name="handle">Resource handle</param>
         /// <returns>Resource contract pointer, or `nullptr` if not found</returns>
         ResourceContract*
-        getContract(ResourceHandle handle);
+        getContract(ResourceHandle handle) const;
 
         /// <summary>
         /// Returns the resource pointer, assuming it's loaded and ready.
@@ -83,7 +91,17 @@ namespace lemon::res {
         /// <returns>Resource instance pointer or `nullptr` if it's not available</returns>
         template<class TResource = ResourceInstance>
         TResource*
-        getResource(ResourceHandle handle);
+        getResource(ResourceHandle handle) const;
+
+        /// <summary>
+        /// Returns the resource pointer, assuming it's loaded and ready.
+        /// </summary>
+        /// <typeparam name="TResource">`ResourceInstance` subclass</typeparam>
+        /// <param name="location">Resource location</param>
+        /// <returns>Resource instance pointer or `nullptr` if it's not available</returns>
+        template<class TResource = ResourceInstance>
+        TResource*
+        getResource(const ResourceLocation& location) const;
 
         /// <summary>
         /// Fetches resource state.
@@ -92,7 +110,7 @@ namespace lemon::res {
         /// <param name="object">Optional resource object handle</param>
         /// <returns>The resource state</returns>
         ResourceState
-        getResourceState(ResourceHandle handle, ResourceObjectHandle object = ResourceHandle::InvalidHandle);
+        getResourceState(ResourceHandle handle, ResourceObjectHandle object = ResourceHandle::InvalidHandle) const;
 
         /// <summary>
         /// Attempts to load a resource and returns a future that resolves to either the resource, or
@@ -154,7 +172,7 @@ namespace lemon::res {
         /// <returns>Either `ResourceMetadata` or an error</returns>
         template<class TResource>
         tl::expected<ResourceMetadata, ResourceLoadingError>
-        loadMetadata(const ResourceLocation& location);
+        loadMetadata(const ResourceLocation& location) const;
 
         /// <summary>
         /// Creates a hash-based class ID. Note that the ID is based on the mangled C++ class name
@@ -185,7 +203,7 @@ namespace lemon::res {
         /// <param name="id">Class ID</param>
         /// <returns>A factory function if one is found</returns>
         std::optional<ResourceFactoryFn>
-        getFactoryFn(ResourceClassID id);
+        getFactoryFn(ResourceClassID id) const;
     };
 } // namespace lemon::res
 

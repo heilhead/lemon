@@ -16,7 +16,7 @@ namespace lemon {
 
     public:
         void
-        init(std::string& assetPath);
+        init(const std::string& assetPath);
 
         void
         loop(const std::function<lemon::device::LoopControl(float)>& callback);

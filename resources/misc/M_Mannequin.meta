@@ -1,6 +1,7 @@
 MaterialResource:
   common:
-    references: []
+    references:
+      []
   baseType: Shader
   basePath: internal\shaders\BaseSurfacePBR.wgsl
   domain:
@@ -8,7 +9,8 @@ MaterialResource:
     usage: StaticMesh|SkeletalMesh
     shadingModel: Lit
     blendMode: Opaque
-  definitions: []
+  definitions:
+    []
   samplers:
     - first: surfaceSampler
       second:

@@ -14,8 +14,8 @@ namespace lemon::res {
         ResourceHandle handle;
         ResourceObjectHandle object;
 
-        explicit ResourceLocation(const std::string& inLocation);
-        ResourceLocation(const std::string& inLocation, std::string& inObject);
+        ResourceLocation(const std::string& inLocation);
+        ResourceLocation(const std::string& inLocation, const std::string& inObject);
 
         inline const std::string&
         getFileName() const

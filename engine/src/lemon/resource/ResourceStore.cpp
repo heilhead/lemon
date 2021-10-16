@@ -20,13 +20,13 @@ ResourceStore::clear()
 };
 
 ResourceContract*
-ResourceStore::find(ResourceHandle id)
+ResourceStore::find(ResourceHandle id) const
 {
     auto it = map.find(id);
     if (it == map.end()) {
         return nullptr;
     } else {
-        folly::PackedSyncPtr<ResourceContract>& ptr = it->second;
+        const folly::PackedSyncPtr<ResourceContract>& ptr = it->second;
         ptr.lock();
         ResourceContract* pContract = ptr.get();
         ptr.unlock();

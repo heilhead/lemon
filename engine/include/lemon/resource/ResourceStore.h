@@ -15,7 +15,7 @@ namespace lemon::res {
         ~ResourceStore();
 
         ResourceContract*
-        find(ResourceHandle id);
+        find(ResourceHandle id) const;
 
         std::pair<ResourceContract*, bool>
         findOrInsert(ResourceHandle id);

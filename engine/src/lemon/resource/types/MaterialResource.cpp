@@ -1,6 +1,6 @@
 #include <lemon/resource/ResourceMetadata.h>
-#include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/ResourceManager.h>
+#include <lemon/resource/types/MaterialResource.h>
 #include <lemon/resource/types/material/MaterialBlueprint.h>
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/RenderManager.h>
@@ -15,18 +15,28 @@ using namespace lemon::res;
 using namespace lemon::res::material;
 using namespace lemon::render;
 
-uint64_t
-computeHash(const std::optional<MaterialBlueprint>& blueprint, const render::MaterialConfiguration& config)
+template<typename TValue>
+inline bool
+findKey(const MaterialResource::ResourceList<TValue>& vec, StringID key)
 {
-    lemon::Hash hash;
-
-    hash.append(config);
-
-    if (blueprint) {
-        hash.appendHash(blueprint->getHash());
+    for (auto& [k, v] : vec) {
+        if (k == key) {
+            return true;
+        }
     }
 
-    return hash;
+    return false;
+}
+
+template<typename TValue>
+void
+mergeResources(const MaterialResource::ResourceList<TValue>& src, MaterialResource::ResourceList<TValue>& dst)
+{
+    for (auto& [srcKey, srcVal] : src) {
+        if (!findKey(dst, srcKey)) {
+            dst.emplace_back(std::make_pair(srcKey, srcVal));
+        }
+    }
 }
 
 MaterialResource::MaterialResource()
@@ -44,12 +54,6 @@ MaterialResource::load(ResourceMetadata&& md)
 {
     auto* pMeta = md.get<Metadata>();
     domain = pMeta->domain;
-
-    config.define(kShaderDefineMaterialLighting, domain.shadingModel == ShadingModel::Lit);
-
-    for (const auto& [k, v] : pMeta->definitions) {
-        config.define(k, v);
-    }
 
     for (const auto& [k, v] : pMeta->samplers) {
         samplers.emplace_back(std::make_pair(lemon::sid(k), v));
@@ -71,7 +75,23 @@ MaterialResource::load(ResourceMetadata&& md)
             co_return result.error();
         }
     } else {
-        LEMON_TODO();
+        const auto* pResourceMan = ResourceManager::get();
+        const auto* pParentMat = pResourceMan->getResource<MaterialResource>(ResourceHandle(pMeta->basePath));
+
+        LEMON_ASSERT(pParentMat != nullptr);
+
+        blueprint = pParentMat->blueprint;
+        config = pParentMat->config;
+
+        mergeResources(pParentMat->samplers, samplers);
+        mergeResources(pParentMat->textures, textures);
+        mergeResources(pParentMat->uniforms, uniforms);
+    }
+
+    config.define(kShaderDefineMaterialLighting, domain.shadingModel == ShadingModel::Lit);
+
+    for (const auto& [k, v] : pMeta->definitions) {
+        config.define(k, v);
     }
 
     co_return {};
@@ -85,5 +105,5 @@ MaterialResource::loadShaderBlueprint(const std::string& bplPath)
     auto& composer = pResMan->getMaterialComposer();
 
     co_return composer.getBlueprint(fullPath).map_error(
-        [](auto err) { return ResourceLoadingError::DataMissing; });
+        [](auto) { return ResourceLoadingError::DataMissing; });
 }

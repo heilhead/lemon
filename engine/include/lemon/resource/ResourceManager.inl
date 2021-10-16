@@ -131,7 +131,7 @@ namespace lemon::res {
 
     template<class TResource>
     TResource*
-    ResourceManager::getResource(ResourceHandle handle)
+    ResourceManager::getResource(ResourceHandle handle) const
     {
         ResourceContract* pContract = getContract(handle);
         if (pContract == nullptr) {
@@ -152,6 +152,13 @@ namespace lemon::res {
         return *resolution;
     }
 
+    template<class TResource = ResourceInstance>
+    inline TResource*
+    ResourceManager::getResource(const ResourceLocation& location) const
+    {
+        return getResource(location.handle);
+    }
+
     template<class TResource>
     ResourceContract::FutureType<TResource>
     ResourceManager::loadResource(const ResourceLocation& location, ResourceLifetime lifetime)
@@ -163,7 +170,7 @@ namespace lemon::res {
 
     template<class TResource>
     tl::expected<ResourceMetadata, ResourceLoadingError>
-    ResourceManager::loadMetadata(const ResourceLocation& location)
+    ResourceManager::loadMetadata(const ResourceLocation& location) const
     {
         auto fullPath = resolvePath(location);
         fullPath += ".meta";

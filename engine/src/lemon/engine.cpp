@@ -13,7 +13,7 @@ printGLFWError(int code, gsl::czstring<> message)
 }
 
 void
-Engine::init(std::string& assetPath)
+Engine::init(const std::string& assetPath)
 {
     glfwSetErrorCallback(printGLFWError);
 

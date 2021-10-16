@@ -20,7 +20,7 @@ ResourceLocation::ResourceLocation(const std::string& inLocation)
     }
 }
 
-ResourceLocation::ResourceLocation(const std::string& inLocation, std::string& inObject)
+ResourceLocation::ResourceLocation(const std::string& inLocation, const std::string& inObject)
 {
     LEMON_ASSERT(inLocation.find(kLocationObjectDelimiter) == std::string::npos);
     LEMON_ASSERT(inObject.find(kLocationObjectDelimiter) == std::string::npos);

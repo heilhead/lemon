@@ -22,25 +22,31 @@ ResourceManager::ResourceManager(std::filesystem::path&& rootPath)
 }
 
 std::filesystem::path
-ResourceManager::resolvePath(const ResourceLocation& location)
+ResourceManager::resolvePath(const ResourceLocation& location) const
 {
-    return std::filesystem::path(root) / location.getFileName();
+    return root / location.getFileName();
 }
 
 std::filesystem::path
-ResourceManager::resolvePath(const std::filesystem::path& relPath)
+ResourceManager::resolvePath(const std::string& relPath) const
 {
-    return std::filesystem::path(root) / relPath;
+    return root / relPath;
+}
+
+std::filesystem::path
+ResourceManager::resolvePath(const std::filesystem::path& relPath) const
+{
+    return root / relPath;
 }
 
 ResourceContract*
-ResourceManager::getContract(ResourceHandle handle)
+ResourceManager::getContract(ResourceHandle handle) const
 {
     return store.find(handle);
 }
 
 ResourceState
-ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object)
+ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle object) const
 {
     ResourceContract* pContract = getContract(handle);
     if (pContract == nullptr) {
@@ -112,7 +118,7 @@ ResourceManager::unloadResource(ResourceHandle handle)
 }
 
 std::optional<ResourceFactoryFn>
-ResourceManager::getFactoryFn(ResourceClassID id)
+ResourceManager::getFactoryFn(ResourceClassID id) const
 {
     auto result = factories.find(id);
     if (result != factories.end()) {

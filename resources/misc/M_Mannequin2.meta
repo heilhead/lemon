@@ -1,0 +1,26 @@
+MaterialResource:
+  common:
+    references:
+      []
+  baseType: Material
+  basePath: misc\M_Mannequin
+  domain:
+    type: Surface
+    usage: StaticMesh|SkeletalMesh
+    shadingModel: Lit
+    blendMode: Opaque
+  definitions:
+    []
+  samplers:
+    []
+  textures:
+    []
+  uniforms:
+    - first: materialParams.tint
+      second:
+        index: 8
+        data:
+          value0: 0.5
+          value1: 1
+          value2: 0.5
+          value3: 0.5

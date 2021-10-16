@@ -45,21 +45,21 @@ namespace lemon::res {
 
         template<class TArchive>
         constexpr bool
-        isSaving(TArchive& ar)
+        isSaving(TArchive& ar) const
         {
             return serialization::isSaving(ar);
         }
 
         template<class TArchive>
         constexpr bool
-        isLoading(TArchive& ar)
+        isLoading(TArchive& ar) const
         {
             return serialization::isLoading(ar);
         }
 
         template<class TResource>
         void
-        addReference(std::string& refPath)
+        addReference(const std::string& refPath)
         {
             common.references.emplace_back(RawResourceReference{refPath, getClassID<TResource>()});
         }

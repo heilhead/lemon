@@ -42,20 +42,19 @@ addDependencies(ResourceMetadataBase* data, std::initializer_list<RawResourceRef
 
 template<typename T>
 void
-saveMetadata(std::unique_ptr<typename T::Metadata>&& data, std::filesystem::path& path)
+saveMetadata(std::unique_ptr<typename T::Metadata>&& data, const std::filesystem::path& path)
 {
     static std::filesystem::path basePath = R"(C:\git\lemon\resources\)";
 
-    auto fullPath = basePath;
-    fullPath /= path;
+    auto fullPath = basePath / path;
     fullPath += ".meta";
 
-    std::ofstream os(fullPath.c_str(), std::ios::binary);
+    std::ofstream os(fullPath, std::ios::binary);
     cereal::YAMLOutputArchive ar(os);
     ResourceMetadataDescriptor desc{
         .type = ResourceManager::getClassID<T>(), .data = std::move(data), .fullPath = "", .name = ""};
-    ResourceMetadata md(std::move(desc));
-    T::saveMetadata(ar, md);
+
+    T::saveMetadata(ar, ResourceMetadata(std::move(desc)));
 }
 
 void
@@ -76,8 +75,7 @@ createMetadata()
         auto bun = createBundle();
 
         for (int j = 0; j < 3; j++) {
-            path p2 = p1;
-            p2 /= dirs[j];
+            path p2 = p1 / dirs[j];
 
             auto mat = createMaterial();
             mat->baseType = MaterialResource::BaseType::Shader;
@@ -97,8 +95,7 @@ createMetadata()
                 std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
 
             for (int k = 0; k < 3; k++) {
-                path texPath = p2;
-                texPath /= textures[k];
+                path texPath = p2 / textures[k];
 
                 auto tex = createTexture();
                 tex->decoder = TextureResource::Decoder::PNG;
@@ -111,8 +108,7 @@ createMetadata()
                 mat->textures.emplace_back(std::make_pair(textureTypes[k], texPath.string()));
             }
 
-            path matPath = p1;
-            matPath /= materials[j];
+            path matPath = p1 / materials[j];
 
             bun->common.references.push_back(RawResourceReference{
                 .location = matPath.string(),
@@ -122,9 +118,7 @@ createMetadata()
             saveMetadata<MaterialResource>(std::move(mat), matPath);
         }
 
-        path bunPath = bundles[i];
-
-        saveMetadata<BundleResource>(std::move(bun), bunPath);
+        saveMetadata<BundleResource>(std::move(bun), bundles[i]);
     }
 
     {
@@ -137,8 +131,8 @@ createMetadata()
             .location = "RB_BC",
             .type = ResourceManager::getClassID<BundleResource>(),
         });
-        path bunPath = "RB_ABC";
-        saveMetadata<BundleResource>(std::move(bun), bunPath);
+
+        saveMetadata<BundleResource>(std::move(bun), "RB_ABC");
     }
 
     {
@@ -151,8 +145,8 @@ createMetadata()
             .location = "RB_B",
             .type = ResourceManager::getClassID<BundleResource>(),
         });
-        path bunPath = "RB_AB";
-        saveMetadata<BundleResource>(std::move(bun), bunPath);
+
+        saveMetadata<BundleResource>(std::move(bun), "RB_AB");
     }
 
     {
@@ -165,8 +159,8 @@ createMetadata()
             .location = "RB_C",
             .type = ResourceManager::getClassID<BundleResource>(),
         });
-        path bunPath = "RB_BC";
-        saveMetadata<BundleResource>(std::move(bun), bunPath);
+
+        saveMetadata<BundleResource>(std::move(bun), "RB_BC");
     }
 
     {
@@ -190,30 +184,42 @@ createMetadata()
 
         saveMetadata<TextureResource>(std::move(texN), texNPath);
 
-        auto mat = createMaterial();
-        mat->baseType = MaterialResource::BaseType::Shader;
-        mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
-        mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
-        mat->domain.type = MaterialResource::Domain::Surface;
-        mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
-        mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
-        mat->samplers.emplace_back(
-            std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
-        mat->textures.emplace_back(std::make_pair("tAlbedo", texAOPath.string()));
-        mat->textures.emplace_back(std::make_pair("tNormal", texNPath.string()));
-        mat->uniforms.emplace_back(
-            std::make_pair("packetParams.modelMatrix", UniformValue{glm::f32mat4x4{}}));
-        mat->uniforms.emplace_back(
-            std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
+        {
+            auto mat = createMaterial();
+            mat->baseType = MaterialResource::BaseType::Shader;
+            mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
+            mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
+            mat->domain.type = MaterialResource::Domain::Surface;
+            mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
+            mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
+            mat->samplers.emplace_back(
+                std::make_pair("surfaceSampler", lemon::res::material::SamplerDescriptor()));
+            mat->textures.emplace_back(std::make_pair("tAlbedo", texAOPath.string()));
+            mat->textures.emplace_back(std::make_pair("tNormal", texNPath.string()));
+            mat->uniforms.emplace_back(
+                std::make_pair("packetParams.modelMatrix", UniformValue{glm::f32mat4x4{}}));
+            mat->uniforms.emplace_back(
+                std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
 
-        path matPath = "misc\\M_Mannequin";
+            saveMetadata<MaterialResource>(std::move(mat), "misc\\M_Mannequin");
+        }
 
-        saveMetadata<MaterialResource>(std::move(mat), matPath);
+        {
+            auto mat = createMaterial();
+            mat->baseType = MaterialResource::BaseType::Material;
+            mat->basePath = "misc\\M_Mannequin";
+            mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
+            mat->domain.type = MaterialResource::Domain::Surface;
+            mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
+            mat->domain.blendMode = MaterialResource::BlendMode::Opaque;
+            mat->uniforms.emplace_back(
+                std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{0.5f, 1.0f, 0.5f, 0.5f}}));
+
+            saveMetadata<MaterialResource>(std::move(mat), "misc\\M_Mannequin2");
+        }
     }
 
     {
-        auto model = createModel();
-        path outPath = R"(ozz-sample\MannequinSkeleton.lem)";
-        saveMetadata<ModelResource>(std::move(model), outPath);
+        saveMetadata<ModelResource>(std::move(createModel()), R"(ozz-sample\MannequinSkeleton.lem)");
     }
 }

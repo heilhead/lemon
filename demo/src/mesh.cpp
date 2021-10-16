@@ -50,7 +50,7 @@ namespace minirender {
     const MaterialResource*
     loadMaterial()
     {
-        ResourceLocation location(R"(misc\\M_Mannequin)");
+        ResourceLocation location(R"(misc\\M_Mannequin2)");
 
         auto result = Scheduler::get()->block(
             ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
@@ -178,9 +178,7 @@ testMeshRendering()
 {
     lemon::Engine engine;
 
-    std::string assetPath(R"(C:\git\lemon\resources)");
-
-    engine.init(assetPath);
+    engine.init(R"(C:\git\lemon\resources)");
 
     {
         MiniRender render;

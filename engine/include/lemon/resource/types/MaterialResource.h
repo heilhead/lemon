@@ -41,6 +41,10 @@ namespace lemon::res {
         // otherwise serialization will break.
         using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
                                           glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
+
+        template<typename T>
+        using ResourceList = std::vector<std::pair<StringID, T>>;
+
         enum class BaseType { Shader, Material };
         enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
         enum class Domain { Surface, PostProcess, UserInterface };
@@ -48,10 +52,10 @@ namespace lemon::res {
         enum class BlendMode { Opaque, Masked, Translucent };
 
         struct DomainDescriptor {
-            Usage usage;
-            Domain type;
-            ShadingModel shadingModel;
-            BlendMode blendMode;
+            Usage usage = Usage::Unknown;
+            Domain type = Domain::Surface;
+            ShadingModel shadingModel = ShadingModel::Lit;
+            BlendMode blendMode = BlendMode::Opaque;
 
             template<class TArchive>
             void
@@ -63,15 +67,18 @@ namespace lemon::res {
         /////////////////////////////////////////////////////////////////////////////////////
 
         struct Metadata : ResourceMetadataBase {
-            BaseType baseType;
-            std::string basePath;
+            template<typename T>
+            using ResourceList = std::vector<std::pair<std::string, T>>;
 
-            DomainDescriptor domain;
+            BaseType baseType = BaseType::Shader;
+            std::string basePath{};
 
-            std::vector<std::pair<std::string, render::MaterialConfiguration::Value>> definitions;
-            std::vector<std::pair<std::string, material::SamplerDescriptor>> samplers;
-            std::vector<std::pair<std::string, std::string>> textures;
-            std::vector<std::pair<std::string, UniformValue>> uniforms;
+            DomainDescriptor domain{};
+
+            ResourceList<render::MaterialConfiguration::Value> definitions;
+            ResourceList<material::SamplerDescriptor> samplers;
+            ResourceList<std::string> textures;
+            ResourceList<UniformValue> uniforms;
 
             template<class TArchive>
             void
@@ -88,9 +95,9 @@ namespace lemon::res {
         DomainDescriptor domain;
         std::optional<material::MaterialBlueprint> blueprint;
         render::MaterialConfiguration config;
-        std::vector<std::pair<StringID, material::SamplerDescriptor>> samplers;
-        std::vector<std::pair<StringID, ResourceLocation>> textures;
-        std::vector<std::pair<StringID, UniformValue>> uniforms;
+        ResourceList<material::SamplerDescriptor> samplers;
+        ResourceList<ResourceLocation> textures;
+        ResourceList<UniformValue> uniforms;
 
     public:
         MaterialResource();
