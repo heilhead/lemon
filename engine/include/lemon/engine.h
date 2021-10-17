@@ -1,12 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <functional>
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/scheduler.h>
 #include <lemon/device/Device.h>
-#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon {
     class Engine final : public UnsafeSingleton<Engine> {

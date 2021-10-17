@@ -1,5 +1,4 @@
 #include <lemon/resource/ResourceLocation.h>
-#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 

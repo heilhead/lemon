@@ -2,6 +2,3 @@
 
 void
 testBundleLoading();
-
-void
-testModelLoading();

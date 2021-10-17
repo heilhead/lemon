@@ -1,7 +1,6 @@
 #include <lemon/render/RenderManager.h>
 #include <lemon/render/material/MaterialLayout.h>
 #include <lemon/resource/types/MaterialResource.h>
-#include <folly/small_vector.h>
 #include <lemon/shader/reflection.h>
 
 using namespace lemon::render;

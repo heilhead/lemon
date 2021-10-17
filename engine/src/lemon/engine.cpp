@@ -1,7 +1,5 @@
-#include <gsl/gsl>
 #include <lemon/engine.h>
 #include <lemon/device/Window.h>
-#include <lemon/shared/utils.h>
 
 using namespace lemon;
 using namespace lemon::device;

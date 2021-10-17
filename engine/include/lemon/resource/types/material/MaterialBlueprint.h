@@ -2,9 +2,6 @@
 
 #include <lemon/resource/types/material/common.h>
 #include <lemon/render/material/MaterialConfiguration.h>
-#include <lemon/shared/Hash.h>
-#include <lemon/shared/logger.h>
-#include <lemon/shared/AtomicCache.h>
 #include <inja/inja.hpp>
 #include <inja/environment.hpp>
 

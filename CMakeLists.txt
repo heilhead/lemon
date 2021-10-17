@@ -13,6 +13,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+add_compile_options("/MP")
+add_link_options("/incremental" "/debug:fastlink")
+
 add_subdirectory(lib/lemon-shared)
 add_subdirectory(lib/lemon-shader) # temporary!
 add_subdirectory(engine)

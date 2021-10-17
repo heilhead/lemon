@@ -1,6 +1,4 @@
 #include <lemon/resource/types/material/MaterialComposer.h>
-#include <lemon/shared/Hash.h>
-#include <lemon/shared/utils.h>
 
 using namespace lemon::res::material;
 

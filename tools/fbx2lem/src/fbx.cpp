@@ -2,14 +2,6 @@
 
 #define AI_CONFIG_PP_SBP_REMOVE aiPrimitiveType_POINT | aiPrimitiveType_LINE
 
-#include <vector>
-#include <cstdint>
-#include <algorithm>
-#include <limits>
-#include <concepts>
-
-#include <glm/glm.hpp>
-
 #include <lemon/resources.h>
 #include <lemon/shared/utils.h>
 #include <lemon/shared/logger.h>

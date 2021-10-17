@@ -1,10 +1,5 @@
 #pragma once
 
-#include <gsl/gsl>
-#include <dawn/webgpu_cpp.h>
-#include <dawn/webgpu_cpp_print.h>
-#include <dawn/dawn_proc.h>
-#include <dawn_native/D3D12Backend.h>
 #include <lemon/render/BindingInitializationHelper.h>
 #include <lemon/render/BindingLayoutEntryInitializationHelper.h>
 

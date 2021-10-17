@@ -3,7 +3,6 @@
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/BundleResource.h>
 #include <lemon/resource/types/ModelResource.h>
-#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 

@@ -1,7 +1,5 @@
 #include <lemon/render/material/ShaderCompiler.h>
 #include <lemon/render/RenderManager.h>
-#include <folly/small_vector.h>
-#include <magic_enum.hpp>
 
 using namespace lemon::render;
 

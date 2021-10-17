@@ -1,8 +1,6 @@
 #pragma once
 
 #include <lemon/render/material/ShaderProgram.h>
-#include <lemon/shared/AtomicCache.h>
-#include <dawn/webgpu_cpp.h>
 
 namespace lemon::render {
     class ShaderCompiler {

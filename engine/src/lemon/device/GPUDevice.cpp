@@ -1,11 +1,6 @@
-#include <gsl/gsl>
 #include <lemon/device/GPUDevice.h>
 #include <lemon/device/Platform.h>
 #include <lemon/device/Window.h>
-#include <lemon/shared/utils.h>
-#include <dawn/dawn_proc.h>
-#include <dawn/webgpu_cpp_print.h>
-#include <dawn_native/D3D12Backend.h>
 
 using namespace lemon::device;
 using namespace lemon::render;

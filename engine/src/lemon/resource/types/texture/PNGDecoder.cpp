@@ -1,5 +1,4 @@
 #include <lemon/resource/types/texture/PNGDecoder.h>
-#include <lemon/shared/logger.h>
 #include <lodepng.h>
 
 using namespace lemon;

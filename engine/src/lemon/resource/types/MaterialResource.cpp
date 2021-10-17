@@ -5,8 +5,6 @@
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/RenderManager.h>
 #include <lemon/device/Device.h>
-#include <lemon/shared/utils.h>
-#include <lemon/shared/logger.h>
 
 using namespace lemon;
 using namespace lemon::utils;

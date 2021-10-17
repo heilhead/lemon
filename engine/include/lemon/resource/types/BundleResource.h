@@ -3,7 +3,6 @@
 #include <lemon/resource/common.h>
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceMetadata.h>
-#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 
 namespace lemon::res {

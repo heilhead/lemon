@@ -2,9 +2,6 @@
 
 #include <lemon/serialization.h>
 #include <lemon/resource/common.h>
-#include <lemon/shared/logger.h>
-#include <lemon/shared/NonCopyable.h>
-#include <filesystem>
 
 namespace lemon::res {
     struct RawResourceReference {

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <cereal/cereal.hpp>
-
 namespace cereal {
     template<class TArchive, typename TData>
     inline void

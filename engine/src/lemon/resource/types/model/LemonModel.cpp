@@ -1,6 +1,4 @@
 #include <lemon/resource/types/model/LemonModel.h>
-#include <lemon/shared/utils.h>
-#include <lemon/shared/logger.h>
 
 using namespace lemon;
 using namespace lemon::render;

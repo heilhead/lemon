@@ -1,6 +1,5 @@
 #pragma once
 
-#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
 #include <lemon/resource/common.h>
 #include <lemon/resource/ResourceInstance.h>

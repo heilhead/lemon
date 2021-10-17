@@ -1,12 +1,8 @@
 #pragma once
 
-#include <folly/experimental/coro/Collect.h>
-#include <folly/small_vector.h>
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/scheduler.h>
-#include <lemon/shared/utils.h>
-#include <lemon/shared/logger.h>
 #include <lemon/tasks/filesystem.h>
 
 using namespace lemon::scheduler;
@@ -152,11 +148,11 @@ namespace lemon::res {
         return *resolution;
     }
 
-    template<class TResource = ResourceInstance>
+    template<class TResource>
     inline TResource*
     ResourceManager::getResource(const ResourceLocation& location) const
     {
-        return getResource(location.handle);
+        return getResource<TResource>(location.handle);
     }
 
     template<class TResource>

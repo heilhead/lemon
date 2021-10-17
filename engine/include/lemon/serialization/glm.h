@@ -1,8 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <cereal/cereal.hpp>
-
 namespace cereal {
     template<class TArchive, size_t NComponents, typename TComponent, glm::qualifier Q>
     inline void

@@ -9,6 +9,11 @@ add_executable(${PROJECT_NAME}
         "src/Singleton.cpp"
         "src/UnsafeSingleton.cpp")
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+    <lemon/pch/folly.h>
+    <lemon/pch/std.h>
+)
+
 find_package(Catch2 CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}

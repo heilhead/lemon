@@ -1,7 +1,4 @@
-// #include <gsl/gsl>
 #include <lemon/device/Platform.h>
-#include <string>
-#include <vector>
 
 using namespace lemon::device;
 

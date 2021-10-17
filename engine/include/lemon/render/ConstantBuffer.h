@@ -1,9 +1,6 @@
 #pragma once
 
-#include <lemon/shared.h>
-#include <lemon/shared/logger.h>
 #include <lemon/render/common.h>
-#include <dawn/webgpu_cpp.h>
 
 namespace lemon::render {
     class ConstantBuffer {

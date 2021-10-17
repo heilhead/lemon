@@ -1,7 +1,5 @@
 #pragma once
 
-#include <folly/AtomicHashMap.h>
-#include <folly/PackedSyncPtr.h>
 #include <lemon/resource/common.h>
 
 namespace lemon::res {

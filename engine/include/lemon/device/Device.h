@@ -4,7 +4,6 @@
 #include <lemon/device/Platform.h>
 #include <lemon/device/Window.h>
 #include <lemon/device/Input.h>
-#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::device {
     class Device : public UnsafeSingleton<Device> {

@@ -1,10 +1,5 @@
 #pragma once
 
-#include <dawn/webgpu_cpp.h>
-#include <dawn/webgpu_cpp_print.h>
-#include <dawn/dawn_proc.h>
-#include <dawn_native/D3D12Backend.h>
-
 namespace lemon::render {
     static constexpr uint8_t kMaxVertexAttributes = 16u;
     static constexpr uint8_t kMaxVertexBuffers = 8u;
@@ -61,7 +56,7 @@ namespace lemon::render {
                 stencilFace.passOp = wgpu::StencilOperation::Keep;
 
                 cDepthStencil.format = wgpu::TextureFormat::Depth24PlusStencil8;
-                cDepthStencil.depthWriteEnabled = false;
+                cDepthStencil.depthWriteEnabled = true;
                 cDepthStencil.depthCompare = wgpu::CompareFunction::Always;
                 cDepthStencil.stencilBack = stencilFace;
                 cDepthStencil.stencilFront = stencilFace;

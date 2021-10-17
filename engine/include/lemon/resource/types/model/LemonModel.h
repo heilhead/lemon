@@ -1,10 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <glm/glm.hpp>
-#include <webgpu/webgpu_cpp.h>
-#include <lemon/shared/Memory.h>
-#include <lemon/shared/logger.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
 #include <lemon/serialization/DataBuffer.h>

@@ -1,8 +1,6 @@
 #include <lemon/render/MeshVertexFormat.h>
 #include <lemon/render.h>
-#include <lemon/shared/logger.h>
 #include <lemon/resource/types/MaterialResource.h>
-#include <magic_enum.hpp>
 
 using namespace magic_enum::bitwise_operators;
 using namespace lemon::render;

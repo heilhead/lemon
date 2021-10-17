@@ -1,10 +1,5 @@
 #pragma once
 
-#include <dawn/webgpu_cpp.h>
-#include <dawn/webgpu_cpp_print.h>
-#include <dawn/dawn_proc.h>
-#include <dawn_native/D3D12Backend.h>
-
 namespace lemon::render {
     struct BindingInitializationHelper {
         BindingInitializationHelper(uint32_t binding, const wgpu::Sampler& sampler)

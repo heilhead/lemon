@@ -1,7 +1,5 @@
 #include <lemon/device/Window.h>
 #include <GLFW/glfw3native.h>
-#include <chrono>
-#include <lemon/shared/utils.h>
 
 using namespace lemon::device;
 

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <vector>
 #include <lemon/shader/reflection.h>
-#include <lemon/shared/Hash.h>
-#include <dawn/webgpu_cpp.h>
-#include <lemon/shared/logger.h>
 
 namespace lemon::render {
     class ShaderProgram {

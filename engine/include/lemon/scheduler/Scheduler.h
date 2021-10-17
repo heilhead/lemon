@@ -1,14 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <string>
-#include <lemon/scheduler/prelude.h>
-#include <lemon/shared/UnsafeSingleton.h>
-#include <folly/executors/IOThreadPoolExecutor.h>
-#include <folly/executors/CPUThreadPoolExecutor.h>
-#include <folly/experimental/coro/Task.h>
-#include <folly/experimental/coro/BlockingWait.h>
-
 namespace lemon::scheduler {
     template<typename TResult, typename TError>
     using Task = folly::coro::Task<tl::expected<TResult, TError>>;

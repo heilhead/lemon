@@ -1,12 +1,3 @@
-#include <iostream>
-
-#include <lemon/shared.h>
-#include <lemon/shared/filesystem.h>
-
-#include <lemon/resources.h>
-
-#include <dawn/webgpu_cpp.h>
-
 using namespace lemon::scheduler;
 using namespace lemon::res;
 
@@ -197,7 +188,7 @@ createMetadata()
             mat->textures.emplace_back(std::make_pair("tAlbedo", texAOPath.string()));
             mat->textures.emplace_back(std::make_pair("tNormal", texNPath.string()));
             mat->uniforms.emplace_back(
-                std::make_pair("packetParams.modelMatrix", UniformValue{glm::f32mat4x4{}}));
+                std::make_pair("packetParams.matModel", UniformValue{glm::f32mat4x4{}}));
             mat->uniforms.emplace_back(
                 std::make_pair("materialParams.tint", UniformValue{glm::f32vec4{1.0f, 0.5f, 0.5f, 0.5f}}));
 

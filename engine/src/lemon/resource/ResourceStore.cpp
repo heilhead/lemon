@@ -1,7 +1,5 @@
 #include <lemon/resource/ResourceContract.h>
 #include <lemon/resource/ResourceStore.h>
-#include <utility>
-#include <lemon/shared/logger.h>
 
 using namespace lemon::res;
 using namespace lemon::scheduler;

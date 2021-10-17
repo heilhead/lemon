@@ -1,6 +1,5 @@
 #pragma once
 
-#include <lemon/shared.h>
 #include <lemon/serialization.h>
 #include <lemon/resource/common.h>
 #include <lemon/resource/ResourceContract.h>
@@ -10,5 +9,5 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/types/BundleResource.h>
 #include <lemon/resource/types/MaterialResource.h>
-#include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/ModelResource.h>
+#include <lemon/resource/types/TextureResource.h>

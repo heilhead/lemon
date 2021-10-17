@@ -2,12 +2,9 @@
 #include <lemon/resource/ResourceManager.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/shader/reflection.h>
-#include <lemon/shared/logger.h>
 #include <lemon/render/RenderManager.h>
 #include <lemon/render/BindingInitializationHelper.h>
 #include <lemon/render/MeshVertexFormat.h>
-#include <variant>
-#include <concepts>
 
 using namespace lemon;
 using namespace lemon::render;

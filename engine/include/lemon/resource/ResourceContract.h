@@ -1,10 +1,7 @@
 #pragma once
 
-#include <folly/experimental/coro/Baton.h>
 #include <lemon/resource/common.h>
 #include <lemon/scheduler.h>
-#include <optional>
-#include <tl/expected.hpp>
 
 namespace lemon::res {
     class ResourceInstance;

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-#include <gsl/gsl>
-#include <webgpu/webgpu_cpp.h>
-
 namespace lemon::render {
     namespace {
         static std::unordered_map<wgpu::VertexFormat, size_t> gVertexFormatSize = {

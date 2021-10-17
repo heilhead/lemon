@@ -1,11 +1,7 @@
 #pragma once
 
-#include <atomic>
 #include <lemon/scheduler.h>
-#include <folly/small_vector.h>
 #include <lemon/resource/common.h>
-#include <lemon/shared/utils.h>
-#include <lemon/shared/NonCopyable.h>
 
 using namespace lemon::scheduler;
 

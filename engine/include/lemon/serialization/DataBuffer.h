@@ -1,8 +1,5 @@
 #pragma once
 
-#include <lemon/shared/Memory.h>
-#include <cereal/cereal.hpp>
-
 namespace cereal {
     template<class TArchive, size_t Alignment>
     inline void

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <variant>
-#include <type_traits>
-#include <gsl/gsl>
 #include <inja/inja.hpp>
-#include <lemon/shared/Hash.h>
 
 namespace lemon::render {
     using ComposerDefinitions = inja::json;

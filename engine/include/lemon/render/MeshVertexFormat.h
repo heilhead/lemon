@@ -1,8 +1,5 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
-#include <dawn/webgpu_cpp.h>
 #include <lemon/render/material/MaterialConfiguration.h>
 
 namespace lemon::render {

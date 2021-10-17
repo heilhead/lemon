@@ -1,10 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <folly/Hash.h>
-#include <optional>
-#include <string>
-
 namespace lemon::res {
     using ResourceClassID = uint64_t;
 

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <concepts>
-#include <cstdint>
-#include <lemon/shared/Memory.h>
-#include <lemon/shared/AtomicCache.h>
 #include <lemon/render/material/common.h>
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/render/material/MaterialLayout.h>
@@ -22,8 +18,8 @@ namespace lemon::render {
 
         MaterialUniformData(const KeepAlive<MaterialLayout>& kaLayout);
 
-        // TODO: Figure out proper constraints for uniform data types. `std::regular` is not enough here.
-        template<std::regular TData>
+        // TODO: Figure out proper constraints for uniform data types. `std::semiregular` is not enough here.
+        template<std::semiregular TData>
         void
         setData(StringID id, const TData& val)
         {

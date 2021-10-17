@@ -1,6 +1,5 @@
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/utils.h>
-#include <lemon/shared/math.h>
 
 using namespace lemon;
 using namespace lemon::render;

@@ -3,10 +3,7 @@
 #include <lemon/resource/types/TextureResource.h>
 #include <lemon/resource/types/texture/common.h>
 #include <lemon/resource/types/texture/PNGDecoder.h>
-#include <lemon/shared/filesystem.h>
-#include <lemon/shared/logger.h>
 #include <lemon/tasks/filesystem.h>
-#include <lemon/shared/utils.h>
 
 using namespace lemon::io;
 using namespace lemon::res;

@@ -1,9 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <lemon/shared.h>
-#include <lemon/shared/filesystem.h>
-#include <lemon/shared/AtomicCache.h>
 #include <lemon/resource/types/material/common.h>
 #include <lemon/resource/types/material/MaterialBlueprint.h>
 #include <inja/inja.hpp>

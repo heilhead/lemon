@@ -1,6 +1,12 @@
+struct CameraParams {
+  matView: mat4x4<f32>;
+  matProjection: mat4x4<f32>;
+  zClip: vec4<f32>;
+};
+
 [[block]]
 struct SceneParams {
-  projection: mat4x4<f32>;
+  camera: CameraParams;
   time: f32;
 };
 
@@ -60,13 +66,10 @@ struct FragmentInput {
 //#if MESH_ENABLE_TEXTURE1
   [[location(3)]] uv1: vec2<f32>;
 //#endif
-
-  [[location(4)]] depth: f32;
 };
 
 struct FragmentOutput {
   [[location(0)]] color: vec4<f32>;
-  [[builtin(frag_depth)]] depth: f32;
 };
 
 [[group(0), binding(0)]]
@@ -79,3 +82,9 @@ var<uniform> sceneParams: SceneParams;
 //#if MATERIAL_ENABLE_LIGHTING
 // TODO: Shared lighting data bindings.
 //#endif
+
+fn linearizeDepth(depth: f32) -> f32 {
+  let near = sceneParams.camera.zClip.x;
+  let far = sceneParams.camera.zClip.y;
+  return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+}

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <dawn_platform/DawnPlatform.h>
-
 namespace lemon::device {
     class PlatformCache : public dawn_platform::CachingInterface {
         virtual size_t

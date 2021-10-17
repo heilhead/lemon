@@ -10,10 +10,7 @@
 #include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
-#include <lemon/shared/utils.h>
 #include <lemon/scheduler.h>
-#include <lemon/shared/AtomicCache.h>
-#include <dawn/webgpu_cpp.h>
 
 namespace lemon::res {
     namespace material {

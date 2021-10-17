@@ -1,6 +1,5 @@
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/types/BundleResource.h>
-#include <lemon/shared/utils.h>
 
 using namespace lemon::res;
 using namespace lemon::utils;

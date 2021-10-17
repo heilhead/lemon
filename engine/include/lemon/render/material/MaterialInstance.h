@@ -1,10 +1,7 @@
 #pragma once
 
-#include <concepts>
 #include <lemon/render/material/MaterialUniformData.h>
 #include <lemon/render/MeshVertexFormat.h>
-#include <lemon/shared/NonCopyable.h>
-#include <folly/small_vector.h>
 
 namespace lemon::res {
     class MaterialResource;

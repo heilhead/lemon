@@ -1,30 +1,6 @@
 #include "mesh.h"
-
-#include "ozz/base/io/stream.h"
-#include "ozz/base/io/archive.h"
-#include "ozz/animation/runtime/skeleton.h"
-#include "ozz/animation/runtime/animation.h"
-
-#include <lemon/shared/utils.h>
-#include <lemon/shared/logger.h>
-#include <lemon/engine.h>
-#include <lemon/device/Device.h>
-#include <lemon/shared/filesystem.h>
-#include <lemon/resources.h>
-#include <lemon/resource/types/ModelResource.h>
-#include <lemon/render/ComboRenderPassDescriptor.h>
-#include <lemon/render/utils.h>
-#include <lemon/render/RenderManager.h>
-#include <lemon/render/PipelineManager.h>
-#include <lemon/render/material/MaterialManager.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
-
-#include <dawn/webgpu_cpp.h>
-#include <dawn/webgpu_cpp_print.h>
-#include <dawn/dawn_proc.h>
-#include <dawn_native/D3D12Backend.h>
+#include "game/Transform.h"
+#include "game/Camera.h"
 
 using namespace lemon;
 using namespace lemon::device;
@@ -32,6 +8,7 @@ using namespace lemon::utils;
 using namespace lemon::res;
 using namespace lemon::scheduler;
 using namespace lemon::render;
+using namespace game;
 
 namespace minirender {
     const ModelResource::Model*
@@ -90,16 +67,6 @@ public:
     void
     init(Window* window)
     {
-        glm::mat4 matIdentity;
-
-        glm::mat4 matModel = glm::translate(matIdentity, glm::vec3(0.f, -1.f, 0.f)) *
-                             glm::scale(matIdentity, glm::vec3(0.01f, 0.01f, 0.01f)) *
-                             glm::rotate(matIdentity, glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f)) *
-                             glm::rotate(matIdentity, glm::radians(135.f), glm::vec3(0.f, 0.f, 1.f));
-
-        glm::mat4 matView = glm::translate(matIdentity, glm::vec3(0.f, 0.f, -1.f)) *
-                            glm::rotate(matIdentity, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
-
         auto* gpu = Device::get()->getGPU();
 
         device = gpu->getDevice();
@@ -109,8 +76,18 @@ public:
         const auto& swapChainImpl = gpu->getSwapChainImpl();
         auto [wndWidth, wndHeight] = window->getSize();
 
-        glm::mat4 matProjection = glm::perspective(90.f, (float)wndWidth / (float)wndHeight, 0.f, 5000.f);
-        glm::mat4 matViewProjection = matProjection * matView * matModel;
+        Transform tModel;
+        tModel.setPosition(0.f, 0.f, 0.f);
+        tModel.setRotation(90.f, 225.0f, 0.f);
+        tModel.setScale(1.f);
+
+        Camera camera;
+        camera.setClipping(1.f, 1000.f);
+        camera.setView(wndWidth, wndHeight);
+
+        auto& tCamera = camera.getTransform();
+        tCamera.setPosition(0.f, -100.f, 100.f);
+        tCamera.setRotation(0.f, 0.f, 0.f);
 
         depthStencilView = createDefaultDepthStencilView(device, wndWidth, wndHeight);
 
@@ -127,9 +104,10 @@ public:
         material = MaterialManager::get()->getMaterialInstance(*pMaterial, mesh->vertexFormat);
 
         pMaterialData = &material.getUniformData();
+        pMaterialData->setData(lemon::sid("packetParams.matModel"), tModel.getMatrix());
 
         pSharedData = &PipelineManager::get()->getSharedUniformData();
-        pSharedData->setData(lemon::sid("sceneParams.projection"), matViewProjection);
+        pSharedData->setData(lemon::sid("sceneParams.camera"), camera.getUniformData());
         pSharedData->setData(lemon::sid("sceneParams.time"), 1.f);
     }
 

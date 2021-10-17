@@ -30,7 +30,7 @@ MaterialResource:
     - first: tNormal
       second: misc\T_Mannequin_N.png
   uniforms:
-    - first: packetParams.modelMatrix
+    - first: packetParams.matModel
       second:
         index: 9
         data:

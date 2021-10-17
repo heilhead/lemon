@@ -5,8 +5,6 @@
 #include <lemon/render/material/MaterialLayout.h>
 #include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/MaterialConfiguration.h>
-#include <lemon/shared/AtomicCache.h>
-#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::res {
     class MaterialResource;

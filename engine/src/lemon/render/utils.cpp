@@ -1,4 +1,3 @@
-#include <gsl/gsl>
 #include <lemon/render/utils.h>
 
 using namespace lemon::render;

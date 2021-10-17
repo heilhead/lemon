@@ -1,7 +1,5 @@
 #pragma once
 
-#include <lemon/shared/Memory.h>
-
 namespace lemon::res::texture {
     enum class DecodingError {
         Unknown,

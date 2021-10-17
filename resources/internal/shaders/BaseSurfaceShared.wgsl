@@ -6,9 +6,8 @@
 
 [[stage(vertex)]]
 fn vs_main(vertexData: VertexInput) -> FragmentInput {
-  // Reference all shared bindings in both vertex and fragment entry points
-  // to set proper visibility flags.
-  let ref = sceneParams.time;
+  // Declare that bindings are part of the shader interface without using them.
+  let tmp = sceneParams.time;
 
   return FragmentInput(
     vec4<f32>(0.0, 0.0, 0.0, 0.0),
@@ -16,15 +15,13 @@ fn vs_main(vertexData: VertexInput) -> FragmentInput {
     vec4<f32>(0.0, 0.0, 0.0, 0.0),
     vec2<f32>(0.0, 0.0),
     vec2<f32>(0.0, 0.0),
-    0.0,
   );
 }
 
 [[stage(fragment)]]
 fn fs_main(fragData: FragmentInput) -> FragmentOutput {
-  // Reference all shared bindings in both vertex and fragment entry points
-  // to set proper visibility flags.
-  let ref = sceneParams.time;
+  // Declare that bindings are part of the shader interface without using them.
+  let tmp = sceneParams.time;
 
-  return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0), 0.0);
+  return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
 }

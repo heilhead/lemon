@@ -8,8 +8,6 @@
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/scheduler.h>
 #include <lemon/device/Device.h>
-#include <lemon/shared/logger.h>
-#include <folly/small_vector.h>
 
 using namespace lemon;
 using namespace lemon::res;
@@ -92,7 +90,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
     primitiveState.topology = wgpu::PrimitiveTopology::TriangleList;
     primitiveState.stripIndexFormat = wgpu::IndexFormat::Undefined;
     primitiveState.frontFace = wgpu::FrontFace::CW;
-    primitiveState.cullMode = wgpu::CullMode::Front;
+    primitiveState.cullMode = wgpu::CullMode::Back;
 
     // Depth-stencil state.
     wgpu::StencilFaceState faceState;

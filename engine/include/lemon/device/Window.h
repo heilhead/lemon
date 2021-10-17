@@ -1,9 +1,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <cstdint>
-#include <functional>
-#include <folly/portability/Windows.h>
 #include <lemon/device/common.h>
 
 namespace lemon::device {

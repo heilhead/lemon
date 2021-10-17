@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <lemon/resource/types/texture/common.h>
 
 namespace lemon::res::texture {

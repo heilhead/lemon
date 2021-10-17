@@ -1,11 +1,7 @@
 #pragma once
 
-#include <lemon/shared/logger.h>
-#include <lemon/shared/AtomicCache.h>
-#include <lemon/shared/UnsafeSingleton.h>
 #include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/render/material/MaterialUniformData.h>
-#include <dawn/webgpu_cpp.h>
 
 namespace lemon::render {
     class MaterialSharedResources;

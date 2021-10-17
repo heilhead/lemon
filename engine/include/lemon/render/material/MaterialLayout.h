@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <lemon/shared/Memory.h>
-#include <lemon/shared/AtomicCache.h>
 #include <lemon/render/material/common.h>
 #include <lemon/render/material/ShaderProgram.h>
 

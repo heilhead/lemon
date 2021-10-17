@@ -1,7 +1,6 @@
 #pragma once
 
 #include <lemon/resource/ResourceLocation.h>
-#include <lemon/shared/logger.h>
 
 // Implement default metadata serialization methods with the specified tag.
 #define LEMON_RESOURCE_TRAITS(tag)                                                                           \

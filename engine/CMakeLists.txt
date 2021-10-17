@@ -57,18 +57,29 @@ include(${LEMON_CPM_CMAKE_PATH})
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn_static)
 
 find_package(glfw3 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
 find_package(folly CONFIG REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
 find_package(lodepng CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT INJA_NOEXCEPTION GLFW_EXPOSE_NATIVE_WIN32)
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+    INJA_NOEXCEPTION
+    GLFW_EXPOSE_NATIVE_WIN32)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:LEMON_DEBUG>")
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+    <lemon/pch/folly.h>
+    <lemon/pch/shared.h>
+    <lemon/pch/std.h>
+    <lemon/pch/cereal.h>
+    <lemon/pch/dawn.h>
+    <lemon/pch/glm.h>
+)
 
 CPMAddPackage(
 	GITHUB_REPOSITORY "guillaumeblanc/ozz-animation"
@@ -89,11 +100,9 @@ target_link_libraries(${PROJECT_NAME}
         lemon::dawn_static
         lemon::shader
         lemon::shared
-        glm::glm
         Folly::folly
         tl::expected
         cereal
-        magic_enum::magic_enum
         ozz_animation
         lodepng
         pantor::inja

@@ -1,14 +1,10 @@
 #pragma once
 
-#include <filesystem>
-#include <folly/hash/Hash.h>
 #include <lemon/resource/ResourceContract.h>
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/resource/ResourceMetadata.h>
 #include <lemon/resource/ResourceStore.h>
 #include <lemon/resource/types/material/MaterialComposer.h>
-#include <lemon/shared/filesystem.h>
-#include <lemon/shared/UnsafeSingleton.h>
 
 namespace lemon::res {
     struct ResourceContract;
@@ -110,7 +106,8 @@ namespace lemon::res {
         /// <param name="object">Optional resource object handle</param>
         /// <returns>The resource state</returns>
         ResourceState
-        getResourceState(ResourceHandle handle, ResourceObjectHandle object = ResourceHandle::InvalidHandle) const;
+        getResourceState(ResourceHandle handle,
+                         ResourceObjectHandle object = ResourceHandle::InvalidHandle) const;
 
         /// <summary>
         /// Attempts to load a resource and returns a future that resolves to either the resource, or
