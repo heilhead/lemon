@@ -76,6 +76,13 @@ namespace lemon::game {
             return uniformData;
         }
 
+        inline UniformData&
+        getUniformData()
+        {
+            updateUniformData();
+            return uniformData;
+        }
+
     private:
         inline void
         updateUniformData() const

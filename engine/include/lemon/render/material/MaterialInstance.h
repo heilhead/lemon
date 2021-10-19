@@ -75,7 +75,7 @@ namespace lemon::render {
         }
 
         // TODO: Figure out a better interface.
-        template<std::integral TData>
+        template<std::semiregular TData>
         inline void
         setParameter(StringID id, const TData& val)
         {

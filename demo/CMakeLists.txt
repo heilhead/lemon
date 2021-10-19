@@ -7,7 +7,7 @@ add_executable(${PROJECT_NAME}
 	"src/mesh.cpp"
 	"src/game/Transform.cpp"
 	"src/game/Camera.cpp"
-)
+    "src/game/math.cpp")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>
