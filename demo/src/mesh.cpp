@@ -126,8 +126,8 @@ public:
                             .transform = Transform{}};
                 dc.material.setParameter(tint, colWhite);
                 dc.transform.setPosition(0.f, 0.f, 0.f);
+                dc.transform.setRotation(kQuatUEOrientation);
                 dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                dc.transform.setRotation(math::toOrientationQuat(kVectorLeft));
                 drawCalls[idx++] = std::move(dc);
             }
 
@@ -138,11 +138,9 @@ public:
                             .ibuf = indexBuffer,
                             .transform = Transform{}};
                 dc.material.setParameter(tint, colRed);
-                dc.transform.setPosition(kVectorForward * 500.f);
-                // dc.transform.setPosition(kVectorXAxis * 500.f);
+                dc.transform.setPosition(kVectorXAxis * 500.f);
+                dc.transform.setRotation(kQuatUEOrientation);
                 dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                // dc.transform.lookAt(0.f, 200.f, 0.f);
-                // dc.transform.rotate(90.f, 0.f, -90.f);
                 drawCalls[idx++] = std::move(dc);
             }
 
@@ -153,11 +151,9 @@ public:
                             .ibuf = indexBuffer,
                             .transform = Transform{}};
                 dc.material.setParameter(tint, colGreen);
-                dc.transform.setPosition(kVectorLeft * 500.f);
-                // dc.transform.setPosition(kVectorYAxis * 500.f);
+                dc.transform.setPosition(kVectorYAxis * 500.f);
+                dc.transform.setRotation(kQuatUEOrientation);
                 dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                // dc.transform.lookAt(0.f, 200.f, 0.f);
-                // dc.transform.rotate(90.f, 0.f, -90.f);
                 drawCalls[idx++] = std::move(dc);
             }
 
@@ -168,11 +164,9 @@ public:
                             .ibuf = indexBuffer,
                             .transform = Transform{}};
                 dc.material.setParameter(tint, colBlue);
-                dc.transform.setPosition(kVectorUp * 500.f);
-                // dc.transform.setPosition(kVectorZAxis * 500.f);
+                dc.transform.setPosition(kVectorZAxis * 500.f);
+                dc.transform.setRotation(kQuatUEOrientation);
                 dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                // dc.transform.lookAt(0.f, 200.f, 0.f);
-                // dc.transform.rotate(90.f, 0.f, -90.f);
                 drawCalls[idx++] = std::move(dc);
             }
         }
@@ -184,26 +178,19 @@ public:
     void
     update(float dt)
     {
-        static constexpr auto cameraParam = lemon::sid("sceneParams.camera");
-        static constexpr auto timeParam = lemon::sid("sceneParams.time");
+        constexpr auto cameraParam = lemon::sid("sceneParams.camera");
+        constexpr auto timeParam = lemon::sid("sceneParams.time");
 
         std::chrono::duration<float> dur = std::chrono::steady_clock::now() - timeStart;
         auto fTime = dur.count(); // time in seconds
 
         auto& tCamera = camera.getTransform();
-        // tCamera.setPosition(kVectorXAxis * 3000.f);
-        // tCamera.setPosition(kVectorXAxis * (std::sin(fTime) * 1500.f + 1500.f));
-        // tCamera.setRotation(0.f, 90.f, 0.f);
-        // tCamera.setRotation(math::toOrientationQuat(kVectorForward));
+        tCamera.setPosition(kVectorXAxis * (std::sin(fTime) * 750.f));
+        tCamera.lookAt(0.f, 0.f, 0.f);
 
-        auto camPos = kVectorXAxis * (std::sin(fTime) * 750.f);
+        // logger::trace("pos: ", tCamera.getPosition(), " dt: ", dt);
 
-        auto& udCamera = camera.getUniformData();
-        udCamera.matView = glm::lookAt(camPos, kVectorZero, kVectorZAxis);
-
-        logger::trace("pos: ", camPos);
-
-        pSharedData->setData(cameraParam, udCamera);
+        pSharedData->setData(cameraParam, camera.getUniformData());
         pSharedData->setData(timeParam, fTime);
     }
 
