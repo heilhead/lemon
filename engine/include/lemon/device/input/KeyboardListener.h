@@ -5,10 +5,10 @@
 #include <lemon/device/input/common.h>
 
 namespace lemon::device {
-    class KeyboardListener {
+    class KeyboardListener : public UnsafeSingleton<KeyboardListener> {
         WindowHandle handle;
 
     public:
         KeyboardListener(WindowHandle handle);
     };
-} // namespace lemon::input
+} // namespace lemon::device

@@ -129,6 +129,7 @@ namespace lemon::device {
     };
 
     enum class KeyMod {
+        None = 0,
         Shift = GLFW_MOD_SHIFT,
         Control = GLFW_MOD_CONTROL,
         Alt = GLFW_MOD_ALT,

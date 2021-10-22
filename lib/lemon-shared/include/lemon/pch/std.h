@@ -20,3 +20,4 @@
 #include <unordered_map>
 #include <fstream>
 #include <cmath>
+#include <ranges>

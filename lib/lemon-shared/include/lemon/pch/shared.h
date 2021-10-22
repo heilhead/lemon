@@ -3,6 +3,7 @@
 #include <gsl/gsl>
 #include <tl/expected.hpp>
 #include <magic_enum.hpp>
+#include <lemon/shared/common.h>
 #include <lemon/shared/AtomicCache.h>
 #include <lemon/shared/filesystem.h>
 #include <lemon/shared/Hash.h>

@@ -30,7 +30,7 @@ namespace minirender {
     const MaterialResource*
     loadMaterial()
     {
-        ResourceLocation location(R"(misc\\M_Mannequin2)");
+        ResourceLocation location(R"(misc\M_Mannequin2)");
 
         auto result = Scheduler::get()->block(
             ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
@@ -59,14 +59,9 @@ private:
     wgpu::Device device;
     wgpu::Buffer indexBuffer;
     wgpu::Buffer vertexBuffer;
-    wgpu::Texture texture;
-    wgpu::Sampler sampler;
     wgpu::Queue queue;
     wgpu::SwapChain swapChain;
     wgpu::TextureView depthStencilView;
-    wgpu::RenderPipeline pipeline;
-    wgpu::BindGroup bindGroup;
-    wgpu::BindGroup bindGroupShared;
 
     MaterialUniformData* pSharedData;
 
@@ -181,17 +176,19 @@ public:
         constexpr auto cameraParam = lemon::sid("sceneParams.camera");
         constexpr auto timeParam = lemon::sid("sceneParams.time");
 
-        std::chrono::duration<float> dur = std::chrono::steady_clock::now() - timeStart;
-        auto fTime = dur.count(); // time in seconds
+        std::chrono::duration<double> dur = std::chrono::steady_clock::now() - timeStart;
+        double dTime = dur.count();                                  // time in seconds
+        float fTime = static_cast<float>(dTime);                     // time in seconds, float
+        float fTimeFrac = static_cast<float>(std::fmod(dTime, 1.f)); // fractional part
 
         auto& tCamera = camera.getTransform();
-        tCamera.setPosition(kVectorXAxis * (std::sin(fTime) * 750.f));
+        tCamera.setPosition(kVectorXAxis * (std::sin(dTime) * 750.f));
         tCamera.lookAt(0.f, 0.f, 0.f);
 
         // logger::trace("pos: ", tCamera.getPosition(), " dt: ", dt);
 
         pSharedData->setData(cameraParam, camera.getUniformData());
-        pSharedData->setData(timeParam, fTime);
+        pSharedData->setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
     }
 
     void

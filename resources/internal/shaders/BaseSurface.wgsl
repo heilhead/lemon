@@ -7,7 +7,7 @@ struct CameraParams {
 [[block]]
 struct SceneParams {
   camera: CameraParams;
-  time: f32;
+  time: vec2<f32>;
 };
 
 [[block]]
@@ -87,4 +87,12 @@ fn linearizeDepth(depth: f32) -> f32 {
   let near = sceneParams.camera.zClip.x;
   let far = sceneParams.camera.zClip.y;
   return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+}
+
+fn getTime() -> f32 {
+  return sceneParams.time.x;
+}
+
+fn getTimeFrac() -> f32 {
+  return sceneParams.time.y;
 }

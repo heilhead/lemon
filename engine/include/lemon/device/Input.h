@@ -12,6 +12,18 @@ namespace lemon::device {
         MouseListener mouseListener;
 
     public:
-        Input(WindowHandle inHandle);
+        Input(WindowHandle handle);
+
+        KeyboardListener&
+        getKeyboard()
+        {
+            return keyboardListener;
+        }
+
+        MouseListener&
+        getMouse()
+        {
+            return mouseListener;
+        }
     };
 } // namespace lemon::device
