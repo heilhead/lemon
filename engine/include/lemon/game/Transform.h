@@ -1,7 +1,6 @@
 #pragma once
 
-#include "math.h"
-#include "common.h"
+#include <lemon/game/common.h>
 
 namespace lemon::game {
     class Rotation {

@@ -5,8 +5,14 @@
 #include <lemon/device/input/KeyboardListener.h>
 #include <lemon/device/input/MouseListener.h>
 
+namespace lemon {
+    class Engine;
+}
+
 namespace lemon::device {
     class Input : public UnsafeSingleton<Input> {
+        friend class Engine;
+
         WindowHandle handle;
         KeyboardListener keyboardListener;
         MouseListener mouseListener;
@@ -25,5 +31,9 @@ namespace lemon::device {
         {
             return mouseListener;
         }
+
+    private:
+        void
+        update();
     };
 } // namespace lemon::device

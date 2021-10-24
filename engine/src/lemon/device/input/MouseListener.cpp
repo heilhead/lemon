@@ -3,6 +3,18 @@
 using namespace lemon;
 using namespace lemon::device;
 
+inline void
+setRawInputMode(WindowHandle handle, bool bEnabled)
+{
+    if (glfwRawMouseMotionSupported()) {
+        if (bEnabled) {
+            glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        } else {
+            glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+        }
+    }
+}
+
 MouseListener::MouseListener(WindowHandle inHandle)
 {
     handle = inHandle;
@@ -20,10 +32,16 @@ MouseListener::setCursorMode(CursorMode inMode)
 {
     switch (inMode) {
     case lemon::device::CursorMode::Normal:
+        setRawInputMode(handle, false);
         glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         break;
     case lemon::device::CursorMode::Disabled:
         glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        setRawInputMode(handle, false);
+        break;
+    case lemon::device::CursorMode::Raw:
+        glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        setRawInputMode(handle, true);
         break;
     default:
         LEMON_UNREACHABLE();
@@ -35,10 +53,8 @@ MouseListener::setCursorMode(CursorMode inMode)
 void
 MouseListener::processButtonEvent(MouseButton btn, KeyEvent evt, KeyMod mods)
 {
-    using namespace magic_enum;
-
-    logger::trace("mouse event: button=", enum_name(btn), " event=", enum_name(evt),
-                  " mods=", flags::enum_name(mods));
+    buttonState.insert_or_assign(btn, evt);
+    getDelegate(btn).invoke(evt, mods);
 }
 
 void
@@ -49,4 +65,16 @@ MouseListener::mouseButtonCallback(WindowHandle handle, int iBtn, int iEvt, int 
     auto mods = static_cast<KeyMod>(iMods);
 
     get()->processButtonEvent(btn, evt, mods);
+}
+
+MulticastDelegate<KeyEvent, KeyMod>&
+MouseListener::getDelegate(MouseButton btn)
+{
+    auto search = buttonListeners.find(btn);
+    if (search != std::end(buttonListeners)) {
+        return search->second;
+    }
+
+    auto [iter, bInserted] = buttonListeners.emplace(btn, MulticastDelegate<KeyEvent, KeyMod>());
+    return iter->second;
 }

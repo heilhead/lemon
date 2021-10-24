@@ -42,47 +42,47 @@ TEST_CASE("Delegate")
     S s(3);
 
     {
-        LambdaDelegate<int, int> d([&](int y) { return s.mul(y); });
-        auto res = d.execute(2);
+        Delegate<int, int> d([&](int y) { return s.mul(y); });
+        auto res = d.invoke(2);
         REQUIRE(res == 6);
     }
 
     {
-        MemberDelegate<int, int> d(&S::mul, &s);
-        auto res = d.execute(2);
+        Delegate<int, int> d(&S::mul, &s);
+        auto res = d.invoke(2);
         REQUIRE(res == 6);
     }
 
     {
-        FunctionDelegate<int, int> d(S::sqr);
-        auto res = d.execute(2);
+        Delegate<int, int> d(S::sqr);
+        auto res = d.invoke(2);
         REQUIRE(res == 4);
     }
 
     {
-        DelegateStack<int> ds;
+        MulticastDelegate<int> md;
 
-        auto h1 = ds.add([&](int y) { s.minc(y); });
-        auto h2 = ds.add(&S::minc, &s);
-        auto h3 = ds.add(S::sinc);
+        auto h1 = md.add([&](int y) { s.minc(y); });
+        auto h2 = md.add(&S::minc, &s);
+        auto h3 = md.add(S::sinc);
 
-        ds.execute(1);
+        md.invoke(1);
         REQUIRE(counter == 3);
     }
 
     {
-        ReverseDelegateStack<int> ds;
+        ReverseMulticastDelegate<int> md;
 
-        auto h1 = ds.add([&](int y) { s.minc(y); });
-        auto h2 = ds.add(&S::minc, &s);
-        auto h3 = ds.add(S::sinc);
+        auto h1 = md.add([&](int y) { s.minc(y); });
+        auto h2 = md.add(&S::minc, &s);
+        auto h3 = md.add(S::sinc);
 
-        ds.execute(1);
+        md.invoke(1);
         REQUIRE(counter == 6);
 
-        REQUIRE(ds.remove(h2));
+        REQUIRE(md.remove(h2));
 
-        ds.execute(1);
+        md.invoke(1);
         REQUIRE(counter == 8);
     }
 }

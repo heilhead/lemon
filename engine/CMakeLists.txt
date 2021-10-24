@@ -37,6 +37,8 @@ set(SOURCE_FILES
         "src/lemon/device/Input.cpp"
         "src/lemon/device/input/KeyboardListener.cpp"
         "src/lemon/device/input/MouseListener.cpp"
+        "src/lemon/game/Camera.cpp"
+        "src/lemon/game/Transform.cpp"
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

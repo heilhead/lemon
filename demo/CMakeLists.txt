@@ -5,9 +5,8 @@ add_executable(${PROJECT_NAME}
 	"src/metadata.cpp"
 	"src/bundles.cpp"
 	"src/mesh.cpp"
-	"src/game/Transform.cpp"
-	"src/game/Camera.cpp"
-    "src/game/math.cpp")
+    "src/game/math.cpp"
+    "src/game/CameraController.cpp")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>
@@ -17,6 +16,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/dawn.h>
     <lemon/pch/glm.h>
     <lemon/engine.h>
+    <lemon/game.h>
     <lemon/misc.h>
     <lemon/render.h>
     <lemon/resources.h>

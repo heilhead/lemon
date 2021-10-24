@@ -30,7 +30,13 @@ void
 Engine::loop(const std::function<LoopControl(float)>& callback)
 {
     logger::log("entering event loop");
-    device->getWindow()->loop([&](float dt) { return callback(dt); });
+
+    device->getWindow()->loop([&](float dt) {
+        device->getInput()->update();
+
+        return callback(dt);
+    });
+
     logger::log("exiting event loop");
 }
 

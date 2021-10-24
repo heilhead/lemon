@@ -3,116 +3,136 @@
 #include <range/v3/view/reverse.hpp>
 
 template<typename TResult, typename... TArgs>
-lemon::DelegateBase<TResult, TArgs...>::DelegateBase()
+lemon::DelegateHandle
+lemon::DelegateHandleProducer<TResult, TArgs...>::create()
 {
-    // TODO: What to do in case of overflow?
-    handle = ++handleCounter;
+    // TODO: Care about overflowing?
+    return ++counter;
 }
 
 template<typename TResult, typename... TArgs>
-inline lemon::DelegateHandle
-lemon::DelegateBase<TResult, TArgs...>::getHandle() const
-{
-    return handle;
-}
-
-template<typename TResult, typename... TArgs>
-lemon::LambdaDelegate<TResult, TArgs...>::LambdaDelegate(Function func) : func{func}
+template<typename TBoundable>
+lemon::Delegate<TResult, TArgs...>::Delegate(TBoundable&& boundable)
+    : func{std::forward<TBoundable>(boundable)}
 {
 }
 
 template<typename TResult, typename... TArgs>
-TResult
-lemon::LambdaDelegate<TResult, TArgs...>::execute(TArgs&&... args)
+template<class TClass>
+lemon::Delegate<TResult, TArgs...>::Delegate(MemberPtr<TClass> member, TClass* instance) : func{}
 {
-    return func(std::forward<TArgs>(args)...);
+    bind(member, instance);
 }
 
 template<typename TResult, typename... TArgs>
-template<class T>
-lemon::MemberDelegate<TResult, TArgs...>::MemberDelegate(MemberPtr<T> member, T* ctx)
-    : LambdaDelegate<TResult, TArgs...>(std::bind_front(std::mem_fn(member), ctx))
+template<typename... TBindArgs>
+void
+lemon::Delegate<TResult, TArgs...>::set(TBindArgs&&... args)
 {
+    func = std::function<TResult(TArgs...)>(std::forward<TBindArgs>(args)...);
 }
 
 template<typename TResult, typename... TArgs>
-lemon::FunctionDelegate<TResult, TArgs...>::FunctionDelegate(Function func) : func{func}
+template<typename... TBindArgs>
+void
+lemon::Delegate<TResult, TArgs...>::bind(TBindArgs&&... args)
 {
+    func = std::bind_front(std::forward<TBindArgs>(args)...);
 }
 
 template<typename TResult, typename... TArgs>
-TResult
-lemon::FunctionDelegate<TResult, TArgs...>::execute(TArgs&&... args)
+inline void
+lemon::Delegate<TResult, TArgs...>::clear()
 {
-    return func(std::forward<TArgs>(args)...);
+    func = nullptr;
+}
+
+template<typename TResult, typename... TArgs>
+template<typename... TInvocationArgs>
+inline TResult
+lemon::Delegate<TResult, TArgs...>::invoke(TInvocationArgs&&... args) const
+{
+    return func(std::forward<TInvocationArgs>(args)...);
+}
+
+template<typename TResult, typename... TArgs>
+inline bool
+lemon::Delegate<TResult, TArgs...>::isValid() const
+{
+    return (bool)func;
+}
+
+template<typename TResult, typename... TArgs>
+template<typename... TInvocationArgs>
+inline TResult
+lemon::Delegate<TResult, TArgs...>::operator()(TInvocationArgs&&... args) const
+{
+    return invoke(std::forward<TInvocationArgs>(args)...);
+}
+
+template<typename TResult, typename... TArgs>
+inline lemon::Delegate<TResult, TArgs...>::operator bool() const
+{
+    return isValid();
 }
 
 template<size_t Size, typename TResult, typename... TArgs>
 inline void
-lemon::DelegateForwardExecutionPolicy::execute(const DelegateVec<Size, TResult, TArgs...>& delegates,
-                                               TArgs&&... args)
+lemon::DelegateForwardExecutionPolicy::invoke(const DelegateVec<Size, TResult, TArgs...>& delegates,
+                                              TArgs&&... args)
 {
     for (auto& d : delegates) {
-        d->execute(std::forward<TArgs>(args)...);
+        d.second.invoke(std::forward<TArgs>(args)...);
     }
 }
 
 template<size_t Size, typename TResult, typename... TArgs>
 inline void
-lemon::DelegateReverseExecutionPolicy::execute(const DelegateVec<Size, TResult, TArgs...>& delegates,
-                                               TArgs&&... args)
+lemon::DelegateReverseExecutionPolicy::invoke(const DelegateVec<Size, TResult, TArgs...>& delegates,
+                                              TArgs&&... args)
 {
     for (auto& d : ranges::reverse_view(delegates)) {
-        d->execute(std::forward<TArgs>(args)...);
+        d.second.invoke(std::forward<TArgs>(args)...);
     }
 }
 
 template<typename ExecutionPolicy, typename TResult, typename... TArgs>
+template<typename TBoundable>
 lemon::DelegateHandle
-lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::add(LambdaDelegate::Function func)
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::add(TBoundable&& boundable)
 {
-    auto d = std::make_unique<LambdaDelegate>(func);
-    const auto handle = d->getHandle();
-    delegates.emplace_back(std::move(d));
+    const auto handle = createHandle();
+    delegates.emplace_back(
+        std::make_pair(handle, Delegate<TResult, TArgs...>(std::forward<TBoundable>(boundable))));
     return handle;
 }
 
 template<typename ExecutionPolicy, typename TResult, typename... TArgs>
-template<class T>
+template<class TClass>
 lemon::DelegateHandle
-lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::add(
-    MemberDelegate::template MemberPtr<T> member, T* ctx)
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::add(
+    ConcreteDelegate::template MemberPtr<TClass> member, TClass* instance)
 {
-    auto d = std::make_unique<MemberDelegate>(member, ctx);
-    const auto handle = d->getHandle();
-    delegates.emplace_back(std::move(d));
+    const auto handle = createHandle();
+    delegates.emplace_back(std::make_pair(handle, Delegate<TResult, TArgs...>(member, instance)));
     return handle;
 }
 
 template<typename ExecutionPolicy, typename TResult, typename... TArgs>
-lemon::DelegateHandle
-lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::add(FunctionDelegate::Function fn)
-{
-    auto d = std::make_unique<FunctionDelegate>(fn);
-    const auto handle = d->getHandle();
-    delegates.emplace_back(std::move(d));
-    return handle;
-}
-
-template<typename ExecutionPolicy, typename TResult, typename... TArgs>
+template<typename... TInvocationArgs>
 inline void
-lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::execute(TArgs&&... args)
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::invoke(TInvocationArgs&&... args)
 {
-    ExecutionPolicy().execute(delegates, std::forward<TArgs>(args)...);
+    ExecutionPolicy().invoke(delegates, std::forward<TArgs>(args)...);
 }
 
 template<typename ExecutionPolicy, typename TResult, typename... TArgs>
 bool
-lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::remove(DelegateHandle handle)
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::remove(DelegateHandle handle)
 {
     int idx = kIndexNone;
     for (int i = 0; i < delegates.size(); i++) {
-        if (delegates[i]->getHandle() == handle) {
+        if (delegates[i].first == handle) {
             idx = i;
             break;
         }
@@ -124,4 +144,19 @@ lemon::DelegateStackBase<ExecutionPolicy, TResult, TArgs...>::remove(DelegateHan
     }
 
     return false;
+}
+
+template<typename ExecutionPolicy, typename TResult, typename... TArgs>
+template<typename... TInvocationArgs>
+inline void
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::operator()(TInvocationArgs&&... args)
+{
+    invoke(std::forward<TInvocationArgs>(args)...);
+}
+
+template<typename ExecutionPolicy, typename TResult, typename... TArgs>
+inline lemon::DelegateHandle
+lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::createHandle() const
+{
+    return DelegateHandleProducer<TResult, TArgs...>::create();
 }

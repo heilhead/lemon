@@ -4,115 +4,110 @@ namespace lemon {
     using DelegateHandle = uint64_t;
 
     template<typename TResult, typename... TArgs>
-    class DelegateBase : public NonCopyable {
-        static inline std::atomic<DelegateHandle> handleCounter = 0;
-
-        DelegateHandle handle;
-
-    public:
-        using Result = TResult;
-
-        DelegateBase();
-
-        virtual ~DelegateBase() {}
-
-        virtual TResult
-        execute(TArgs&&... args) = 0;
-
-        inline DelegateHandle
-        getHandle() const;
-    };
-
-    template<typename TResult, typename... TArgs>
-    class LambdaDelegate : public DelegateBase<TResult, TArgs...> {
-    public:
-        using Function = std::function<TResult(TArgs...)>;
+    struct DelegateHandleProducer {
+        static DelegateHandle
+        create();
 
     private:
-        Function func;
-
-    public:
-        LambdaDelegate(Function func);
-
-        TResult
-        execute(TArgs&&... args);
+        static inline std::atomic<DelegateHandle> counter = 0;
     };
 
     template<typename TResult, typename... TArgs>
-    class MemberDelegate : public LambdaDelegate<TResult, TArgs...> {
+    class Delegate {
+        std::function<TResult(TArgs...)> func;
+
     public:
         template<class T>
         using MemberPtr = TResult (T::*)(TArgs...);
 
-        template<class T>
-        MemberDelegate(MemberPtr<T> member, T* ctx);
-    };
+        Delegate() = default;
 
-    template<typename TResult, typename... TArgs>
-    class FunctionDelegate : public DelegateBase<TResult, TArgs...> {
-    public:
-        using Function = TResult (*)(TArgs...);
+        template<typename TBoundable>
+        Delegate(TBoundable&& boundable);
 
-    private:
-        Function func;
+        template<class TClass>
+        Delegate(MemberPtr<TClass> member, TClass* instance);
 
-    public:
-        FunctionDelegate(Function func);
+        template<typename... TBindArgs>
+        void
+        set(TBindArgs&&... args);
 
+        template<typename... TBindArgs>
+        void
+        bind(TBindArgs&&... args);
+
+        void
+        clear();
+
+        template<typename... TInvocationArgs>
         TResult
-        execute(TArgs&&... args) final;
+        invoke(TInvocationArgs&&... args) const;
+
+        bool
+        isValid() const;
+
+        template<typename... TInvocationArgs>
+        TResult
+        operator()(TInvocationArgs&&... args) const;
+
+        operator bool() const;
     };
 
     template<size_t Size, typename TResult, typename... TArgs>
-    using DelegateVec = folly::small_vector<std::unique_ptr<DelegateBase<TResult, TArgs...>>, Size>;
+    using DelegateVec = folly::small_vector<std::pair<DelegateHandle, Delegate<TResult, TArgs...>>, Size>;
 
     struct DelegateForwardExecutionPolicy {
         template<size_t Size, typename TResult, typename... TArgs>
         inline void
-        execute(const DelegateVec<Size, TResult, TArgs...>& delegates, TArgs&&... args);
+        invoke(const DelegateVec<Size, TResult, TArgs...>& delegates, TArgs&&... args);
     };
 
     struct DelegateReverseExecutionPolicy {
         template<size_t Size, typename TResult, typename... TArgs>
         void
-        execute(const DelegateVec<Size, TResult, TArgs...>& delegates, TArgs&&... args);
+        invoke(const DelegateVec<Size, TResult, TArgs...>& delegates, TArgs&&... args);
     };
 
     template<typename ExecutionPolicy, typename TResult, typename... TArgs>
-    class DelegateStackBase {
-        static constexpr size_t kDefaultStackSize = 8;
+    class MulticastDelegateBase {
+        static constexpr size_t kDefaultStackSize = 6;
 
         DelegateVec<kDefaultStackSize, TResult, TArgs...> delegates;
 
     public:
-        using LambdaDelegate = LambdaDelegate<TResult, TArgs...>;
-        using MemberDelegate = MemberDelegate<TResult, TArgs...>;
-        using FunctionDelegate = FunctionDelegate<TResult, TArgs...>;
+        using ConcreteDelegate = Delegate<TResult, TArgs...>;
 
-        DelegateStackBase() = default;
+        MulticastDelegateBase() = default;
 
+        template<typename TBoundable>
         [[nodiscard]] DelegateHandle
-        add(LambdaDelegate::Function func);
+        add(TBoundable&& boundable);
 
-        template<class T>
+        template<class TClass>
         [[nodiscard]] DelegateHandle
-        add(MemberDelegate::template MemberPtr<T> member, T* ctx);
+        add(ConcreteDelegate::template MemberPtr<TClass> member, TClass* instance);
 
-        [[nodiscard]] DelegateHandle
-        add(FunctionDelegate::Function fn);
-
+        template<typename... TInvocationArgs>
         void
-        execute(TArgs&&... args);
+        invoke(TInvocationArgs&&... args);
 
         bool
         remove(DelegateHandle handle);
+
+        template<typename... TInvocationArgs>
+        void
+        operator()(TInvocationArgs&&... args);
+
+    private:
+        DelegateHandle
+        createHandle() const;
     };
 
-    template<typename... Args>
-    using DelegateStack = DelegateStackBase<DelegateForwardExecutionPolicy, void, Args...>;
+    template<typename... TArgs>
+    using MulticastDelegate = MulticastDelegateBase<DelegateForwardExecutionPolicy, void, TArgs...>;
 
-    template<typename... Args>
-    using ReverseDelegateStack = DelegateStackBase<DelegateReverseExecutionPolicy, void, Args...>;
+    template<typename... TArgs>
+    using ReverseMulticastDelegate = MulticastDelegateBase<DelegateReverseExecutionPolicy, void, TArgs...>;
 } // namespace lemon
 
 #include <lemon/misc/Delegate.inl>

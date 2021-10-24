@@ -1,4 +1,4 @@
-#include "Camera.h"
+#include <lemon/game/Camera.h>
 
 using namespace lemon::game;
 

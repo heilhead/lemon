@@ -6,3 +6,9 @@ Input::Input(WindowHandle inHandle) : keyboardListener{inHandle}, mouseListener{
 {
     handle = inHandle;
 }
+
+void
+Input::update()
+{
+    mouseListener.update();
+}

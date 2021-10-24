@@ -3,11 +3,14 @@
 #include <GLFW/glfw3.h>
 #include <lemon/device/common.h>
 #include <lemon/device/input/common.h>
+#include <lemon/misc/Delegate.h>
 
 namespace lemon::device {
-    enum class CursorMode { Normal, Disabled };
+    enum class CursorMode { Normal, Disabled, Raw };
 
     class MouseListener : public UnsafeSingleton<MouseListener> {
+        std::unordered_map<MouseButton, KeyEvent> buttonState;
+        std::unordered_map<MouseButton, MulticastDelegate<KeyEvent, KeyMod>> buttonListeners;
         WindowHandle handle;
         CursorMode mode{CursorMode::Normal};
         double x{0.f};
@@ -23,22 +26,25 @@ namespace lemon::device {
         setCursorMode(CursorMode mode);
 
         inline double
-        getX()
+        getX() const
         {
             return x;
         }
 
         inline double
-        getY()
+        getY() const
         {
             return y;
         }
 
         inline glm::f64vec2
-        getPos()
+        getPos() const
         {
             return glm::f64vec2(x, y);
         }
+
+        MulticastDelegate<KeyEvent, KeyMod>&
+        getDelegate(MouseButton btn);
 
     private:
         void
