@@ -22,7 +22,7 @@ namespace lemon::game {
         float height{1.f};
         float zNear{1.f};
         float zFar{100.f};
-        float fov{90.f};
+        float fov{56.f};
         ProjectionType type{ProjectionType::Perspective};
         mutable UniformData uniformData;
         mutable bool bDirty{true};

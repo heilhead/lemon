@@ -1,7 +1,5 @@
 #include "mesh.h"
-#include "game/Transform.h"
-#include "game/Camera.h"
-#include "game/print.h"
+#include "game/CameraController.h"
 
 using namespace lemon;
 using namespace lemon::device;
@@ -68,8 +66,11 @@ private:
     minirender::MeshHandle mesh;
 
     std::array<minirender::DrawCall, 4> drawCalls;
-    Camera camera;
     std::chrono::time_point<std::chrono::steady_clock> timeStart = std::chrono::steady_clock::now();
+
+    bool bCapturingMouse = false;
+    FirstPersonCameraController cameraController;
+    glm::f64vec2 prevPos;
 
 public:
     void
@@ -99,9 +100,6 @@ public:
             createBufferFromData(device, mesh->indexData, mesh->indexData.size(), wgpu::BufferUsage::Index);
 
         auto material = MaterialManager::get()->getMaterialInstance(*pMaterial, mesh->vertexFormat);
-
-        // auto camData = camera.getUniformData();
-        // camData.matView = glm::lookAt(glm::f32vec3(200.f), glm::f32vec3(0.f), Transform::up);
 
         pSharedData = &PipelineManager::get()->getSharedUniformData();
 
@@ -166,13 +164,89 @@ public:
             }
         }
 
+        auto& camera = cameraController.getCamera();
+
         camera.setClipping(1.f, 100000.f);
         camera.setView(wndWidth, wndHeight);
+
+        auto& tCamera = camera.getTransform();
+        tCamera.setPosition(kVectorZAxis * -1500.f);
+        tCamera.lookAt(0.f, 0.f, 0.f);
+
+        auto h1 = MouseListener::get()->getDelegate(MouseButton::Button2).add(&MiniRender::handleClick, this);
+    }
+
+    void
+    handleClick(KeyEvent evt, KeyMod mods)
+    {
+        logger::trace("click: event=", magic_enum::enum_name(evt),
+                      " mods=", magic_enum::flags::enum_name(mods));
+
+        if (evt == KeyEvent::Press) {
+            MouseListener::get()->setCursorMode(CursorMode::Raw);
+            bCapturingMouse = true;
+            prevPos = MouseListener::get()->getPos();
+        } else if (evt == KeyEvent::Release) {
+            MouseListener::get()->setCursorMode(CursorMode::Normal);
+            bCapturingMouse = false;
+        }
+    }
+
+    void
+    updateCamera(float dt)
+    {
+        auto* pMouse = MouseListener::get();
+        auto* pKeyboard = KeyboardListener::get();
+
+        if (bCapturingMouse) {
+            auto pos = pMouse->getPos();
+            auto delta = pos - prevPos;
+
+            if (!math::isNearlyZero(delta)) {
+                cameraController.handleRotationInput(delta, 1.f);
+            }
+
+            prevPos = pos;
+        }
+
+        auto movement = kVectorZero;
+
+        if (pKeyboard->isKeyPressed(KeyCode::W)) {
+            movement += kVectorForward;
+        }
+
+        if (pKeyboard->isKeyPressed(KeyCode::S)) {
+            movement += kVectorBackward;
+        }
+
+        if (pKeyboard->isKeyPressed(KeyCode::A)) {
+            movement += kVectorLeft;
+        }
+
+        if (pKeyboard->isKeyPressed(KeyCode::D)) {
+            movement += kVectorRight;
+        }
+
+        cameraController.handlePositionInput(movement, dt, true);
+
+        movement = kVectorZero;
+
+        if (pKeyboard->isKeyPressed(KeyCode::Space)) {
+            movement += kVectorUp;
+        }
+
+        if (pKeyboard->isKeyPressed(KeyCode::LeftControl)) {
+            movement += kVectorDown;
+        }
+
+        cameraController.handlePositionInput(movement, dt, false);
     }
 
     void
     update(float dt)
     {
+        updateCamera(dt);
+
         constexpr auto cameraParam = lemon::sid("sceneParams.camera");
         constexpr auto timeParam = lemon::sid("sceneParams.time");
 
@@ -181,13 +255,7 @@ public:
         float fTime = static_cast<float>(dTime);                     // time in seconds, float
         float fTimeFrac = static_cast<float>(std::fmod(dTime, 1.f)); // fractional part
 
-        auto& tCamera = camera.getTransform();
-        tCamera.setPosition(kVectorXAxis * (std::sin(dTime) * 750.f));
-        tCamera.lookAt(0.f, 0.f, 0.f);
-
-        // logger::trace("pos: ", tCamera.getPosition(), " dt: ", dt);
-
-        pSharedData->setData(cameraParam, camera.getUniformData());
+        pSharedData->setData(cameraParam, cameraController.getCamera().getUniformData());
         pSharedData->setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
     }
 
@@ -255,6 +323,11 @@ testMeshRendering()
         engine.loop([&](float dt) {
             render.update(dt);
             render.render();
+
+            if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+                return LoopControl::Abort;
+            }
+
             return LoopControl::Continue;
         });
     }

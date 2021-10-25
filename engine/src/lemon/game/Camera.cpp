@@ -15,12 +15,14 @@ Camera::updateUniformData() const
     const auto rot = transform.getRotation();
     const auto fwd = kVectorForward * rot;
     const auto up = kVectorUp * rot;
+    const auto pos = transform.getPosition();
 
-    uniformData.matView = glm::lookAt(transform.getPosition(), fwd, up);
-    uniformData.zData.x = zNear;
-    uniformData.zData.y = zFar;
+    uniformData.matView = glm::lookAt(pos, pos + fwd, up);
 
     if (bDirty) {
+        uniformData.zData.x = zNear;
+        uniformData.zData.y = zFar;
+
         if (type == ProjectionType::Perspective) {
             uniformData.matProjection = glm::perspective(glm::radians(fov), width / height, zNear, zFar);
         } else {

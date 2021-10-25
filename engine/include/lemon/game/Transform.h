@@ -4,11 +4,11 @@
 
 namespace lemon::game {
     class Rotation {
+    public:
         float pitch;
         float yaw;
         float roll;
 
-    public:
         Rotation();
 
         explicit Rotation(float val);
@@ -21,6 +21,9 @@ namespace lemon::game {
 
         glm::quat
         toQuat() const;
+
+        glm::quat
+        toQuatYawPitch() const;
 
         void
         fromQuat(const glm::quat& rot);
@@ -99,13 +102,29 @@ namespace lemon::game {
 inline glm::quat
 lemon::game::Rotation::toQuat() const
 {
-    return glm::quat(glm::f32vec3(normalizeAxis(pitch), normalizeAxis(yaw), normalizeAxis(roll)));
+    // N.B. GLM's euler-to-quat implementation is different in that the transformations are applied all
+    // together as a matrix, which results in a bit unintuitive orientation.
+
+    auto qYaw = glm::rotate(kQuatIdentity, glm::radians(yaw), kVectorYAxis);
+    auto qPitch = glm::rotate(kQuatIdentity, glm::radians(pitch), kVectorXAxis * qYaw);
+    auto qRoll = glm::rotate(kQuatIdentity, glm::radians(roll), kVectorZAxis * qYaw * qPitch);
+
+    return qYaw * qPitch * qRoll;
+}
+
+inline glm::quat
+lemon::game::Rotation::toQuatYawPitch() const
+{
+    auto qYaw = glm::rotate(kQuatIdentity, glm::radians(yaw), kVectorYAxis);
+    auto qPitch = glm::rotate(kQuatIdentity, glm::radians(pitch), kVectorXAxis * qYaw);
+
+    return qYaw * qPitch;
 }
 
 inline void
 lemon::game::Rotation::fromQuat(const glm::quat& rot)
 {
-    fromEuler(glm::eulerAngles(rot));
+    fromEuler(glm::degrees(glm::eulerAngles(rot)));
 }
 
 inline glm::f32vec3
