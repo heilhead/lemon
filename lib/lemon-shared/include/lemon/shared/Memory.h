@@ -7,6 +7,9 @@
 #include <lemon/shared/math.h>
 
 namespace lemon {
+    template<typename T>
+    concept Sized = sizeof(T) > 0;
+
     namespace {
         inline void*
         alignedAlloc(size_t size, size_t alignment)
@@ -49,7 +52,7 @@ namespace lemon {
     /// <summary>
     /// Heap-allocated aligned memory. Sanity checks aligned access and allocation.
     /// </summary>
-    template<size_t Alignment>
+    template<size_t Alignment, typename TItem = uint8_t>
     class AlignedMemory {
         std::unique_ptr<uint8_t[], AlignedDeleter> data;
         size_t length;
@@ -121,7 +124,7 @@ namespace lemon {
             LEMON_ASSERT(!err);
         }
 
-        inline void
+        void
         allocate(size_t inLength)
         {
             if (length == inLength) {
@@ -140,6 +143,12 @@ namespace lemon {
             }
         }
 
+        void
+        allocateItems(size_t capacity)
+        {
+            allocate(capacity * sizeof(TItem));
+        }
+
         inline void
         release()
         {
@@ -148,19 +157,45 @@ namespace lemon {
         }
 
         template<typename TData = uint8_t>
-        const TData*
+        inline const TData*
         get(size_t byteOffset = 0) const
         {
             LEMON_ASSERT(math::isAligned(byteOffset, alignof(TData)), "unaligned access");
+            LEMON_ASSERT(byteOffset >= 0 && byteOffset < length);
             return reinterpret_cast<const TData*>(data.get() + byteOffset);
         }
 
         template<typename TData = uint8_t>
-        TData*
+        inline TData*
         get(size_t byteOffset = 0)
         {
             LEMON_ASSERT(math::isAligned(byteOffset, alignof(TData)), "unaligned access");
+            LEMON_ASSERT(byteOffset >= 0 && byteOffset < length);
             return reinterpret_cast<TData*>(data.get() + byteOffset);
+        }
+
+        inline const TItem*
+        getItem(size_t index) const
+        {
+            return get<TItem>(index * sizeof(TItem));
+        }
+
+        inline TItem*
+        getItem(size_t index)
+        {
+            return get<TItem>(index * sizeof(TItem));
+        }
+
+        inline const TItem*
+        operator[](size_t index) const
+        {
+            return getItem(index);
+        }
+
+        inline TItem*
+        operator[](size_t index)
+        {
+            return getItem(index);
         }
 
     private:
@@ -190,4 +225,26 @@ namespace lemon {
     };
 
     using UnalignedMemory = AlignedMemory<1>;
+
+    template<Sized T>
+    using HeapArray = AlignedMemory<alignof(T), T>;
+
+    template<Sized T>
+    using MaybeUninit = std::aligned_storage<sizeof(T), alignof(T)>::type;
+
+    template<Sized T>
+    inline T*
+    assumeInit(MaybeUninit<T>* mem)
+    {
+        LEMON_ASSERT(math::isPtrAligned(mem, alignof(T)));
+        return std::launder(reinterpret_cast<T*>(mem));
+    }
+
+    template<Sized T>
+    inline const T*
+    assumeInit(const MaybeUninit<T>* mem)
+    {
+        LEMON_ASSERT(math::isPtrAligned(mem, alignof(T)));
+        return std::launder(reinterpret_cast<const T*>(mem));
+    }
 } // namespace lemon
