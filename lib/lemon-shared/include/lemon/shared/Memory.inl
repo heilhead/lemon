@@ -62,14 +62,14 @@ namespace lemon {
     inline const TData*
     MaybeUninit<TData>::assumeInit() const
     {
-        return ::assumeInit<TData>(&data);
+        return ::lemon::assumeInit<TData>(&data);
     }
 
     template<Sized TData>
     inline TData*
     MaybeUninit<TData>::assumeInit()
     {
-        return ::assumeInit<TData>(&data);
+        return ::lemon::assumeInit<TData>(&data);
     }
 
     template<size_t Alignment, Sized TData>

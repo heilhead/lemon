@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lemon/pch/folly.h>
+#include <lemon/shared/common.h>
 #include <lemon/shared/Memory.h>
 
 namespace lemon {
@@ -13,13 +14,15 @@ namespace lemon {
 
     struct SlotMapHandle {
     private:
-        uint32_t index;
-        uint32_t generation;
+        int32_t index{kInvalidIndex};
+        uint32_t generation{0};
 
     public:
-        SlotMapHandle(uint32_t index, uint32_t generation);
+        SlotMapHandle() = default;
 
-        uint32_t
+        SlotMapHandle(int32_t index, uint32_t generation);
+
+        int32_t
         getIndex() const;
 
         uint32_t
@@ -80,10 +83,10 @@ namespace lemon {
         TData&
         operator[](size_t index);
 
-        inline const TData&
+        const TData&
         getData(size_t index) const;
 
-        inline TData&
+        TData&
         getData(size_t index);
 
     private:

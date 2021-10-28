@@ -5,11 +5,9 @@
 #include <memory>
 #include <lemon/shared/logger.h>
 #include <lemon/shared/math.h>
+#include <lemon/shared/concepts.h>
 
 namespace lemon {
-    template<typename T>
-    concept Sized = sizeof(T) > 0;
-
     template<Sized T>
     using AlignedStorage = std::aligned_storage<sizeof(T), alignof(T)>::type;
 

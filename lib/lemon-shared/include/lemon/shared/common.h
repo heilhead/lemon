@@ -1,5 +1,5 @@
 #pragma once
 
 namespace lemon {
-    constexpr int kIndexNone = -1;
+    constexpr int kInvalidIndex = -1;
 }

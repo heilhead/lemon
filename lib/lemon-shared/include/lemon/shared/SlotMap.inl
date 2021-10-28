@@ -1,28 +1,5 @@
 #pragma once
 
-lemon::SlotMapHandle::SlotMapHandle(uint32_t index, uint32_t generation)
-    : index{index}, generation{generation}
-{
-}
-
-inline uint32_t
-lemon::SlotMapHandle::getIndex() const
-{
-    return index;
-}
-
-inline uint32_t
-lemon::SlotMapHandle::getGeneration() const
-{
-    return generation;
-}
-
-inline bool
-lemon::SlotMapHandle::operator==(const SlotMapHandle& other) const
-{
-    return index == other.index && generation == other.generation;
-}
-
 template<typename TData, uint32_t Capacity>
 lemon::SlotMap<TData, Capacity>::SlotMap() : keys{}, data{}, keyLookup{}, size{0}
 {
@@ -111,6 +88,9 @@ bool
 lemon::SlotMap<TData, Capacity>::isValid(SlotMapHandle handle)
 {
     auto keyIndex = handle.getIndex();
+    if (keyIndex == kInvalidIndex) {
+        return false;
+    }
 
     LEMON_ASSERT(keyIndex < Capacity);
 
@@ -249,39 +229,4 @@ lemon::SlotMap<TData, Capacity>::getKeyIndex(const Key* ptr) const
     ptrdiff_t idx = ptr - &keys[0];
     LEMON_ASSERT(idx >= 0 && idx < Capacity);
     return static_cast<size_t>(idx);
-}
-
-lemon::slotmap_detail::SlotMapKey::SlotMapKey() : dataIndex{0}, generation{0}, next{}
-{
-    next.init(nullptr, 0);
-}
-
-inline void
-lemon::slotmap_detail::SlotMapKey::setNext(SlotMapKey* pNext)
-{
-    next.set(pNext);
-}
-
-inline lemon::slotmap_detail::SlotMapKey*
-lemon::slotmap_detail::SlotMapKey::getNext() const
-{
-    return next.get();
-}
-
-inline bool
-lemon::slotmap_detail::SlotMapKey::isUsed() const
-{
-    return next.extra() == 1;
-}
-
-inline void
-lemon::slotmap_detail::SlotMapKey::setUsed(bool bUsed)
-{
-    return next.setExtra(bUsed ? 1 : 0);
-}
-
-inline void
-lemon::slotmap_detail::SlotMapKey::bump()
-{
-    generation++;
 }

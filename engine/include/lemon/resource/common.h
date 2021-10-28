@@ -77,9 +77,7 @@ namespace lemon::res {
     inline static ResourceClassID
     getClassID()
     {
-        static std::string_view strName{typeid(TResource).name()};
-        static auto hash = folly::hash::fnv64_buf(strName.data(), strName.size());
-        return hash;
+        return typeid(TResource).hash_code();
     }
 } // namespace lemon::res
 

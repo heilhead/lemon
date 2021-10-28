@@ -6,7 +6,13 @@ add_executable(${PROJECT_NAME}
 	"src/bundles.cpp"
 	"src/mesh.cpp"
     "src/game/math.cpp"
-    "src/game/CameraController.cpp")
+    "src/game/CameraController.cpp"
+    "src/game/actor/Actor.cpp"
+    "src/game/actor/ActorManager.cpp"
+    "src/game/actor/GameObject.cpp"
+    "src/game/actor/GameObjectStore.cpp"
+    "src/game/actor/ActorComponent.cpp"
+    "src/game/actor/common.cpp")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>

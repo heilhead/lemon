@@ -2,8 +2,8 @@ BundleResource:
   common:
     references:
       - location: a\M_A
-        type: 5591508765783496903
+        type: 14711149695379887629
       - location: a\M_B
-        type: 5591508765783496903
+        type: 14711149695379887629
       - location: a\M_C
-        type: 5591508765783496903
+        type: 14711149695379887629

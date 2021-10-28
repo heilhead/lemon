@@ -130,7 +130,7 @@ template<typename ExecutionPolicy, typename TResult, typename... TArgs>
 bool
 lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::remove(DelegateHandle handle)
 {
-    int idx = kIndexNone;
+    int idx = kInvalidIndex;
     for (int i = 0; i < delegates.size(); i++) {
         if (delegates[i].first == handle) {
             idx = i;
@@ -138,7 +138,7 @@ lemon::MulticastDelegateBase<ExecutionPolicy, TResult, TArgs...>::remove(Delegat
         }
     }
 
-    if (idx != kIndexNone) {
+    if (idx != kInvalidIndex) {
         delegates.erase(delegates.begin() + idx);
         return true;
     }

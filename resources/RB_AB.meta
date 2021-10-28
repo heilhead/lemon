@@ -2,6 +2,6 @@ BundleResource:
   common:
     references:
       - location: RB_A
-        type: 4773101802588095312
+        type: 5596928340705551680
       - location: RB_B
-        type: 4773101802588095312
+        type: 5596928340705551680
