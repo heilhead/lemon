@@ -31,7 +31,7 @@ lemon::FreeList<TData, Capacity, bHeapAllocated>::insert(TArgs&&... args)
     auto* pOldHead = pHead;
     pHead = pOldHead->pNext;
 
-    const auto* pItem = new (&pOldHead->data) TData(std::forward<TArgs>(args)...);
+    const auto* pItem = pOldHead->data.init(std::forward<TArgs>(args)...);
 
     return getIndex(pItem);
 }
@@ -45,16 +45,18 @@ lemon::FreeList<TData, Capacity, bHeapAllocated>::remove(size_t index)
 
 template<typename TData, size_t Capacity, bool bHeapAllocated>
 void
-lemon::FreeList<TData, Capacity, bHeapAllocated>::remove(TData* pItem)
+lemon::FreeList<TData, Capacity, bHeapAllocated>::remove(TData* pData)
 {
-    auto idx = getIndex(pItem);
+    auto idx = getIndex(pData);
 
-    freeCount++;
-    pItem->~TData();
+    auto* pItem = getItem(idx);
+    pItem->data.destroy();
 
     auto* pOldHead = pHead;
-    pHead = getItem(idx);
+    pHead = pItem;
     pHead->pNext = pOldHead;
+
+    freeCount++;
 }
 
 template<typename TData, size_t Capacity, bool bHeapAllocated>
@@ -116,7 +118,7 @@ inline const TData*
 lemon::FreeList<TData, Capacity, bHeapAllocated>::getData(size_t index) const
 {
     LEMON_ASSERT(index < Capacity);
-    return assumeInit<TData>(&getItem(index)->data);
+    return getItem(index)->data.assumeInit();
 }
 
 template<typename TData, size_t Capacity, bool bHeapAllocated>
@@ -124,7 +126,7 @@ inline TData*
 lemon::FreeList<TData, Capacity, bHeapAllocated>::getData(size_t index)
 {
     LEMON_ASSERT(index < Capacity);
-    return assumeInit<TData>(&getItem(index)->data);
+    return getItem(index)->data.assumeInit();
 }
 
 template<typename TData, size_t Capacity, bool bHeapAllocated>

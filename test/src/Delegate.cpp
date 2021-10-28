@@ -1,4 +1,5 @@
-#include <catch2/catch.hpp>
+#include "catch.h"
+#include "utils.h"
 #include <lemon/shared/common.h>
 #include <lemon/shared/NonCopyable.h>
 #include <lemon/misc/Delegate.h>

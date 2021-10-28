@@ -9,7 +9,8 @@ add_executable(${PROJECT_NAME}
         "src/Singleton.cpp"
         "src/UnsafeSingleton.cpp"
         "src/Delegate.cpp"
-        "src/FreeList.cpp" "src/SlotMap.cpp")
+        "src/FreeList.cpp"
+        "src/SlotMap.cpp")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>

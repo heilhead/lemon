@@ -1,26 +1,10 @@
-#include <catch2/catch.hpp>
+#include "catch.h"
+#include "utils.h"
 #include <lemon/shared/SlotMap.h>
 
 using namespace lemon;
 
-class Counter {
-public:
-    static inline int count = 0;
-    int i;
-
-    Counter() = default;
-
-    Counter(int ii)
-    {
-        i = ii;
-        count++;
-    }
-
-    ~Counter()
-    {
-        count--;
-    }
-};
+TEST_COUNTER(Counter);
 
 TEST_CASE("SlotMap")
 {
@@ -31,7 +15,7 @@ TEST_CASE("SlotMap")
             auto handle = slotMap.insert(1);
 
             REQUIRE(slotMap.isValid(handle));
-            REQUIRE(slotMap[handle].i == 1);
+            REQUIRE(slotMap[handle].data == 1);
 
             slotMap.remove(handle);
 
@@ -46,13 +30,15 @@ TEST_CASE("SlotMap")
             auto h3 = slotMap.insert(3);
             auto h4 = slotMap.insert(4);
 
+            // move++
             slotMap.remove(h2);
 
             REQUIRE(slotMap.getSize() == 3);
 
             // `2` was removed, `4` took its place.
-            REQUIRE(slotMap[1].i == 4);
+            REQUIRE(slotMap[1].data == 4);
 
+            // no move
             slotMap.remove(h3);
 
             REQUIRE(slotMap.getSize() == 2);
@@ -66,10 +52,11 @@ TEST_CASE("SlotMap")
 
         REQUIRE(slotMap.getSize() == 3);
 
-        REQUIRE(slotMap[0].i == 1);
-        REQUIRE(slotMap[1].i == 2);
-        REQUIRE(slotMap[2].i == 3);
+        REQUIRE(slotMap[0].data == 1);
+        REQUIRE(slotMap[1].data == 2);
+        REQUIRE(slotMap[2].data == 3);
 
+        // move++
         REQUIRE(slotMap.remove(0));
         REQUIRE(!slotMap.remove(999));
 
@@ -77,5 +64,11 @@ TEST_CASE("SlotMap")
         REQUIRE(slotMap.getHandle(0) == h3);
     }
 
-    REQUIRE(Counter::count == 0);
+    REQUIRE(Counter::aliveCount == 0);
+
+    // Make sure move/copy counts are correct.
+    REQUIRE(Counter::moveCtors == 2);
+    REQUIRE(Counter::copyCtors == 0);
+    REQUIRE(Counter::moveAssigns == 0);
+    REQUIRE(Counter::copyAssigns == 0);
 }

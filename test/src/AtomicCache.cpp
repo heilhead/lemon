@@ -1,26 +1,14 @@
-#include <catch2/catch.hpp>
+#include "catch.h"
+#include "utils.h"
 #include <lemon/shared/AtomicCache.h>
 
 using namespace lemon;
 
+TEST_COUNTER(Data);
+
 TEST_CASE("AtomicCache")
 {
-    static uint32_t staticRefs = 0;
-    struct Data {
-        uint32_t data = 1;
-
-        Data()
-        {
-            staticRefs++;
-        }
-
-        ~Data()
-        {
-            staticRefs--;
-        }
-    };
-
-    auto initializer = []() { return new Data(); };
+    auto initializer = []() { return new Data(1); };
 
     {
         AtomicCache<Data> cache;
@@ -33,13 +21,13 @@ TEST_CASE("AtomicCache")
             {
                 auto [ref1, bRef1Initialized] = cache.findOrInsert(1, initializer);
 
-                REQUIRE(staticRefs == 1);
+                REQUIRE(Data::aliveCount == 1);
                 REQUIRE(bRef1Initialized);
                 REQUIRE(ref1.refCount() == 1);
 
                 auto [ref2, bRef2Initialized] = cache.findOrInsert(1, initializer);
 
-                REQUIRE(staticRefs == 1);
+                REQUIRE(Data::aliveCount == 1);
                 REQUIRE(!bRef2Initialized);
                 REQUIRE(ref1.refCount() == 2);
                 REQUIRE(ref2.refCount() == 2);
@@ -71,7 +59,7 @@ TEST_CASE("AtomicCache")
         auto [ref, bInitialized] = cache.findOrInsert(1, initializer);
 
         REQUIRE((bool)ref);
-        REQUIRE(staticRefs == 1);
+        REQUIRE(Data::aliveCount == 1);
         REQUIRE(bInitialized);
 
         REQUIRE(ref.get().data == 1);
@@ -79,5 +67,5 @@ TEST_CASE("AtomicCache")
         REQUIRE((*ref).data == 1);
     }
 
-    REQUIRE(staticRefs == 0);
+    REQUIRE(Data::aliveCount == 0);
 }

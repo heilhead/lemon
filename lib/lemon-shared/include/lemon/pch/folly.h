@@ -1,11 +1,11 @@
 #pragma once
 
 #include <coroutine>
+
+#pragma warning(push)
+#pragma warning(disable : 4005)
+
 #include <folly/Portability.h>
-
-// Override folly's coroutine define to help retarded code analyzers figure out feature support.
-#define FOLLY_HAS_COROUTINES 1
-
 #include <folly/executors/IOThreadPoolExecutor.h>
 #include <folly/executors/CPUThreadPoolExecutor.h>
 #include <folly/experimental/coro/Task.h>
@@ -16,3 +16,5 @@
 #include <folly/small_vector.h>
 #include <folly/AtomicHashMap.h>
 #include <folly/PackedSyncPtr.h>
+
+#pragma warning(pop)

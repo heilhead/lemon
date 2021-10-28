@@ -10,241 +10,122 @@ namespace lemon {
     template<typename T>
     concept Sized = sizeof(T) > 0;
 
-    namespace {
-        inline void*
-        alignedAlloc(size_t size, size_t alignment)
-        {
-            LEMON_ASSERT(size > 0);
-            LEMON_ASSERT(math::isPowerOfTwo(alignment));
+    template<Sized T>
+    using AlignedStorage = std::aligned_storage<sizeof(T), alignof(T)>::type;
 
-            void* ptr;
+    template<Sized T>
+    T*
+    assumeInit(AlignedStorage<T>* mem);
 
-#if defined(_MSC_VER)
-            ptr = _aligned_malloc(size, alignment);
-#else
-            ptr = std::aligned_alloc(alignment, size);
-#endif
-
-            LEMON_ASSERT(math::isPtrAligned(ptr, alignment));
-
-            return ptr;
-        }
-
-        inline void
-        alignedFree(void* ptr)
-        {
-#if defined(_MSC_VER)
-            _aligned_free(ptr);
-#else
-            std::free(ptr);
-#endif
-        }
-
-        struct AlignedDeleter {
-            inline void
-            operator()(void* ptr) const
-            {
-                alignedFree(ptr);
-            }
-        };
-    } // namespace
+    template<Sized T>
+    const T*
+    assumeInit(const AlignedStorage<T>* mem);
 
     /// <summary>
-    /// Heap-allocated aligned memory. Sanity checks aligned access and allocation.
+    /// Aligned memory block intended to be manually initialized and destroyed.
+    ///
+    /// Note: Will not call the destructor even if the memory was initialized. Both `init()` and `destroy()`
+    /// need to be called manually.
     /// </summary>
-    template<size_t Alignment, typename TItem = uint8_t>
+    template<Sized TData>
+    struct MaybeUninit {
+        using Data = TData;
+
+    private:
+        AlignedStorage<TData> data;
+
+    public:
+        template<typename... TArgs>
+        TData*
+        init(TArgs&&... args);
+
+        void
+        destroy();
+
+        const TData&
+        operator*() const;
+
+        TData&
+        operator*();
+
+        const TData*
+        operator->() const;
+
+        TData*
+        operator->();
+
+        const TData*
+        assumeInit() const;
+
+        TData*
+        assumeInit();
+    };
+
+    /// <summary>
+    /// Dynamic heap-allocated and aligned memory buffer. Provides type conversion methods and ensures aligned
+    /// access.
+    /// </summary>
+    template<size_t Alignment, Sized TData = uint8_t>
     class AlignedMemory {
-        std::unique_ptr<uint8_t[], AlignedDeleter> data;
+        using DataBlock = std::aligned_storage<Alignment, Alignment>::type;
+
+        std::unique_ptr<DataBlock[]> data;
         size_t length;
 
     public:
-        AlignedMemory() : data{nullptr}, length{0} {}
+        AlignedMemory();
 
-        explicit AlignedMemory(size_t length) : AlignedMemory()
-        {
-            allocate(length);
-        }
+        explicit AlignedMemory(size_t length);
 
-        AlignedMemory(const AlignedMemory& other) : AlignedMemory()
-        {
-            copyAssign(other);
-        }
+        AlignedMemory(const AlignedMemory& other);
 
-        AlignedMemory(AlignedMemory&& other) noexcept : AlignedMemory()
-        {
-            moveAssign(std::move(other));
-        }
+        AlignedMemory(AlignedMemory&& other) noexcept;
 
         const uint8_t*
-        operator*() const
-        {
-            return data.get();
-        }
+        operator*() const;
 
-        operator uint8_t*() const
-        {
-            return data.get();
-        }
+        operator const uint8_t*() const;
+
+        operator uint8_t*();
 
         AlignedMemory&
-        operator=(const AlignedMemory& other)
-        {
-            if (this != &other) {
-                copyAssign(other);
-            }
-
-            return *this;
-        }
+        operator=(const AlignedMemory& other);
 
         AlignedMemory&
-        operator=(AlignedMemory&& other) noexcept
-        {
-            if (this != &other) {
-                moveAssign(std::move(other));
-            }
-
-            return *this;
-        }
+        operator=(AlignedMemory&& other) noexcept;
 
         size_t
-        size() const
-        {
-            return length;
-        }
+        size() const;
 
         void
-        copy(const uint8_t* pData, size_t size)
-        {
-            LEMON_ASSERT(size > 0);
-            LEMON_ASSERT(pData != nullptr);
-
-            allocate(size);
-            auto err = memcpy_s(data.get(), size, pData, size);
-
-            LEMON_ASSERT(!err);
-        }
+        copy(const uint8_t* pData, size_t size);
 
         void
-        allocate(size_t inLength)
-        {
-            if (length == inLength) {
-                return;
-            }
-
-            if (inLength > 0) {
-                LEMON_ASSERT(math::isAligned(inLength, Alignment),
-                             "allocation size must be multiple of alignment");
-
-                data = std::unique_ptr<uint8_t[], AlignedDeleter>(
-                    reinterpret_cast<uint8_t*>(alignedAlloc(inLength, Alignment)), AlignedDeleter());
-                length = inLength;
-            } else {
-                release();
-            }
-        }
+        allocate(size_t inLength);
 
         void
-        allocateItems(size_t capacity)
-        {
-            allocate(capacity * sizeof(TItem));
-        }
+        allocateItems(size_t capacity);
 
-        inline void
-        release()
-        {
-            data = nullptr;
-            length = 0;
-        }
+        void
+        release();
 
-        template<typename TData = uint8_t>
-        inline const TData*
-        get(size_t byteOffset = 0) const
-        {
-            LEMON_ASSERT(math::isAligned(byteOffset, alignof(TData)), "unaligned access");
-            LEMON_ASSERT(byteOffset >= 0 && byteOffset < length);
-            return reinterpret_cast<const TData*>(data.get() + byteOffset);
-        }
+        template<typename TConcreteData = TData>
+        const TConcreteData*
+        get(size_t byteOffset = 0) const;
 
-        template<typename TData = uint8_t>
-        inline TData*
-        get(size_t byteOffset = 0)
-        {
-            LEMON_ASSERT(math::isAligned(byteOffset, alignof(TData)), "unaligned access");
-            LEMON_ASSERT(byteOffset >= 0 && byteOffset < length);
-            return reinterpret_cast<TData*>(data.get() + byteOffset);
-        }
-
-        inline const TItem*
-        getItem(size_t index) const
-        {
-            return get<TItem>(index * sizeof(TItem));
-        }
-
-        inline TItem*
-        getItem(size_t index)
-        {
-            return get<TItem>(index * sizeof(TItem));
-        }
-
-        inline const TItem*
-        operator[](size_t index) const
-        {
-            return getItem(index);
-        }
-
-        inline TItem*
-        operator[](size_t index)
-        {
-            return getItem(index);
-        }
+        template<typename TConcreteData = TData>
+        TConcreteData*
+        get(size_t byteOffset = 0);
 
     private:
-        inline void
-        copyAssign(const AlignedMemory& other)
-        {
-            if (other.length > 0) {
-                allocate(other.length);
-                auto err = memcpy_s(data.get(), length, other.data.get(), length);
-                LEMON_ASSERT(!err);
-            } else {
-                release();
-            }
-        }
+        void
+        copyAssign(const AlignedMemory& other);
 
-        inline void
-        moveAssign(AlignedMemory&& other)
-        {
-            if (other.length > 0) {
-                data = std::move(other.data);
-                length = other.length;
-                other.length = 0;
-            } else {
-                release();
-            }
-        }
+        void
+        moveAssign(AlignedMemory&& other);
     };
 
     using UnalignedMemory = AlignedMemory<1>;
-
-    template<Sized T>
-    using HeapArray = AlignedMemory<alignof(T), T>;
-
-    template<Sized T>
-    using MaybeUninit = std::aligned_storage<sizeof(T), alignof(T)>::type;
-
-    template<Sized T>
-    inline T*
-    assumeInit(MaybeUninit<T>* mem)
-    {
-        LEMON_ASSERT(math::isPtrAligned(mem, alignof(T)));
-        return std::launder(reinterpret_cast<T*>(mem));
-    }
-
-    template<Sized T>
-    inline const T*
-    assumeInit(const MaybeUninit<T>* mem)
-    {
-        LEMON_ASSERT(math::isPtrAligned(mem, alignof(T)));
-        return std::launder(reinterpret_cast<const T*>(mem));
-    }
 } // namespace lemon
+
+#include <lemon/shared/Memory.inl>

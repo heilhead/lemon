@@ -54,7 +54,7 @@ lemon::SlotMap<TData, Capacity>::insert(TArgs&&... args)
     key.dataIndex = dataIndex;
 
     keyLookup[dataIndex] = keyIndex;
-    new (assumeInit<TData>(&data[dataIndex])) TData(std::forward<TArgs>(args)...);
+    data[dataIndex].init(std::forward<TArgs>(args)...);
 
     return SlotMapHandle(keyIndex, key.generation);
 }
@@ -176,7 +176,7 @@ inline const TData&
 lemon::SlotMap<TData, Capacity>::getData(size_t index) const
 {
     LEMON_ASSERT(index < size);
-    return *assumeInit<TData>(&data[index]);
+    return *data[index];
 }
 
 template<typename TData, uint32_t Capacity>
@@ -184,7 +184,7 @@ inline TData&
 lemon::SlotMap<TData, Capacity>::getData(size_t index)
 {
     LEMON_ASSERT(index < size);
-    return *assumeInit<TData>(&data[index]);
+    return *data[index];
 }
 
 template<typename TData, uint32_t Capacity>
@@ -193,16 +193,15 @@ lemon::SlotMap<TData, Capacity>::removeImpl(size_t currDataIndex)
 {
     auto lastDataIndex = --size;
 
-    auto* pCurrData = assumeInit<TData>(&data[currDataIndex]);
-    pCurrData->~TData();
+    data[currDataIndex].destroy();
 
     pushKey(keyLookup[currDataIndex]);
 
     // Perform swap.
     if (currDataIndex != lastDataIndex) {
-        auto* pLastData = assumeInit<TData>(&data[lastDataIndex]);
+        data[currDataIndex].init(std::move(*data[lastDataIndex]));
+        data[lastDataIndex].destroy();
 
-        new (pCurrData) TData(std::move(*pLastData));
         keyLookup[currDataIndex] = keyLookup[lastDataIndex];
 
         auto& key = keys[keyLookup[currDataIndex]];

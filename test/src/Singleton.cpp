@@ -1,4 +1,5 @@
-#include <catch2/catch.hpp>
+#include "catch.h"
+#include "utils.h"
 #include <lemon/shared/Singleton.h>
 
 using namespace lemon;
