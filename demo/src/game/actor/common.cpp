@@ -14,3 +14,15 @@ lemon::game::validateHandle(GameObjectInternalHandle handle)
 {
     return GameObjectStore::get()->validateHandle(handle);
 }
+
+TypeInfo
+lemon::game::getTypeInfo(const GameObject* pObject)
+{
+    return &typeid(*pObject);
+}
+
+GameObjectInternalHandle
+lemon::game::registerObject(GameObject* pObject, TypeInfo typeInfo)
+{
+    return GameObjectStore::get()->registerObject(pObject, typeInfo);
+}

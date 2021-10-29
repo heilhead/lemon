@@ -21,17 +21,21 @@ namespace lemon::game {
     public:
         GameObjectStore() {}
 
-        template<DerivedFrom<GameObject> TGameObject>
-        TGameObject*
+        template<GameObjectBase TConcreteGameObject>
+        TConcreteGameObject*
         create()
         {
-            auto* pObject = new TGameObject();
-            auto handle = gameObjects.insert(pObject);
+            auto* pObject = new TConcreteGameObject();
 
-            GameObjectDescriptor desc{.typeInfo = &typeid(*pObject), .storeHandle = handle};
-            pObject->objectDescriptor = std::move(desc);
+            registerObject(pObject, getTypeInfo(pObject));
 
             return pObject;
+        }
+
+        void
+        destroy(GameObject* pObject)
+        {
+            gameObjects.remove(pObject->getObjectDescriptor().storeHandle);
         }
 
         GameObject*
@@ -39,5 +43,9 @@ namespace lemon::game {
 
         bool
         validateHandle(GameObjectInternalHandle handle);
+
+        // TODO: Make internal
+        GameObjectInternalHandle
+        registerObject(GameObject* pObject, TypeInfo typeInfo);
     };
 } // namespace lemon::game

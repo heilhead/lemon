@@ -82,5 +82,6 @@ namespace lemon::logger {
 
 #define LEMON_TODO(...) ::lemon::logger::detail::Logger::get().unreachable(__FILE__, __LINE__, __VA_ARGS__)
 #define LEMON_UNREACHABLE(...) LEMON_TODO(__VA_ARGS__)
+#define LEMON_TRACE_FN() ::lemon::logger::trace(__FUNCTION__);
 
 #include <lemon/shared/logger.inl>

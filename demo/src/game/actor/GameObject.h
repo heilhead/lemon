@@ -5,14 +5,158 @@
 namespace lemon::game {
     class GameObject;
 
-    using TypeInfo = const std::type_info*;
+    template<class T>
+    concept GameObjectBase = Base<T, GameObject> && std::is_default_constructible_v<T>;
 
     struct GameObjectDescriptor {
         TypeInfo typeInfo;
         GameObjectInternalHandle storeHandle;
     };
 
-    template<Base<GameObject> TConcreteGameObject>
+    enum class GameObjectTickType { Actor, Component };
+
+    struct GameObjectTickDescriptor {
+    public:
+        static constexpr size_t kMaxInlineTickDependencies = 4;
+
+        using Dependencies = folly::small_vector<GameObjectInternalHandle, kMaxInlineTickDependencies>;
+
+    private:
+        Dependencies dependencies{};
+        GameObjectTickType tickType{};
+
+    public:
+        Dependencies&
+        getDependencies()
+        {
+            return dependencies;
+        }
+
+        void
+        addDependency(GameObjectInternalHandle handle)
+        {
+            dependencies.push_back(handle);
+        }
+
+        void
+        removeDependency(GameObjectInternalHandle handle)
+        {
+            dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), handle),
+                               dependencies.end());
+        }
+
+        GameObjectTickType
+        getTickType()
+        {
+            return tickType;
+        }
+
+        void
+        setTickType(GameObjectTickType inTickType)
+        {
+            tickType = inTickType;
+        }
+    };
+
+    class GameObject : NonCopyable {
+        static constexpr size_t kMaxInlineGameObjects = 8;
+
+        friend class GameObjectStore;
+
+    public:
+        using SubObjectList = folly::small_vector<GameObject*, kMaxInlineGameObjects>;
+
+    private:
+        GameObjectDescriptor objectDescriptor;
+        GameObject* pParent;
+        SubObjectList subObjects;
+
+    protected:
+        GameObjectTickDescriptor tick;
+        bool bTickEnabled = false;
+
+    public:
+        GameObject()
+        {
+            LEMON_TRACE_FN();
+        }
+
+        virtual ~GameObject();
+
+        template<typename T>
+        T*
+        cast();
+
+        template<typename T>
+        const T*
+        cast() const;
+
+        template<typename T>
+        T*
+        cast(GameObject* pObject) const;
+
+        template<typename T>
+        const T*
+        cast(const GameObject* pObject) const;
+
+        const GameObjectDescriptor&
+        getObjectDescriptor() const;
+
+        template<GameObjectBase TConcreteGameObject>
+        TConcreteGameObject*
+        createSubObject();
+
+        const SubObjectList&
+        getSubObjectList() const;
+
+        SubObjectList&
+        getSubObjectList();
+
+        const GameObject*
+        getParent() const;
+
+        GameObject*
+        getParent();
+
+        GameObjectInternalHandle
+        getInternalHandle() const;
+
+        void
+        iterateSubObjects(const std::function<void(const GameObject*)>& fn, bool bRecursive = false) const;
+
+        void
+        iterateSubObjects(const std::function<void(GameObject*)>& fn, bool bRecursive = false);
+
+        virtual void
+        onStart()
+        {
+            LEMON_TRACE_FN();
+        }
+
+        virtual void
+        onTick(float deltaTime)
+        {
+            LEMON_TRACE_FN();
+        }
+
+        virtual void
+        onStop()
+        {
+            LEMON_TRACE_FN();
+        }
+
+        void
+        enableTick();
+
+        void
+        disableTick();
+
+    private:
+        void
+        setParent(GameObject* pParent);
+    };
+
+    template<GameObjectBase TConcreteGameObject>
     struct GameObjectHandle {
     private:
         GameObjectInternalHandle storeHandle;
@@ -39,102 +183,94 @@ namespace lemon::game {
         operator=(const GameObject* pObject);
     };
 
-    class GameObject : NonCopyable {
-        friend class GameObjectStore;
-
-        GameObjectDescriptor objectDescriptor;
-
-    public:
-        GameObject() {}
-
-        virtual ~GameObject() = default;
-
-        template<Base<GameObject> TConcreteGameObject>
-        inline TConcreteGameObject*
-        cast();
-
-        template<Base<GameObject> TConcreteGameObject>
-        inline const TConcreteGameObject*
-        cast() const;
-
-        const GameObjectDescriptor&
-        getObjectDescriptor() const;
-    };
-
-    template<Base<GameObject> TConcreteGameObject>
-    inline TConcreteGameObject*
-    cast(GameObject* pObject)
+    template<typename T>
+    inline T*
+    GameObject::cast()
     {
-        return dynamic_cast<TConcreteGameObject*>(pObject);
+        return ::lemon::game::cast<T>(this);
     }
 
-    template<Base<GameObject> TConcreteGameObject>
-    inline const TConcreteGameObject*
-    cast(const GameObject* pObject)
+    template<typename T>
+    inline const T*
+    GameObject::cast() const
     {
-        return dynamic_cast<const TConcreteGameObject*>(pObject);
+        return ::lemon::game::cast<T>(this);
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<typename T>
+    inline T*
+    GameObject::cast(GameObject* pObject) const
+    {
+        return ::lemon::game::cast<T>(pObject);
+    }
+
+    template<typename T>
+    inline const T*
+    GameObject::cast(const GameObject* pObject) const
+    {
+        return ::lemon::game::cast<T>(pObject);
+    }
+
+    template<GameObjectBase TConcreteGameObject>
+    TConcreteGameObject*
+    GameObject::createSubObject()
+    {
+        auto* pObject = new TConcreteGameObject();
+
+        registerObject(pObject, getTypeInfo(pObject));
+
+        pObject->setParent(this);
+        subObjects.push_back(pObject);
+
+        return pObject;
+    }
+
+    template<GameObjectBase TConcreteGameObject>
     GameObjectHandle<TConcreteGameObject>::GameObjectHandle(GameObjectInternalHandle handle)
         : storeHandle{handle}
     {
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     GameObjectHandle<TConcreteGameObject>::GameObjectHandle(const GameObject* pObject)
     {
         LEMON_ASSERT(pObject->cast<TConcreteGameObject>() != nullptr);
         storeHandle = pObject->getObjectDescriptor().storeHandle;
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     TConcreteGameObject*
     GameObjectHandle<TConcreteGameObject>::get()
     {
         return cast<TConcreteGameObject>(upgradeHandle(storeHandle));
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     inline const TConcreteGameObject*
     GameObjectHandle<TConcreteGameObject>::get() const
     {
         return cast<TConcreteGameObject>(upgradeHandle(storeHandle));
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     inline bool
     GameObjectHandle<TConcreteGameObject>::isValid() const
     {
         return validateHandle(storeHandle);
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     inline GameObjectHandle<TConcreteGameObject>::operator bool() const
     {
         return isValid();
     }
 
-    template<Base<GameObject> TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject>
     inline GameObjectHandle<TConcreteGameObject>&
     GameObjectHandle<TConcreteGameObject>::operator=(const GameObject* pObject)
     {
         LEMON_ASSERT(pObject->cast<TConcreteGameObject>() != nullptr);
         storeHandle = pObject->getObjectDescriptor().storeHandle;
         return *this;
-    }
-
-    template<Base<GameObject> TConcreteGameObject>
-    inline TConcreteGameObject*
-    GameObject::cast()
-    {
-        return ::lemon::game::cast<TConcreteGameObject>(this);
-    }
-
-    template<Base<GameObject> TConcreteGameObject>
-    inline const TConcreteGameObject*
-    GameObject::cast() const
-    {
-        return ::lemon::game::cast<TConcreteGameObject>(this);
     }
 } // namespace lemon::game

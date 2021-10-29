@@ -8,7 +8,7 @@ add_executable(${PROJECT_NAME}
     "src/game/math.cpp"
     "src/game/CameraController.cpp"
     "src/game/actor/Actor.cpp"
-    "src/game/actor/ActorManager.cpp"
+    "src/game/actor/GameWorld.cpp"
     "src/game/actor/GameObject.cpp"
     "src/game/actor/GameObjectStore.cpp"
     "src/game/actor/ActorComponent.cpp"

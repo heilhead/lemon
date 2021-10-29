@@ -1,6 +1,6 @@
 #pragma once
 
 namespace lemon::game {
-    class ActorManager : public UnsafeSingleton<ActorManager> {
+    class GameWorld : public UnsafeSingleton<GameWorld> {
     };
 } // namespace lemon::game

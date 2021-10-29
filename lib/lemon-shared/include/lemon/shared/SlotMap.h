@@ -32,7 +32,7 @@ namespace lemon {
         operator==(const SlotMapHandle& other) const;
     };
 
-    template<typename TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity>
     class SlotMap {
         using Key = slotmap_detail::SlotMapKey;
 
