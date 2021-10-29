@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include "GameObjectStore.h"
+#include "GameWorld.h"
 
 using namespace lemon;
 using namespace lemon::game;
@@ -42,6 +43,17 @@ void
 GameObject::enableTick()
 {
     if (!bTickEnabled) {
+        switch (tick.getTickType()) {
+        case GameObjectTickType::Actor:
+            tick.setHandle(GameWorld::get()->registerTickingActor(cast<Actor>()));
+            break;
+        case GameObjectTickType::Component:
+            tick.setHandle(GameWorld::get()->registerTickingComponent(cast<ActorComponent>()));
+            break;
+        default:
+            LEMON_UNREACHABLE();
+        }
+
         bTickEnabled = true;
     }
 }
@@ -50,6 +62,17 @@ void
 GameObject::disableTick()
 {
     if (bTickEnabled) {
+        switch (tick.getTickType()) {
+        case GameObjectTickType::Actor:
+            GameWorld::get()->unregisterTickingActor(tick.getHandle());
+            break;
+        case GameObjectTickType::Component:
+            GameWorld::get()->unregisterTickingComponent(tick.getHandle());
+            break;
+        default:
+            LEMON_UNREACHABLE();
+        }
+
         bTickEnabled = false;
     }
 }

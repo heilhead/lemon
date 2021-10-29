@@ -91,6 +91,9 @@ namespace lemon::game {
         glm::quat
         getRotation() const;
 
+        glm::f32vec3
+        getScale() const;
+
         glm::f32mat4
         getMatrix() const;
 
@@ -230,4 +233,10 @@ inline glm::quat
 lemon::game::Transform::getRotation() const
 {
     return rotation;
+}
+
+inline glm::f32vec3
+lemon::game::Transform::getScale() const
+{
+    return scale;
 }

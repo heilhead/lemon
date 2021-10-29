@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "GameWorld.h"
 
 using namespace lemon;
 using namespace lemon::game;
@@ -11,8 +12,30 @@ Actor::~Actor()
     unregisterComponents();
 }
 
+PositionableComponent*
+Actor::getRootComponent()
+{
+    return rootComponent;
+}
+
 void
-Actor::onStartInternal()
+Actor::onStart()
+{
+    GameObject::onStart();
+    LEMON_TRACE_FN();
+    worldHandle = GameWorld::get()->registerActor(this);
+}
+
+void
+Actor::onStop()
+{
+    LEMON_TRACE_FN();
+    GameWorld::get()->unregisterActor(worldHandle);
+    GameObject::onStop();
+}
+
+void
+Actor::startInternal()
 {
     if (!bComponentsInitialized) {
         onPreInitializeComponents();
@@ -30,11 +53,12 @@ Actor::onStartInternal()
         },
         true);
 
+    bAddedToWorld = true;
     onStart();
 }
 
 void
-Actor::onStopInternal()
+Actor::stopInternal()
 {
     iterateSubObjects(
         [](GameObject* pObject) {
@@ -45,6 +69,7 @@ Actor::onStopInternal()
         true);
 
     onStop();
+    bAddedToWorld = false;
 }
 
 void

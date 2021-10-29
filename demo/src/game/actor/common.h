@@ -7,6 +7,8 @@ namespace lemon::game {
 
     using GameObjectInternalHandle = SlotMapHandle;
 
+    static constexpr size_t kMaxAliveGameObjects = 16384;
+
     template<typename T>
     inline T*
     cast(GameObject* pObject)

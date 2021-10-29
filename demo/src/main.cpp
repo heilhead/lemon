@@ -6,13 +6,14 @@
 #include "game/actor/Actor.h"
 #include "game/actor/ActorComponent.h"
 #include "game/actor/GameObjectStore.h"
+#include "game/actor/GameWorld.h"
 
 using namespace lemon;
 using namespace lemon::game;
 
 class MovementComponent : public ActorComponent {
 public:
-    MovementComponent()
+    MovementComponent() : ActorComponent()
     {
         LEMON_TRACE_FN();
     }
@@ -37,6 +38,8 @@ public:
     void
     onStart() override
     {
+        ActorComponent::onStop();
+
         LEMON_TRACE_FN();
     }
 
@@ -49,6 +52,8 @@ public:
     void
     onStop() override
     {
+        ActorComponent::onStop();
+
         LEMON_TRACE_FN();
     }
 
@@ -65,11 +70,16 @@ public:
     }
 };
 
+class MeshRenderComponent : public RenderableComponent {
+};
+
 class CharacterActor : public Actor {
 public:
-    CharacterActor()
+    CharacterActor() : Actor()
     {
         LEMON_TRACE_FN();
+
+        rootComponent = addComponent<MeshRenderComponent>();
 
         auto* pMovementComponent = addComponent<MovementComponent>();
 
@@ -96,6 +106,8 @@ public:
     void
     onStart() override
     {
+        Actor::onStart();
+
         LEMON_TRACE_FN();
     }
 
@@ -108,6 +120,8 @@ public:
     void
     onStop() override
     {
+        Actor::onStop();
+
         LEMON_TRACE_FN();
     }
 };
@@ -121,14 +135,19 @@ main(int argc, char* argv[])
     // testMeshRendering();
 
     auto store = std::make_unique<GameObjectStore>();
+    auto world = std::make_unique<GameWorld>();
 
-    auto* pActor = store->create<CharacterActor>();
+    auto hActor = world->createActor<CharacterActor>();
 
-    pActor->onStartInternal();
-    pActor->onTick(0.f);
-    pActor->onStopInternal();
+    LEMON_ASSERT(hActor);
 
-    // TODO: GameWorld, spawn/destroy actors, dispatch ticking
+    auto* pActor = hActor.get();
+
+    world->destroyActor(hActor);
+
+    LEMON_ASSERT(!hActor);
+
+    // TODO: dispatch ticking
 
     return 0;
 }

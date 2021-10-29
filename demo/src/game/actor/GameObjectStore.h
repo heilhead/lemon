@@ -13,9 +13,9 @@ namespace lemon::game {
         }
     };
 
+    // TODO: Make internal and accessible only to `GameWorld`. It probably shouldn't be a singleton and
+    // instead live inside `GameWorld`.
     class GameObjectStore : public UnsafeSingleton<GameObjectStore> {
-        static constexpr size_t kMaxAliveGameObjects = 16384;
-
         SlotMap<GameObjectWrapper, kMaxAliveGameObjects> gameObjects;
 
     public:
@@ -44,7 +44,6 @@ namespace lemon::game {
         bool
         validateHandle(GameObjectInternalHandle handle);
 
-        // TODO: Make internal
         GameObjectInternalHandle
         registerObject(GameObject* pObject, TypeInfo typeInfo);
     };

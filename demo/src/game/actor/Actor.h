@@ -10,8 +10,15 @@ namespace lemon::game {
     concept ActorBase = Base<T, Actor> && GameObjectBase<T>;
 
     class Actor : public GameObject {
+        friend class GameWorld;
+
+        SlotMapHandle worldHandle;
         bool bComponentsInitialized = false;
         bool bTickEnabled = false;
+        bool bAddedToWorld = false;
+
+    protected:
+        PositionableComponent* rootComponent;
 
     public:
         Actor() : GameObject()
@@ -25,11 +32,14 @@ namespace lemon::game {
 
         template<ActorComponentBase TComponent>
         TComponent*
-        addComponent();
+        addComponent(PositionableComponent* parentComponent = nullptr);
 
         template<ActorComponentBase TComponent>
         TComponent*
         getComponent();
+
+        PositionableComponent*
+        getRootComponent();
 
         virtual void
         onPreInitializeComponents()
@@ -43,15 +53,19 @@ namespace lemon::game {
             LEMON_TRACE_FN();
         }
 
-        // INTERNAL START
         void
-        onStartInternal();
+        onStart() override;
 
         void
-        onStopInternal();
-        // INTERNAL END
+        onStop() override;
 
     private:
+        void
+        startInternal();
+
+        void
+        stopInternal();
+
         void
         initializeComponents();
 
@@ -64,9 +78,10 @@ namespace lemon::game {
 
     template<ActorComponentBase TComponent>
     TComponent*
-    Actor::addComponent()
+    Actor::addComponent(PositionableComponent* parentComponent)
     {
         auto* pComponent = createSubObject<TComponent>();
+        pComponent->setParent(parentComponent);
         pComponent->onRegister();
         return pComponent;
     }

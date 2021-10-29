@@ -24,6 +24,7 @@ namespace lemon::game {
     private:
         Dependencies dependencies{};
         GameObjectTickType tickType{};
+        SlotMapHandle tickQueueHandle{};
 
     public:
         Dependencies&
@@ -55,6 +56,18 @@ namespace lemon::game {
         setTickType(GameObjectTickType inTickType)
         {
             tickType = inTickType;
+        }
+
+        void
+        setHandle(SlotMapHandle handle)
+        {
+            tickQueueHandle = handle;
+        }
+
+        SlotMapHandle
+        getHandle()
+        {
+            return tickQueueHandle;
         }
     };
 
@@ -143,6 +156,10 @@ namespace lemon::game {
         onStop()
         {
             LEMON_TRACE_FN();
+
+            if (bTickEnabled) {
+                disableTick();
+            }
         }
 
         void
@@ -151,7 +168,7 @@ namespace lemon::game {
         void
         disableTick();
 
-    private:
+    protected:
         void
         setParent(GameObject* pParent);
     };
