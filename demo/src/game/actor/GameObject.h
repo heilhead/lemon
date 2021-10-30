@@ -26,12 +26,14 @@ namespace lemon::game {
         using Dependencies = folly::small_vector<ProxyHandle, kMaxInlineTickDependencies>;
 
     private:
-        Dependencies dependencies{};
-        GameObjectTickType tickType{};
-        ProxyHandle tickProxyHandle{};
-        float interval{0.f};
+        Dependencies dependencies;
+        GameObjectTickType tickType;
+        ProxyHandle tickProxyHandle;
+        float interval;
 
     public:
+        GameObjectTickDescriptor() : dependencies{}, tickType{}, tickProxyHandle{}, interval{0.f} {}
+
         Dependencies&
         getDependencies();
 
@@ -83,11 +85,12 @@ namespace lemon::game {
 
     private:
         GameObjectDescriptor objectDescriptor;
-        GameObject* pParent;
-        SubObjectList subObjects;
+        GameObject* pParent{nullptr};
+        SubObjectList subObjects{};
+        std::string objectName{};
 
     protected:
-        GameObjectTickDescriptor tick;
+        GameObjectTickDescriptor tick{};
         bool bTickEnabled = false;
 
     public:
@@ -168,6 +171,18 @@ namespace lemon::game {
 
         bool
         isParentOf(const GameObject* pObject) const;
+
+        void
+        setName(const std::string& name)
+        {
+            objectName = name;
+        }
+
+        const std::string&
+        getName() const
+        {
+            return objectName;
+        }
 
     protected:
         void

@@ -90,6 +90,8 @@ GameWorld::updateInternal(double time)
     for (size_t i = 0, length = tickingComponents.getSize(); i < length; i++) {
         tick(tickingComponents[i], time, dt);
     }
+
+    lastUpdateTime = time;
 }
 
 GameObjectWorldHandle

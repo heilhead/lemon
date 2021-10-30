@@ -14,7 +14,6 @@ namespace lemon::game {
 
         GameObjectWorldHandle worldHandle;
         bool bComponentsInitialized = false;
-        bool bTickEnabled = false;
         bool bAddedToWorld = false;
 
     protected:

@@ -42,6 +42,8 @@ ActorComponent::disableTick()
         if (pTickingParent != nullptr) {
             removeTickDependencyInternal(pTickingParent->tick.getHandle());
         }
+
+        detachTickRecursive(this);
     }
 }
 

@@ -83,9 +83,9 @@ public:
 
         rootComponent = addComponent<MeshRenderComponent>();
 
-        auto* pMovementComponent = addComponent<MovementComponent>();
+        // auto* pMovementComponent = addComponent<MovementComponent>();
 
-        LEMON_ASSERT(pMovementComponent != nullptr);
+        // LEMON_ASSERT(pMovementComponent != nullptr);
     }
 
     ~CharacterActor()
@@ -143,28 +143,36 @@ main(int argc, char* argv[])
 
     double time = 0.5f;
 
-    auto hActor = world->createActor<CharacterActor>();
+    auto hActor1 = world->createActor<CharacterActor>();
+    hActor1.get()->setName("actor1");
+    auto hActor2 = world->createActor<CharacterActor>();
+    hActor2.get()->setName("actor2");
 
-    logger::trace("time: ", time);
     world->updateInternal(time += 0.5f);
-    logger::trace("time: ", time);
-    world->updateInternal(time += 0.5f);
-    logger::trace("time: ", time);
-    world->updateInternal(time += 0.5f);
-    logger::trace("time: ", time);
-    world->updateInternal(time += 0.5f);
-    logger::trace("time: ", time);
-    world->updateInternal(time += 0.5f);
-    logger::trace("time: ", time);
     world->updateInternal(time += 0.5f);
 
-    LEMON_ASSERT(hActor);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
+    // logger::trace("time: ", time);
+    // world->updateInternal(time += 0.5f);
 
-    auto* pActor = hActor.get();
+    // LEMON_ASSERT(hActor);
 
-    world->destroyActor(hActor);
+    // auto* pActor = hActor.get();
 
-    LEMON_ASSERT(!hActor);
+    world->destroyActor(hActor1);
+    world->destroyActor(hActor2);
+
+    LEMON_ASSERT(!hActor1);
+    LEMON_ASSERT(!hActor2);
 
     // TODO: dispatch ticking
 
