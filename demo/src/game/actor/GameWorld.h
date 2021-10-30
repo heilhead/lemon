@@ -6,16 +6,20 @@
 
 namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {
-        GameObjectStore store{};
+        GameObjectStore store;
 
         // TODO: SlotMap should probably by dynamically-sized?
-        SlotMap<Actor*, kMaxAliveGameObjects, GameObjectWorldHandle> actors{};
-        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingActors{};
-        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingComponents{};
-        SlotMap<RenderableComponent*, kMaxAliveGameObjects, GameObjectRenderProxyHandle>
-            renderableComponents{};
+        SlotMap<Actor*, kMaxAliveGameObjects, GameObjectWorldHandle> actors;
+        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingActors;
+        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingComponents;
+        SlotMap<GameObjectRenderProxy, kMaxAliveGameObjects, GameObjectRenderProxyHandle>
+            renderableComponents;
+
+        double lastUpdateTime;
 
     public:
+        GameWorld();
+
         template<ActorBase TActor>
         GameObjectHandle<TActor>
         createActor(const glm::f32vec3& pos = kVectorZero, const glm::quat& rot = kQuatIdentity,
@@ -34,10 +38,19 @@ namespace lemon::game {
         removeActor(Actor* pActor);
 
         GameObject*
-        resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType) const;
+        resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
+
+        GameObjectTickProxy*
+        getTickProxy(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
+
+        GameObjectRenderProxy*
+        getRenderProxy(GameObjectRenderProxyHandle handle);
 
         static GameObjectStore*
         getStoreInternal();
+
+        void
+        updateInternal(double time);
 
         GameObjectWorldHandle
         registerActorInternal(Actor* pActor);
@@ -46,16 +59,20 @@ namespace lemon::game {
         unregisterActorInternal(GameObjectWorldHandle handle);
 
         GameObjectTickProxyHandle
-        registerTickingObjectInternal(const GameObjectTickProxy& tick, GameObjectTickType tickType);
+        registerTickingObjectInternal(const GameObjectTickProxy& proxy, GameObjectTickType tickType);
 
         void
         unregisterTickingObjectInternal(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
 
         GameObjectRenderProxyHandle
-        registerRenderableComponentInternal(RenderableComponent* pComponent);
+        registerRenderableComponentInternal(const GameObjectRenderProxy& proxy);
 
         void
         unregisterRenderableComponentInternal(GameObjectRenderProxyHandle handle);
+
+    private:
+        void
+        tick(GameObjectTickProxy& proxy, double time, float dt);
     };
 
     template<ActorBase TActor>

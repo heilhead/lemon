@@ -41,6 +41,8 @@ public:
         ActorComponent::onStop();
 
         LEMON_TRACE_FN();
+
+        enableTick(1.f);
     }
 
     void
@@ -109,6 +111,8 @@ public:
         Actor::onStart();
 
         LEMON_TRACE_FN();
+
+        enableTick();
     }
 
     void
@@ -137,7 +141,22 @@ main(int argc, char* argv[])
     auto store = std::make_unique<GameObjectStore>();
     auto world = std::make_unique<GameWorld>();
 
+    double time = 0.5f;
+
     auto hActor = world->createActor<CharacterActor>();
+
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
 
     LEMON_ASSERT(hActor);
 

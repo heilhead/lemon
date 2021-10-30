@@ -4,6 +4,7 @@
 
 namespace lemon::game {
     class ActorComponent;
+    class RenderableComponent;
 
     template<class T>
     concept ActorComponentBase = Base<T, ActorComponent> && GameObjectBase<T>;
@@ -95,6 +96,12 @@ namespace lemon::game {
         updateGlobalTransform() const;
     };
 
+    struct GameObjectRenderProxy {
+        RenderableComponent* pRenderable;
+
+        GameObjectRenderProxy(RenderableComponent* pRenderable);
+    };
+
     class RenderableComponent : public PositionableComponent {
         GameObjectRenderProxyHandle renderProxyHandle;
 
@@ -104,5 +111,12 @@ namespace lemon::game {
 
         void
         onStop() override;
+
+    private:
+        GameObjectRenderProxy
+        createRenderProxy();
+
+        void
+        updateRenderProxy();
     };
 } // namespace lemon::game

@@ -25,7 +25,7 @@ ActorComponent::enableTick(float interval)
 
         auto* pTickingParent = findTickingParent();
         if (pTickingParent != nullptr) {
-            tick.addDependency(pTickingParent->tick.getHandle());
+            addTickDependencyInternal(pTickingParent->tick.getHandle());
         }
 
         attachTickRecursive(this);
@@ -40,7 +40,7 @@ ActorComponent::disableTick()
 
         auto* pTickingParent = findTickingParent();
         if (pTickingParent != nullptr) {
-            tick.removeDependency(pTickingParent->tick.getHandle());
+            removeTickDependencyInternal(pTickingParent->tick.getHandle());
         }
     }
 }
@@ -228,12 +228,14 @@ PositionableComponent::getGlobalTransformMatrix() const
     return transformCache.pParent != nullptr ? transformCache.globalMatrix : transformCache.localMatrix;
 }
 
+GameObjectRenderProxy::GameObjectRenderProxy(RenderableComponent* pRenderable) : pRenderable{pRenderable} {}
+
 void
 RenderableComponent::onStart()
 {
     PositionableComponent::onStart();
     LEMON_TRACE_FN();
-    renderProxyHandle = GameWorld::get()->registerRenderableComponentInternal(this);
+    renderProxyHandle = GameWorld::get()->registerRenderableComponentInternal(createRenderProxy());
 }
 
 void
@@ -242,4 +244,17 @@ RenderableComponent::onStop()
     LEMON_TRACE_FN();
     GameWorld::get()->unregisterRenderableComponentInternal(renderProxyHandle);
     PositionableComponent::onStop();
+}
+
+GameObjectRenderProxy
+RenderableComponent::createRenderProxy()
+{
+    return GameObjectRenderProxy(this);
+}
+
+void
+RenderableComponent::updateRenderProxy()
+{
+    auto* pRenderProxy = GameWorld::get()->getRenderProxy(renderProxyHandle);
+    LEMON_ASSERT(pRenderProxy != nullptr);
 }

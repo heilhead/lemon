@@ -11,6 +11,12 @@ GameObjectTickDescriptor::getDependencies()
     return dependencies;
 }
 
+const GameObjectTickDescriptor::Dependencies&
+GameObjectTickDescriptor::getDependencies() const
+{
+    return dependencies;
+}
+
 void
 GameObjectTickDescriptor::addDependency(ProxyHandle handle)
 {
@@ -146,6 +152,26 @@ GameObject::isTickEnabled() const
     return bTickEnabled;
 }
 
+const GameObjectTickDescriptor&
+GameObject::getTickDescriptor() const
+{
+    return tick;
+}
+
+void
+GameObject::addTickDependencyInternal(GameObjectTickProxyHandle handle)
+{
+    tick.addDependency(handle);
+    updateTickProxy();
+}
+
+void
+GameObject::removeTickDependencyInternal(GameObjectTickProxyHandle handle)
+{
+    tick.removeDependency(handle);
+    updateTickProxy();
+}
+
 bool
 GameObject::isParentOf(const GameObject* pObject) const
 {
@@ -221,6 +247,14 @@ GameObjectTickProxy
 GameObject::createTickProxy()
 {
     return GameObjectTickProxy(this, tick.getInterval());
+}
+
+inline void
+GameObject::updateTickProxy()
+{
+    auto* pProxy = GameWorld::get()->getTickProxy(tick.getHandle(), tick.getTickType());
+    LEMON_ASSERT(pProxy != nullptr);
+    pProxy->dependencyCount = tick.getDependencies().size();
 }
 
 const GameObject::SubObjectList&

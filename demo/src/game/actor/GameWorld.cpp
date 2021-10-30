@@ -3,6 +3,11 @@
 using namespace lemon;
 using namespace lemon::game;
 
+GameWorld::GameWorld()
+    : store{}, actors{}, tickingActors{}, tickingComponents{}, renderableComponents{}, lastUpdateTime{0.f}
+{
+}
+
 void
 GameWorld::removeActor(Actor* pActor)
 {
@@ -16,7 +21,7 @@ GameWorld::removeActor(Actor* pActor)
 }
 
 GameObject*
-GameWorld::resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType) const
+GameWorld::resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType)
 {
     switch (tickType) {
     case GameObjectTickType::Actor: {
@@ -44,10 +49,47 @@ GameWorld::resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTic
     return nullptr;
 }
 
+GameObjectTickProxy*
+GameWorld::getTickProxy(GameObjectTickProxyHandle handle, GameObjectTickType tickType)
+{
+    switch (tickType) {
+    case GameObjectTickType::Actor:
+        return tickingActors.getData(handle);
+
+    case GameObjectTickType::Component:
+        return tickingComponents.getData(handle);
+
+    default:
+        LEMON_UNREACHABLE();
+    }
+
+    return nullptr;
+}
+
+GameObjectRenderProxy*
+GameWorld::getRenderProxy(GameObjectRenderProxyHandle handle)
+{
+    return renderableComponents.getData(handle);
+}
+
 GameObjectStore*
 GameWorld::getStoreInternal()
 {
     return &get()->store;
+}
+
+void
+GameWorld::updateInternal(double time)
+{
+    auto dt = static_cast<float>(time - lastUpdateTime);
+
+    for (size_t i = 0, length = tickingActors.getSize(); i < length; i++) {
+        tick(tickingActors[i], time, dt);
+    }
+
+    for (size_t i = 0, length = tickingComponents.getSize(); i < length; i++) {
+        tick(tickingComponents[i], time, dt);
+    }
 }
 
 GameObjectWorldHandle
@@ -94,14 +136,39 @@ GameWorld::unregisterTickingObjectInternal(GameObjectTickProxyHandle handle, Gam
 }
 
 GameObjectRenderProxyHandle
-GameWorld::registerRenderableComponentInternal(RenderableComponent* pComponent)
+GameWorld::registerRenderableComponentInternal(const GameObjectRenderProxy& proxy)
 {
-    LEMON_ASSERT(pComponent != nullptr);
-    return renderableComponents.insert(pComponent);
+    LEMON_ASSERT(proxy.pRenderable != nullptr);
+    return renderableComponents.insert(proxy);
 }
 
 void
 GameWorld::unregisterRenderableComponentInternal(GameObjectRenderProxyHandle handle)
 {
     renderableComponents.remove(handle);
+}
+
+inline void
+GameWorld::tick(GameObjectTickProxy& proxy, double time, float dt)
+{
+    bool bShouldTick = (time != proxy.lastTickTime) && (time - proxy.lastTickTime >= proxy.interval);
+
+    if (bShouldTick) {
+        auto* pObject = proxy.pObject;
+
+        if (proxy.dependencyCount > 0) {
+            auto& tickDesc = pObject->getTickDescriptor();
+
+            for (auto hDep : tickDesc.getDependencies()) {
+                auto* depProxy = getTickProxy(hDep, tickDesc.getTickType());
+
+                LEMON_ASSERT(depProxy != nullptr);
+
+                tick(*depProxy, time, dt);
+            }
+        }
+
+        proxy.pObject->onTick(dt);
+        proxy.lastTickTime = time;
+    }
 }

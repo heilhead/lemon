@@ -20,6 +20,9 @@ namespace lemon::game {
         static constexpr size_t kMaxInlineTickDependencies = 4;
 
         using ProxyHandle = GameObjectTickProxyHandle;
+
+        // TODO: Store a wrapper instead of raw handle which will include a 'user added' flag to make handles
+        // permanent for user added dependencies.
         using Dependencies = folly::small_vector<ProxyHandle, kMaxInlineTickDependencies>;
 
     private:
@@ -31,6 +34,9 @@ namespace lemon::game {
     public:
         Dependencies&
         getDependencies();
+
+        const Dependencies&
+        getDependencies() const;
 
         void
         addDependency(ProxyHandle handle);
@@ -59,8 +65,9 @@ namespace lemon::game {
 
     struct GameObjectTickProxy {
         GameObject* pObject;
+        double lastTickTime;
         float interval;
-        float lastTickTime;
+        uint32_t dependencyCount;
 
         GameObjectTickProxy(GameObject* pObject, float interval);
     };
@@ -150,6 +157,15 @@ namespace lemon::game {
         bool
         isTickEnabled() const;
 
+        const GameObjectTickDescriptor&
+        getTickDescriptor() const;
+
+        void
+        addTickDependencyInternal(GameObjectTickProxyHandle handle);
+
+        void
+        removeTickDependencyInternal(GameObjectTickProxyHandle handle);
+
         bool
         isParentOf(const GameObject* pObject) const;
 
@@ -160,6 +176,9 @@ namespace lemon::game {
     private:
         GameObjectTickProxy
         createTickProxy();
+
+        void
+        updateTickProxy();
     };
 
     template<GameObjectBase TConcreteGameObject>
