@@ -13,30 +13,18 @@ namespace lemon::game {
         }
     };
 
-    // TODO: Make internal and accessible only to `GameWorld`. It probably shouldn't be a singleton and
-    // instead live inside `GameWorld`.
-    class GameObjectStore : public UnsafeSingleton<GameObjectStore> {
-        SlotMap<GameObjectWrapper, kMaxAliveGameObjects> gameObjects;
+    class GameObjectStore {
+        SlotMap<GameObjectWrapper, kMaxAliveGameObjects, GameObjectInternalHandle> gameObjects;
 
     public:
         GameObjectStore() {}
 
         template<GameObjectBase TConcreteGameObject>
         TConcreteGameObject*
-        create()
-        {
-            auto* pObject = new TConcreteGameObject();
-
-            registerObject(pObject, getTypeInfo(pObject));
-
-            return pObject;
-        }
+        create();
 
         void
-        destroy(GameObject* pObject)
-        {
-            gameObjects.remove(pObject->getObjectDescriptor().storeHandle);
-        }
+        destroy(GameObject* pObject);
 
         GameObject*
         upgradeHandle(GameObjectInternalHandle handle);
@@ -47,4 +35,15 @@ namespace lemon::game {
         GameObjectInternalHandle
         registerObject(GameObject* pObject, TypeInfo typeInfo);
     };
+
+    template<GameObjectBase TConcreteGameObject>
+    TConcreteGameObject*
+    GameObjectStore::create()
+    {
+        auto* pObject = new TConcreteGameObject();
+
+        registerObject(pObject, getTypeInfo(pObject));
+
+        return pObject;
+    }
 } // namespace lemon::game

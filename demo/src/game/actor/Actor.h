@@ -12,7 +12,7 @@ namespace lemon::game {
     class Actor : public GameObject {
         friend class GameWorld;
 
-        SlotMapHandle worldHandle;
+        GameObjectWorldHandle worldHandle;
         bool bComponentsInitialized = false;
         bool bTickEnabled = false;
         bool bAddedToWorld = false;
@@ -21,12 +21,7 @@ namespace lemon::game {
         PositionableComponent* rootComponent;
 
     public:
-        Actor() : GameObject()
-        {
-            LEMON_TRACE_FN();
-
-            tick.setTickType(GameObjectTickType::Actor);
-        }
+        Actor();
 
         ~Actor() override;
 
@@ -42,16 +37,10 @@ namespace lemon::game {
         getRootComponent();
 
         virtual void
-        onPreInitializeComponents()
-        {
-            LEMON_TRACE_FN();
-        }
+        onPreInitializeComponents();
 
         virtual void
-        onPostInitializeComponents()
-        {
-            LEMON_TRACE_FN();
-        }
+        onPostInitializeComponents();
 
         void
         onStart() override;

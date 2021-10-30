@@ -4,6 +4,13 @@
 using namespace lemon;
 using namespace lemon::game;
 
+Actor::Actor() : GameObject()
+{
+    LEMON_TRACE_FN();
+
+    tick.setTickType(GameObjectTickType::Actor);
+}
+
 Actor::~Actor()
 {
     LEMON_TRACE_FN();
@@ -19,18 +26,30 @@ Actor::getRootComponent()
 }
 
 void
+Actor::onPreInitializeComponents()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+Actor::onPostInitializeComponents()
+{
+    LEMON_TRACE_FN();
+}
+
+void
 Actor::onStart()
 {
     GameObject::onStart();
     LEMON_TRACE_FN();
-    worldHandle = GameWorld::get()->registerActor(this);
+    worldHandle = GameWorld::get()->registerActorInternal(this);
 }
 
 void
 Actor::onStop()
 {
     LEMON_TRACE_FN();
-    GameWorld::get()->unregisterActor(worldHandle);
+    GameWorld::get()->unregisterActorInternal(worldHandle);
     GameObject::onStop();
 }
 

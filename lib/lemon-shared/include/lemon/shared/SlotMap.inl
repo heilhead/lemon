@@ -1,8 +1,8 @@
 #pragma once
 
 namespace lemon {
-    template<SlotMapDataType TData, uint32_t Capacity>
-    SlotMap<TData, Capacity>::SlotMap() : keys{}, data{}, keyLookup{}, size{0}
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
+    SlotMap<TData, Capacity, THandle>::SlotMap() : keys{}, data{}, keyLookup{}, size{0}
     {
         for (size_t i = 0; i < Capacity - 1; i++) {
             keys[i].setNext(&keys[i + 1]);
@@ -12,16 +12,16 @@ namespace lemon {
         pNextKey = &keys[0];
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
-    SlotMap<TData, Capacity>::~SlotMap()
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
+    SlotMap<TData, Capacity, THandle>::~SlotMap()
     {
         clear();
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     template<typename... TArgs>
-    [[nodiscard]] SlotMapHandle
-    SlotMap<TData, Capacity>::insert(TArgs&&... args)
+    [[nodiscard]] THandle
+    SlotMap<TData, Capacity, THandle>::insert(TArgs&&... args)
     {
         LEMON_ASSERT(size < Capacity);
 
@@ -34,12 +34,12 @@ namespace lemon {
         keyLookup[dataIndex] = keyIndex;
         data[dataIndex].init(std::forward<TArgs>(args)...);
 
-        return SlotMapHandle(keyIndex, key.generation);
+        return THandle(keyIndex, key.generation);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     bool
-    SlotMap<TData, Capacity>::remove(SlotMapHandle handle)
+    SlotMap<TData, Capacity, THandle>::remove(THandle handle)
     {
         if (isValid(handle)) {
             removeImpl(keys[handle.getIndex()].dataIndex);
@@ -50,9 +50,9 @@ namespace lemon {
         return false;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     bool
-    SlotMap<TData, Capacity>::remove(size_t index)
+    SlotMap<TData, Capacity, THandle>::remove(size_t index)
     {
         if (index < size) {
             removeImpl(index);
@@ -63,30 +63,30 @@ namespace lemon {
         return false;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
-    SlotMapHandle
-    SlotMap<TData, Capacity>::getHandle(size_t index) const
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
+    THandle
+    SlotMap<TData, Capacity, THandle>::getHandle(size_t index) const
     {
         LEMON_ASSERT(index < size);
 
         auto keyIndex = keyLookup[index];
         auto& key = keys[keyIndex];
 
-        return SlotMapHandle(keyIndex, key.generation);
+        return THandle(keyIndex, key.generation);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     void
-    SlotMap<TData, Capacity>::clear()
+    SlotMap<TData, Capacity, THandle>::clear()
     {
         while (size > 0) {
             removeImpl(size - 1);
         }
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     bool
-    SlotMap<TData, Capacity>::isValid(SlotMapHandle handle)
+    SlotMap<TData, Capacity, THandle>::isValid(THandle handle)
     {
         auto keyIndex = handle.getIndex();
         if (keyIndex == kInvalidIndex) {
@@ -100,23 +100,23 @@ namespace lemon {
         return key.isUsed() && key.generation == handle.getGeneration();
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     size_t
-    SlotMap<TData, Capacity>::getSize() const
+    SlotMap<TData, Capacity, THandle>::getSize() const
     {
         return size;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     size_t
-    SlotMap<TData, Capacity>::getCapacity() const
+    SlotMap<TData, Capacity, THandle>::getCapacity() const
     {
         return Capacity;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     const TData&
-    SlotMap<TData, Capacity>::operator[](SlotMapHandle handle) const
+    SlotMap<TData, Capacity, THandle>::operator[](THandle handle) const
     {
         LEMON_ASSERT(isValid(handle));
 
@@ -126,9 +126,9 @@ namespace lemon {
         return getData(dataIndex);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     TData&
-    SlotMap<TData, Capacity>::operator[](SlotMapHandle handle)
+    SlotMap<TData, Capacity, THandle>::operator[](THandle handle)
     {
         LEMON_ASSERT(isValid(handle));
 
@@ -138,39 +138,77 @@ namespace lemon {
         return getData(dataIndex);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     const TData&
-    SlotMap<TData, Capacity>::operator[](size_t index) const
+    SlotMap<TData, Capacity, THandle>::operator[](size_t index) const
     {
         return getData(index);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     TData&
-    SlotMap<TData, Capacity>::operator[](size_t index)
+    SlotMap<TData, Capacity, THandle>::operator[](size_t index)
     {
         return getData(index);
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     inline const TData&
-    SlotMap<TData, Capacity>::getData(size_t index) const
+    SlotMap<TData, Capacity, THandle>::getData(size_t index) const
     {
         LEMON_ASSERT(index < size);
         return *data[index];
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     inline TData&
-    SlotMap<TData, Capacity>::getData(size_t index)
+    SlotMap<TData, Capacity, THandle>::getData(size_t index)
     {
         LEMON_ASSERT(index < size);
         return *data[index];
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
+    const TData*
+    SlotMap<TData, Capacity, THandle>::getData(THandle handle) const
+    {
+        auto keyIndex = handle.getIndex();
+        if (keyIndex == kInvalidIndex) {
+            return nullptr;
+        }
+
+        LEMON_ASSERT(keyIndex < Capacity);
+
+        auto& key = keys[keyIndex];
+        if (key.isUsed() && key.generation == handle.getGeneration()) {
+            return &getData(key.dataIndex);
+        } else {
+            return nullptr;
+        }
+    }
+
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
+    TData*
+    SlotMap<TData, Capacity, THandle>::getData(THandle handle)
+    {
+        auto keyIndex = handle.getIndex();
+        if (keyIndex == kInvalidIndex) {
+            return nullptr;
+        }
+
+        LEMON_ASSERT(keyIndex < Capacity);
+
+        auto& key = keys[keyIndex];
+        if (key.isUsed() && key.generation == handle.getGeneration()) {
+            return &getData(key.dataIndex);
+        } else {
+            return nullptr;
+        }
+    }
+
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     void
-    SlotMap<TData, Capacity>::removeImpl(size_t currDataIndex)
+    SlotMap<TData, Capacity, THandle>::removeImpl(size_t currDataIndex)
     {
         auto lastDataIndex = --size;
 
@@ -190,9 +228,9 @@ namespace lemon {
         }
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     size_t
-    SlotMap<TData, Capacity>::popKey()
+    SlotMap<TData, Capacity, THandle>::popKey()
     {
         LEMON_ASSERT(pNextKey != nullptr);
 
@@ -207,9 +245,9 @@ namespace lemon {
         return keyIndex;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     void
-    SlotMap<TData, Capacity>::pushKey(size_t keyIndex)
+    SlotMap<TData, Capacity, THandle>::pushKey(size_t keyIndex)
     {
         auto& key = keys[keyIndex];
 
@@ -222,9 +260,9 @@ namespace lemon {
         pNextKey = &key;
     }
 
-    template<SlotMapDataType TData, uint32_t Capacity>
+    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle>
     inline size_t
-    SlotMap<TData, Capacity>::getKeyIndex(const Key* ptr) const
+    SlotMap<TData, Capacity, THandle>::getKeyIndex(const Key* ptr) const
     {
         LEMON_ASSERT(ptr != nullptr);
         ptrdiff_t idx = ptr - &keys[0];

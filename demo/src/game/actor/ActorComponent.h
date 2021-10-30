@@ -12,39 +12,38 @@ namespace lemon::game {
         friend class Actor;
 
     public:
-        ActorComponent() : GameObject()
-        {
-            LEMON_TRACE_FN();
-
-            tick.setTickType(GameObjectTickType::Component);
-        }
+        ActorComponent();
 
         virtual ~ActorComponent();
 
+        void
+        enableTick(float interval = 0.f) override;
+
+        void
+        disableTick() override;
+
     protected:
         virtual void
-        onRegister()
-        {
-            LEMON_TRACE_FN();
-        }
+        onRegister();
 
         virtual void
-        onInitialize()
-        {
-            LEMON_TRACE_FN();
-        }
+        onInitialize();
 
         virtual void
-        onUninitialize()
-        {
-            LEMON_TRACE_FN();
-        }
+        onUninitialize();
 
         virtual void
-        onUnregister()
-        {
-            LEMON_TRACE_FN();
-        }
+        onUnregister();
+
+    private:
+        void
+        attachTickRecursive(GameObject* pParent);
+
+        void
+        detachTickRecursive(GameObject* pParent);
+
+        ActorComponent*
+        findTickingParent();
     };
 
     class PositionableComponent : public ActorComponent {
@@ -97,7 +96,7 @@ namespace lemon::game {
     };
 
     class RenderableComponent : public PositionableComponent {
-        SlotMapHandle renderQueueHandle;
+        GameObjectRenderProxyHandle renderProxyHandle;
 
     public:
         void

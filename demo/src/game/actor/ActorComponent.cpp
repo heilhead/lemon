@@ -5,9 +5,114 @@
 using namespace lemon;
 using namespace lemon::game;
 
+ActorComponent::ActorComponent() : GameObject()
+{
+    LEMON_TRACE_FN();
+
+    tick.setTickType(GameObjectTickType::Component);
+}
+
 ActorComponent::~ActorComponent()
 {
     LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::enableTick(float interval)
+{
+    if (!bTickEnabled) {
+        GameObject::enableTick(interval);
+
+        auto* pTickingParent = findTickingParent();
+        if (pTickingParent != nullptr) {
+            tick.addDependency(pTickingParent->tick.getHandle());
+        }
+
+        attachTickRecursive(this);
+    }
+}
+
+void
+ActorComponent::disableTick()
+{
+    if (bTickEnabled) {
+        GameObject::disableTick();
+
+        auto* pTickingParent = findTickingParent();
+        if (pTickingParent != nullptr) {
+            tick.removeDependency(pTickingParent->tick.getHandle());
+        }
+    }
+}
+
+void
+ActorComponent::onRegister()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::onInitialize()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::onUninitialize()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::onUnregister()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::attachTickRecursive(GameObject* pParent)
+{
+    pParent->iterateSubObjects([&](GameObject* pObject) {
+        if (auto* pComponent = pObject->cast<ActorComponent>()) {
+            if (pComponent->isTickEnabled()) {
+                pComponent->tick.addDependency(tick.getHandle());
+            } else {
+                attachTickRecursive(pComponent);
+            }
+        }
+    });
+}
+
+void
+ActorComponent::detachTickRecursive(GameObject* pParent)
+{
+    pParent->iterateSubObjects([&](GameObject* pObject) {
+        if (auto* pComponent = pObject->cast<ActorComponent>()) {
+            if (pComponent->isTickEnabled()) {
+                pComponent->tick.removeDependency(tick.getHandle());
+            } else {
+                detachTickRecursive(pComponent);
+            }
+        }
+    });
+}
+
+inline ActorComponent*
+ActorComponent::findTickingParent()
+{
+    auto* pParentObj = getParent();
+    while (pParentObj != nullptr) {
+        if (pParentObj->isTickEnabled()) {
+            auto* pParentComp = cast<ActorComponent>(pParentObj);
+            if (pParentComp != nullptr) {
+                return pParentComp;
+            }
+        }
+
+        pParentObj = pParentObj->getParent();
+    }
+
+    return nullptr;
 }
 
 void
@@ -128,13 +233,13 @@ RenderableComponent::onStart()
 {
     PositionableComponent::onStart();
     LEMON_TRACE_FN();
-    renderQueueHandle = GameWorld::get()->registerRenderableComponent(this);
+    renderProxyHandle = GameWorld::get()->registerRenderableComponentInternal(this);
 }
 
 void
 RenderableComponent::onStop()
 {
     LEMON_TRACE_FN();
-    GameWorld::get()->unregisterRenderableComponent(renderQueueHandle);
+    GameWorld::get()->unregisterRenderableComponentInternal(renderProxyHandle);
     PositionableComponent::onStop();
 }

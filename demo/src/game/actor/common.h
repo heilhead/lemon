@@ -5,7 +5,10 @@ namespace lemon::game {
 
     using TypeInfo = const std::type_info*;
 
-    using GameObjectInternalHandle = SlotMapHandle;
+    LEMON_SLOT_MAP_HANDLE(GameObjectInternalHandle);
+    LEMON_SLOT_MAP_HANDLE(GameObjectWorldHandle);
+    LEMON_SLOT_MAP_HANDLE(GameObjectTickProxyHandle);
+    LEMON_SLOT_MAP_HANDLE(GameObjectRenderProxyHandle);
 
     static constexpr size_t kMaxAliveGameObjects = 16384;
 

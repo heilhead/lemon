@@ -5,11 +5,92 @@
 using namespace lemon;
 using namespace lemon::game;
 
+GameObjectTickDescriptor::Dependencies&
+GameObjectTickDescriptor::getDependencies()
+{
+    return dependencies;
+}
+
+void
+GameObjectTickDescriptor::addDependency(ProxyHandle handle)
+{
+    auto* pWorld = GameWorld::get();
+    auto* pNewObject = pWorld->resolveTickableObject(handle, tickType);
+
+    LEMON_ASSERT(pNewObject != nullptr);
+
+    auto predicate = [&](auto hExisting) {
+        auto* pExistingObject = pWorld->resolveTickableObject(hExisting, tickType);
+
+        LEMON_ASSERT(pExistingObject != nullptr);
+
+        return pExistingObject->isParentOf(pNewObject);
+    };
+
+    // Make sure to remove existing dependencies which are parents of the new dependency.
+    dependencies.erase(std::remove_if(dependencies.begin(), dependencies.end(), predicate),
+                       dependencies.end());
+
+    dependencies.push_back(handle);
+}
+
+void
+GameObjectTickDescriptor::removeDependency(ProxyHandle handle)
+{
+    dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), handle), dependencies.end());
+}
+
+GameObjectTickType
+GameObjectTickDescriptor::getTickType() const
+{
+    return tickType;
+}
+
+void
+GameObjectTickDescriptor::setTickType(GameObjectTickType inTickType)
+{
+    tickType = inTickType;
+}
+
+void
+GameObjectTickDescriptor::setHandle(ProxyHandle handle)
+{
+    tickProxyHandle = handle;
+}
+
+GameObjectTickDescriptor::ProxyHandle
+GameObjectTickDescriptor::getHandle() const
+{
+    return tickProxyHandle;
+}
+
+float
+GameObjectTickDescriptor::getInterval() const
+{
+    return interval;
+}
+
+void
+GameObjectTickDescriptor::setInterval(float value)
+{
+    interval = value;
+}
+
+GameObjectTickProxy::GameObjectTickProxy(GameObject* pObject, float interval)
+    : pObject{pObject}, interval{interval}, lastTickTime{0.f}
+{
+}
+
+GameObject::GameObject()
+{
+    LEMON_TRACE_FN();
+}
+
 GameObject::~GameObject()
 {
     LEMON_TRACE_FN();
 
-    auto* pStore = GameObjectStore::get();
+    auto* pStore = GameWorld::getStoreInternal();
     for (auto* pObject : getSubObjectList()) {
         pStore->destroy(pObject);
     }
@@ -40,20 +121,12 @@ GameObject::getInternalHandle() const
 }
 
 void
-GameObject::enableTick()
+GameObject::enableTick(float interval)
 {
     if (!bTickEnabled) {
-        switch (tick.getTickType()) {
-        case GameObjectTickType::Actor:
-            tick.setHandle(GameWorld::get()->registerTickingActor(cast<Actor>()));
-            break;
-        case GameObjectTickType::Component:
-            tick.setHandle(GameWorld::get()->registerTickingComponent(cast<ActorComponent>()));
-            break;
-        default:
-            LEMON_UNREACHABLE();
-        }
-
+        tick.setInterval(interval);
+        tick.setHandle(
+            GameWorld::get()->registerTickingObjectInternal(createTickProxy(), tick.getTickType()));
         bTickEnabled = true;
     }
 }
@@ -62,19 +135,34 @@ void
 GameObject::disableTick()
 {
     if (bTickEnabled) {
-        switch (tick.getTickType()) {
-        case GameObjectTickType::Actor:
-            GameWorld::get()->unregisterTickingActor(tick.getHandle());
-            break;
-        case GameObjectTickType::Component:
-            GameWorld::get()->unregisterTickingComponent(tick.getHandle());
-            break;
-        default:
-            LEMON_UNREACHABLE();
-        }
-
+        GameWorld::get()->unregisterTickingObjectInternal(tick.getHandle(), tick.getTickType());
         bTickEnabled = false;
     }
+}
+
+bool
+GameObject::isTickEnabled() const
+{
+    return bTickEnabled;
+}
+
+bool
+GameObject::isParentOf(const GameObject* pObject) const
+{
+    if (pObject == this) {
+        return false;
+    }
+
+    auto* pParentObj = pObject->getParent();
+    while (pParentObj != nullptr) {
+        if (pParentObj == this) {
+            return true;
+        }
+
+        pParentObj = pParentObj->getParent();
+    }
+
+    return false;
 }
 
 void
@@ -102,9 +190,37 @@ GameObject::iterateSubObjects(const std::function<void(const GameObject*)>& fn, 
 }
 
 void
+GameObject::onStart()
+{
+    LEMON_TRACE_FN();
+}
+
+void
+GameObject::onTick(float deltaTime)
+{
+    LEMON_TRACE_FN();
+}
+
+void
+GameObject::onStop()
+{
+    LEMON_TRACE_FN();
+
+    if (bTickEnabled) {
+        disableTick();
+    }
+}
+
+void
 GameObject::setParent(GameObject* inParent)
 {
     pParent = inParent;
+}
+
+GameObjectTickProxy
+GameObject::createTickProxy()
+{
+    return GameObjectTickProxy(this, tick.getInterval());
 }
 
 const GameObject::SubObjectList&

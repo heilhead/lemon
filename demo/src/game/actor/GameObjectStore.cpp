@@ -3,6 +3,12 @@
 using namespace lemon;
 using namespace lemon::game;
 
+void
+GameObjectStore::destroy(GameObject* pObject)
+{
+    gameObjects.remove(pObject->getObjectDescriptor().storeHandle);
+}
+
 GameObject*
 GameObjectStore::upgradeHandle(GameObjectInternalHandle handle)
 {

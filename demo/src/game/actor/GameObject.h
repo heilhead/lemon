@@ -19,62 +19,57 @@ namespace lemon::game {
     public:
         static constexpr size_t kMaxInlineTickDependencies = 4;
 
-        using Dependencies = folly::small_vector<GameObjectInternalHandle, kMaxInlineTickDependencies>;
+        using ProxyHandle = GameObjectTickProxyHandle;
+        using Dependencies = folly::small_vector<ProxyHandle, kMaxInlineTickDependencies>;
 
     private:
         Dependencies dependencies{};
         GameObjectTickType tickType{};
-        SlotMapHandle tickQueueHandle{};
+        ProxyHandle tickProxyHandle{};
+        float interval{0.f};
 
     public:
         Dependencies&
-        getDependencies()
-        {
-            return dependencies;
-        }
+        getDependencies();
 
         void
-        addDependency(GameObjectInternalHandle handle)
-        {
-            dependencies.push_back(handle);
-        }
+        addDependency(ProxyHandle handle);
 
         void
-        removeDependency(GameObjectInternalHandle handle)
-        {
-            dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), handle),
-                               dependencies.end());
-        }
+        removeDependency(ProxyHandle handle);
 
         GameObjectTickType
-        getTickType()
-        {
-            return tickType;
-        }
+        getTickType() const;
 
         void
-        setTickType(GameObjectTickType inTickType)
-        {
-            tickType = inTickType;
-        }
+        setTickType(GameObjectTickType inTickType);
 
         void
-        setHandle(SlotMapHandle handle)
-        {
-            tickQueueHandle = handle;
-        }
+        setHandle(ProxyHandle handle);
 
-        SlotMapHandle
-        getHandle()
-        {
-            return tickQueueHandle;
-        }
+        ProxyHandle
+        getHandle() const;
+
+        float
+        getInterval() const;
+
+        void
+        setInterval(float interval);
+    };
+
+    struct GameObjectTickProxy {
+        GameObject* pObject;
+        float interval;
+        float lastTickTime;
+
+        GameObjectTickProxy(GameObject* pObject, float interval);
     };
 
     class GameObject : NonCopyable {
         static constexpr size_t kMaxInlineGameObjects = 8;
 
         friend class GameObjectStore;
+        friend class GameWorld;
 
     public:
         using SubObjectList = folly::small_vector<GameObject*, kMaxInlineGameObjects>;
@@ -89,10 +84,7 @@ namespace lemon::game {
         bool bTickEnabled = false;
 
     public:
-        GameObject()
-        {
-            LEMON_TRACE_FN();
-        }
+        GameObject();
 
         virtual ~GameObject();
 
@@ -141,36 +133,33 @@ namespace lemon::game {
         iterateSubObjects(const std::function<void(GameObject*)>& fn, bool bRecursive = false);
 
         virtual void
-        onStart()
-        {
-            LEMON_TRACE_FN();
-        }
+        onStart();
 
         virtual void
-        onTick(float deltaTime)
-        {
-            LEMON_TRACE_FN();
-        }
+        onTick(float deltaTime);
 
         virtual void
-        onStop()
-        {
-            LEMON_TRACE_FN();
+        onStop();
 
-            if (bTickEnabled) {
-                disableTick();
-            }
-        }
+        virtual void
+        enableTick(float interval = 0.f);
 
-        void
-        enableTick();
-
-        void
+        virtual void
         disableTick();
+
+        bool
+        isTickEnabled() const;
+
+        bool
+        isParentOf(const GameObject* pObject) const;
 
     protected:
         void
         setParent(GameObject* pParent);
+
+    private:
+        GameObjectTickProxy
+        createTickProxy();
     };
 
     template<GameObjectBase TConcreteGameObject>
