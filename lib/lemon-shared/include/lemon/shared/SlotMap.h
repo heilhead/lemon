@@ -5,24 +5,30 @@
 #include <lemon/shared/Memory.h>
 
 namespace lemon {
+    template<typename Tag>
     struct SlotMapHandle;
 
     namespace slotmap_detail {
         struct SlotMapKey;
-    }
+        struct SlotMapDefaultHandleTag {
+        };
+    } // namespace slotmap_detail
 
     template<typename T>
     concept SlotMapDataType = std::move_constructible<T>;
 
-    template<typename T>
-    concept SlotMapHandleType = Base<T, SlotMapHandle> || std::is_same_v<T, SlotMapHandle>;
+    template<typename T, typename Tag>
+    concept SlotMapHandleType = Base<T, SlotMapHandle<Tag>>;
 
+    template<typename TTag = slotmap_detail::SlotMapDefaultHandleTag>
     struct SlotMapHandle {
     private:
         int32_t index{kInvalidIndex};
         uint32_t generation{0};
 
     public:
+        using Tag = TTag;
+
         SlotMapHandle() = default;
 
         SlotMapHandle(int32_t index, uint32_t generation);
@@ -37,7 +43,9 @@ namespace lemon {
         operator==(const SlotMapHandle& other) const;
     };
 
-    template<SlotMapDataType TData, uint32_t Capacity, SlotMapHandleType THandle = SlotMapHandle>
+    using SlotMapDefaultHandle = SlotMapHandle<slotmap_detail::SlotMapDefaultHandleTag>;
+
+    template<SlotMapDataType TData, uint32_t Capacity, typename THandle = SlotMapDefaultHandle>
     class SlotMap {
         using Key = slotmap_detail::SlotMapKey;
 
@@ -48,27 +56,30 @@ namespace lemon {
         uint32_t keyLookup[Capacity];
 
     public:
+        using HandleTag = THandle::Tag;
+        using Handle = THandle;
+
         SlotMap();
         ~SlotMap();
 
         template<typename... TArgs>
-        [[nodiscard]] THandle
+        [[nodiscard]] Handle
         insert(TArgs&&... args);
 
         bool
-        remove(THandle handle);
+        remove(Handle handle);
 
         bool
         remove(size_t index);
 
-        THandle
+        Handle
         getHandle(size_t index) const;
 
         void
         clear();
 
         bool
-        isValid(THandle handle);
+        isValid(Handle handle);
 
         size_t
         getSize() const;
@@ -77,10 +88,10 @@ namespace lemon {
         getCapacity() const;
 
         const TData&
-        operator[](THandle handle) const;
+        operator[](Handle handle) const;
 
         TData&
-        operator[](THandle handle);
+        operator[](Handle handle);
 
         const TData&
         operator[](size_t index) const;
@@ -95,10 +106,10 @@ namespace lemon {
         getData(size_t index);
 
         const TData*
-        getData(THandle handle) const;
+        getData(Handle handle) const;
 
         TData*
-        getData(THandle handle);
+        getData(Handle handle);
 
     private:
         void
@@ -141,9 +152,8 @@ namespace lemon {
 } // namespace lemon
 
 #define LEMON_SLOT_MAP_HANDLE(Name)                                                                          \
-    struct Name : ::lemon::SlotMapHandle {                                                                   \
-        Name() = default;                                                                                    \
-        Name(int32_t index, uint32_t generation) : SlotMapHandle(index, generation) {}                       \
-    }
+    struct Name##Tag {                                                                                       \
+    };                                                                                                       \
+    using Name = ::lemon::SlotMapHandle<Name##Tag>
 
 #include <lemon/shared/SlotMap.inl>
