@@ -4,6 +4,8 @@
 
 namespace lemon::game {
     class GameObject;
+    class TickGroup;
+    struct GameObjectTickProxy;
 
     template<class T>
     concept GameObjectBase = Base<T, GameObject> && std::is_default_constructible_v<T>;
@@ -13,26 +15,26 @@ namespace lemon::game {
         GameObjectStoreHandle storeHandle;
     };
 
-    enum class GameObjectTickType { Actor, Component };
-
     struct GameObjectTickDescriptor {
     public:
         static constexpr size_t kMaxInlineTickDependencies = 4;
 
-        using ProxyHandle = GameObjectTickProxyHandle;
+        // TODO: Remove alias.
+        using ProxyHandle = TickGroupHandle;
 
         // TODO: Store a wrapper instead of raw handle which will include a 'user added' flag to make handles
         // permanent for user added dependencies.
         using Dependencies = folly::small_vector<ProxyHandle, kMaxInlineTickDependencies>;
 
     private:
+        TickGroup* group;
         Dependencies dependencies;
-        GameObjectTickType tickType;
         ProxyHandle tickProxyHandle;
         float interval;
+        bool bEnabled;
 
     public:
-        GameObjectTickDescriptor() : dependencies{}, tickType{}, tickProxyHandle{}, interval{0.f} {}
+        GameObjectTickDescriptor() : dependencies{}, tickProxyHandle{}, interval{0.f}, bEnabled{false} {}
 
         Dependencies&
         getDependencies();
@@ -46,15 +48,6 @@ namespace lemon::game {
         void
         removeDependency(ProxyHandle handle);
 
-        GameObjectTickType
-        getTickType() const;
-
-        void
-        setTickType(GameObjectTickType inTickType);
-
-        void
-        setHandle(ProxyHandle handle);
-
         ProxyHandle
         getHandle() const;
 
@@ -63,6 +56,37 @@ namespace lemon::game {
 
         void
         setInterval(float interval);
+
+        TickGroup*
+        getGroup();
+
+        const TickGroup*
+        getGroup() const;
+
+        void
+        setGroup(TickGroup* group);
+
+        GameObjectTickProxy*
+        getProxy();
+
+        const GameObjectTickProxy*
+        getProxy() const;
+
+        void
+        enable(GameObject* pObject, float interval);
+
+        void
+        disable();
+
+        bool
+        isEnabled() const;
+
+    private:
+        void
+        setHandle(ProxyHandle handle);
+
+        void
+        updateProxy();
     };
 
     struct GameObjectTickProxy {
@@ -71,7 +95,7 @@ namespace lemon::game {
         float interval;
         uint32_t dependencyCount;
 
-        GameObjectTickProxy(GameObject* pObject, float interval);
+        GameObjectTickProxy(GameObject* pObject, float interval, uint32_t dependencyCount);
     };
 
     class GameObject : NonCopyable {
@@ -91,7 +115,6 @@ namespace lemon::game {
 
     protected:
         GameObjectTickDescriptor tick{};
-        bool bTickEnabled = false;
 
     public:
         GameObject();
@@ -164,10 +187,10 @@ namespace lemon::game {
         getTickDescriptor() const;
 
         void
-        addTickDependencyInternal(GameObjectTickProxyHandle handle);
+        addTickDependencyInternal(TickGroupHandle handle);
 
         void
-        removeTickDependencyInternal(GameObjectTickProxyHandle handle);
+        removeTickDependencyInternal(TickGroupHandle handle);
 
         bool
         isParentOf(const GameObject* pObject) const;
@@ -187,13 +210,6 @@ namespace lemon::game {
     protected:
         void
         setParent(GameObject* pParent);
-
-    private:
-        GameObjectTickProxy
-        createTickProxy();
-
-        void
-        updateTickProxy();
     };
 
     template<GameObjectBase TConcreteGameObject>

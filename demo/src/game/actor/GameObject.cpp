@@ -21,12 +21,12 @@ void
 GameObjectTickDescriptor::addDependency(ProxyHandle handle)
 {
     auto* pWorld = GameWorld::get();
-    auto* pNewObject = pWorld->resolveTickableObject(handle, tickType);
+    auto* pNewObject = group->getProxy(handle)->pObject;
 
     LEMON_ASSERT(pNewObject != nullptr);
 
     auto predicate = [&](auto hExisting) {
-        auto* pExistingObject = pWorld->resolveTickableObject(hExisting, tickType);
+        auto* pExistingObject = group->getProxy(hExisting)->pObject;
 
         LEMON_ASSERT(pExistingObject != nullptr);
 
@@ -38,24 +38,16 @@ GameObjectTickDescriptor::addDependency(ProxyHandle handle)
                        dependencies.end());
 
     dependencies.push_back(handle);
+
+    updateProxy();
 }
 
 void
 GameObjectTickDescriptor::removeDependency(ProxyHandle handle)
 {
     dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), handle), dependencies.end());
-}
 
-GameObjectTickType
-GameObjectTickDescriptor::getTickType() const
-{
-    return tickType;
-}
-
-void
-GameObjectTickDescriptor::setTickType(GameObjectTickType inTickType)
-{
-    tickType = inTickType;
+    updateProxy();
 }
 
 void
@@ -73,17 +65,85 @@ GameObjectTickDescriptor::getHandle() const
 float
 GameObjectTickDescriptor::getInterval() const
 {
-    return interval;
+    if (isEnabled()) {
+        return getProxy()->interval;
+    }
+
+    return 0.f;
 }
 
 void
 GameObjectTickDescriptor::setInterval(float value)
 {
-    interval = value;
+    if (isEnabled()) {
+        getProxy()->interval = value;
+    }
 }
 
-GameObjectTickProxy::GameObjectTickProxy(GameObject* pObject, float interval)
-    : pObject{pObject}, interval{interval}, lastTickTime{0.f}
+TickGroup*
+GameObjectTickDescriptor::getGroup()
+{
+    return group;
+}
+
+const TickGroup*
+GameObjectTickDescriptor::getGroup() const
+{
+    return group;
+}
+
+void
+GameObjectTickDescriptor::setGroup(TickGroup* inGroup)
+{
+    group = inGroup;
+}
+
+GameObjectTickProxy*
+GameObjectTickDescriptor::getProxy()
+{
+    return group->getProxy(getHandle());
+}
+
+const GameObjectTickProxy*
+GameObjectTickDescriptor::getProxy() const
+{
+    return group->getProxy(getHandle());
+}
+
+void
+GameObjectTickDescriptor::enable(GameObject* pObject, float interval)
+{
+    if (!bEnabled) {
+        bEnabled = true;
+        setHandle(group->add(GameObjectTickProxy(pObject, interval, dependencies.size())));
+    }
+}
+
+void
+GameObjectTickDescriptor::disable()
+{
+    if (bEnabled) {
+        bEnabled = false;
+        group->remove(getHandle());
+    }
+}
+
+bool
+GameObjectTickDescriptor::isEnabled() const
+{
+    return bEnabled;
+}
+
+inline void
+GameObjectTickDescriptor::updateProxy()
+{
+    auto* pProxy = getProxy();
+    LEMON_ASSERT(pProxy != nullptr);
+    pProxy->dependencyCount = dependencies.size();
+}
+
+GameObjectTickProxy::GameObjectTickProxy(GameObject* pObject, float interval, uint32_t dependencyCount)
+    : pObject{pObject}, interval{interval}, lastTickTime{0.f}, dependencyCount{dependencyCount}
 {
 }
 
@@ -129,27 +189,19 @@ GameObject::getInternalHandle() const
 void
 GameObject::enableTick(float interval)
 {
-    if (!bTickEnabled) {
-        tick.setInterval(interval);
-        tick.setHandle(
-            GameWorld::get()->registerTickingObjectInternal(createTickProxy(), tick.getTickType()));
-        bTickEnabled = true;
-    }
+    tick.enable(this, interval);
 }
 
 void
 GameObject::disableTick()
 {
-    if (bTickEnabled) {
-        GameWorld::get()->unregisterTickingObjectInternal(tick.getHandle(), tick.getTickType());
-        bTickEnabled = false;
-    }
+    tick.disable();
 }
 
 bool
 GameObject::isTickEnabled() const
 {
-    return bTickEnabled;
+    return tick.isEnabled();
 }
 
 const GameObjectTickDescriptor&
@@ -159,17 +211,15 @@ GameObject::getTickDescriptor() const
 }
 
 void
-GameObject::addTickDependencyInternal(GameObjectTickProxyHandle handle)
+GameObject::addTickDependencyInternal(TickGroupHandle handle)
 {
     tick.addDependency(handle);
-    updateTickProxy();
 }
 
 void
-GameObject::removeTickDependencyInternal(GameObjectTickProxyHandle handle)
+GameObject::removeTickDependencyInternal(TickGroupHandle handle)
 {
     tick.removeDependency(handle);
-    updateTickProxy();
 }
 
 bool
@@ -232,29 +282,13 @@ GameObject::onStop()
 {
     LEMON_TRACE_FN();
 
-    if (bTickEnabled) {
-        disableTick();
-    }
+    tick.disable();
 }
 
 void
 GameObject::setParent(GameObject* inParent)
 {
     pParent = inParent;
-}
-
-GameObjectTickProxy
-GameObject::createTickProxy()
-{
-    return GameObjectTickProxy(this, tick.getInterval());
-}
-
-inline void
-GameObject::updateTickProxy()
-{
-    auto* pProxy = GameWorld::get()->getTickProxy(tick.getHandle(), tick.getTickType());
-    LEMON_ASSERT(pProxy != nullptr);
-    pProxy->dependencyCount = tick.getDependencies().size();
 }
 
 const GameObject::SubObjectList&

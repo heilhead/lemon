@@ -48,7 +48,7 @@ public:
     void
     onTick(float deltaTime) override
     {
-        LEMON_TRACE_FN();
+        LEMON_TRACE_FN(" ", getParent()->getName());
     }
 
     void
@@ -83,9 +83,9 @@ public:
 
         rootComponent = addComponent<MeshRenderComponent>();
 
-        // auto* pMovementComponent = addComponent<MovementComponent>();
+        auto* pMovementComponent = addComponent<MovementComponent>();
 
-        // LEMON_ASSERT(pMovementComponent != nullptr);
+        LEMON_ASSERT(pMovementComponent != nullptr);
     }
 
     ~CharacterActor()
@@ -118,7 +118,7 @@ public:
     void
     onTick(float deltaTime) override
     {
-        LEMON_TRACE_FN();
+        LEMON_TRACE_FN(" ", getName());
     }
 
     void
@@ -141,28 +141,34 @@ main(int argc, char* argv[])
     auto store = std::make_unique<GameObjectStore>();
     auto world = std::make_unique<GameWorld>();
 
-    double time = 0.5f;
+    double time = 0.0f;
 
     auto hActor1 = world->createActor<CharacterActor>();
     hActor1.get()->setName("actor1");
     auto hActor2 = world->createActor<CharacterActor>();
     hActor2.get()->setName("actor2");
 
-    world->updateInternal(time += 0.5f);
-    world->updateInternal(time += 0.5f);
+    // world->updateInternal(time += 0.5f);
+    // world->updateInternal(time += 0.5f);
 
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
-    // logger::trace("time: ", time);
-    // world->updateInternal(time += 0.5f);
+    auto* tickGroup = world->getComponentTickGroup();
+    const auto* p1 = tickGroup->getProxy(
+        hActor1.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
+    const auto* p2 = tickGroup->getProxy(
+        hActor2.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
+
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
+    logger::trace("time: ", time);
+    world->updateInternal(time += 0.5f);
 
     // LEMON_ASSERT(hActor);
 

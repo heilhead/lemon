@@ -8,7 +8,7 @@ Actor::Actor() : GameObject()
 {
     LEMON_TRACE_FN();
 
-    tick.setTickType(GameObjectTickType::Actor);
+    tick.setGroup(GameWorld::get()->getActorTickGroup());
 }
 
 Actor::~Actor()

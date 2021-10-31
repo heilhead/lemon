@@ -3,6 +3,7 @@
 #include "GameObject.h"
 
 namespace lemon::game {
+    class Actor;
     class ActorComponent;
     class RenderableComponent;
 
@@ -11,6 +12,8 @@ namespace lemon::game {
 
     class ActorComponent : public GameObject {
         friend class Actor;
+
+        Actor* pOwner;
 
     public:
         ActorComponent();
@@ -22,6 +25,12 @@ namespace lemon::game {
 
         void
         disableTick() override;
+
+        Actor*
+        getOwner();
+
+        const Actor*
+        getOwner() const;
 
     protected:
         virtual void
@@ -37,6 +46,9 @@ namespace lemon::game {
         onUnregister();
 
     private:
+        void
+        setOwner(Actor* pOwner);
+
         void
         attachTickRecursive(GameObject* pParent);
 

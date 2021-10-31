@@ -4,8 +4,8 @@ using namespace lemon;
 using namespace lemon::game;
 
 GameWorld::GameWorld()
-    : store{}, actors{kMaxAliveGameObjects}, tickingActors{512}, tickingComponents{512},
-      renderableComponents{512}, lastUpdateTime{0.f}
+    : store{}, actors{kMaxAliveGameObjects}, tickingActors{}, tickingComponents{}, renderableComponents{512},
+      lastUpdateTime{0.f}
 {
 }
 
@@ -19,52 +19,6 @@ GameWorld::removeActor(Actor* pActor)
     }
 
     pActor->stopInternal();
-}
-
-GameObject*
-GameWorld::resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType)
-{
-    switch (tickType) {
-    case GameObjectTickType::Actor: {
-        auto* pData = tickingActors.getData(handle);
-        if (pData != nullptr) {
-            return pData->pObject;
-        }
-
-        return nullptr;
-    }
-
-    case GameObjectTickType::Component: {
-        auto* pData = tickingComponents.getData(handle);
-        if (pData != nullptr) {
-            return pData->pObject;
-        }
-
-        return nullptr;
-    }
-
-    default:
-        LEMON_UNREACHABLE();
-    }
-
-    return nullptr;
-}
-
-GameObjectTickProxy*
-GameWorld::getTickProxy(GameObjectTickProxyHandle handle, GameObjectTickType tickType)
-{
-    switch (tickType) {
-    case GameObjectTickType::Actor:
-        return tickingActors.getData(handle);
-
-    case GameObjectTickType::Component:
-        return tickingComponents.getData(handle);
-
-    default:
-        LEMON_UNREACHABLE();
-    }
-
-    return nullptr;
 }
 
 GameObjectRenderProxy*
@@ -82,17 +36,9 @@ GameWorld::getStoreInternal()
 void
 GameWorld::updateInternal(double time)
 {
-    auto dt = static_cast<float>(time - lastUpdateTime);
-
-    for (size_t i = 0, length = tickingActors.getSize(); i < length; i++) {
-        tick(tickingActors[i], time, dt);
-    }
-
-    for (size_t i = 0, length = tickingComponents.getSize(); i < length; i++) {
-        tick(tickingComponents[i], time, dt);
-    }
-
     lastUpdateTime = time;
+    tickingActors.tick(time);
+    tickingComponents.tick(time);
 }
 
 GameObjectWorldHandle
@@ -108,36 +54,6 @@ GameWorld::unregisterActorInternal(GameObjectWorldHandle handle)
     actors.remove(handle);
 }
 
-GameObjectTickProxyHandle
-GameWorld::registerTickingObjectInternal(const GameObjectTickProxy& tick, GameObjectTickType tickType)
-{
-    switch (tickType) {
-    case GameObjectTickType::Actor:
-        return tickingActors.insert(tick);
-    case GameObjectTickType::Component:
-        return tickingComponents.insert(tick);
-    default:
-        LEMON_UNREACHABLE();
-    }
-
-    return GameObjectTickProxyHandle();
-}
-
-void
-GameWorld::unregisterTickingObjectInternal(GameObjectTickProxyHandle handle, GameObjectTickType tickType)
-{
-    switch (tickType) {
-    case GameObjectTickType::Actor:
-        tickingActors.remove(handle);
-        break;
-    case GameObjectTickType::Component:
-        tickingComponents.remove(handle);
-        break;
-    default:
-        LEMON_UNREACHABLE();
-    }
-}
-
 GameObjectRenderProxyHandle
 GameWorld::registerRenderableComponentInternal(const GameObjectRenderProxy& proxy)
 {
@@ -151,27 +67,14 @@ GameWorld::unregisterRenderableComponentInternal(GameObjectRenderProxyHandle han
     renderableComponents.remove(handle);
 }
 
-inline void
-GameWorld::tick(GameObjectTickProxy& proxy, double time, float dt)
+TickGroup*
+GameWorld::getActorTickGroup()
 {
-    bool bShouldTick = (time != proxy.lastTickTime) && (time - proxy.lastTickTime >= proxy.interval);
+    return &tickingActors;
+}
 
-    if (bShouldTick) {
-        auto* pObject = proxy.pObject;
-
-        if (proxy.dependencyCount > 0) {
-            auto& tickDesc = pObject->getTickDescriptor();
-
-            for (auto hDep : tickDesc.getDependencies()) {
-                auto* depProxy = getTickProxy(hDep, tickDesc.getTickType());
-
-                LEMON_ASSERT(depProxy != nullptr);
-
-                tick(*depProxy, time, dt);
-            }
-        }
-
-        proxy.pObject->onTick(dt);
-        proxy.lastTickTime = time;
-    }
+TickGroup*
+GameWorld::getComponentTickGroup()
+{
+    return &tickingComponents;
 }

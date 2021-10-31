@@ -66,11 +66,13 @@ namespace lemon::game {
 
     template<ActorComponentBase TComponent>
     TComponent*
-    Actor::addComponent(PositionableComponent* parentComponent)
+    Actor::addComponent(PositionableComponent* pParentComponent)
     {
-        auto* pComponent = createSubObject<TComponent>();
-        pComponent->setParent(parentComponent);
+        auto* pComponent = pParentComponent == nullptr ? createSubObject<TComponent>()
+                                                       : pParentComponent->createSubObject<TComponent>();
+        pComponent->setOwner(this);
         pComponent->onRegister();
+
         return pComponent;
     }
 

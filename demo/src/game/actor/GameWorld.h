@@ -9,10 +9,9 @@ namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {
         GameObjectStore store;
 
-        // TODO: SlotMap should probably by dynamically-sized?
         SlotMap<Actor*, GameObjectWorldHandle> actors;
-        SlotMap<GameObjectTickProxy, GameObjectTickProxyHandle> tickingActors;
-        SlotMap<GameObjectTickProxy, GameObjectTickProxyHandle> tickingComponents;
+        TickGroup tickingActors;
+        TickGroup tickingComponents;
         SlotMap<GameObjectRenderProxy, GameObjectRenderProxyHandle> renderableComponents;
 
         double lastUpdateTime;
@@ -37,12 +36,6 @@ namespace lemon::game {
         void
         removeActor(Actor* pActor);
 
-        GameObject*
-        resolveTickableObject(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
-
-        GameObjectTickProxy*
-        getTickProxy(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
-
         GameObjectRenderProxy*
         getRenderProxy(GameObjectRenderProxyHandle handle);
 
@@ -58,17 +51,17 @@ namespace lemon::game {
         void
         unregisterActorInternal(GameObjectWorldHandle handle);
 
-        GameObjectTickProxyHandle
-        registerTickingObjectInternal(const GameObjectTickProxy& proxy, GameObjectTickType tickType);
-
-        void
-        unregisterTickingObjectInternal(GameObjectTickProxyHandle handle, GameObjectTickType tickType);
-
         GameObjectRenderProxyHandle
         registerRenderableComponentInternal(const GameObjectRenderProxy& proxy);
 
         void
         unregisterRenderableComponentInternal(GameObjectRenderProxyHandle handle);
+
+        TickGroup*
+        getActorTickGroup();
+
+        TickGroup*
+        getComponentTickGroup();
 
     private:
         void

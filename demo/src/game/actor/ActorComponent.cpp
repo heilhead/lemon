@@ -9,7 +9,7 @@ ActorComponent::ActorComponent() : GameObject()
 {
     LEMON_TRACE_FN();
 
-    tick.setTickType(GameObjectTickType::Component);
+    tick.setGroup(GameWorld::get()->getComponentTickGroup());
 }
 
 ActorComponent::~ActorComponent()
@@ -20,7 +20,7 @@ ActorComponent::~ActorComponent()
 void
 ActorComponent::enableTick(float interval)
 {
-    if (!bTickEnabled) {
+    if (!tick.isEnabled()) {
         GameObject::enableTick(interval);
 
         auto* pTickingParent = findTickingParent();
@@ -35,7 +35,7 @@ ActorComponent::enableTick(float interval)
 void
 ActorComponent::disableTick()
 {
-    if (bTickEnabled) {
+    if (tick.isEnabled()) {
         GameObject::disableTick();
 
         auto* pTickingParent = findTickingParent();
@@ -45,6 +45,18 @@ ActorComponent::disableTick()
 
         detachTickRecursive(this);
     }
+}
+
+Actor*
+ActorComponent::getOwner()
+{
+    return pOwner;
+}
+
+const Actor*
+ActorComponent::getOwner() const
+{
+    return pOwner;
 }
 
 void
@@ -69,6 +81,12 @@ void
 ActorComponent::onUnregister()
 {
     LEMON_TRACE_FN();
+}
+
+void
+ActorComponent::setOwner(Actor* pInOwner)
+{
+    pOwner = pInOwner;
 }
 
 void
