@@ -120,7 +120,7 @@ GameObject::getParent()
     return pParent;
 };
 
-GameObjectInternalHandle
+GameObjectStoreHandle
 GameObject::getInternalHandle() const
 {
     return objectDescriptor.storeHandle;

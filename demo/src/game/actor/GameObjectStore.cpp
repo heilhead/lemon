@@ -3,6 +3,8 @@
 using namespace lemon;
 using namespace lemon::game;
 
+GameObjectStore::GameObjectStore() : gameObjects{kMaxAliveGameObjects} {}
+
 void
 GameObjectStore::destroy(GameObject* pObject)
 {
@@ -10,7 +12,7 @@ GameObjectStore::destroy(GameObject* pObject)
 }
 
 GameObject*
-GameObjectStore::upgradeHandle(GameObjectInternalHandle handle)
+GameObjectStore::upgradeHandle(GameObjectStoreHandle handle)
 {
     if (gameObjects.isValid(handle)) {
         return gameObjects[handle].gameObject.get();
@@ -20,12 +22,12 @@ GameObjectStore::upgradeHandle(GameObjectInternalHandle handle)
 }
 
 bool
-GameObjectStore::validateHandle(GameObjectInternalHandle handle)
+GameObjectStore::validateHandle(GameObjectStoreHandle handle)
 {
     return gameObjects.isValid(handle);
 }
 
-GameObjectInternalHandle
+GameObjectStoreHandle
 GameObjectStore::registerObject(GameObject* pObject, TypeInfo typeInfo)
 {
     auto handle = gameObjects.insert(pObject);

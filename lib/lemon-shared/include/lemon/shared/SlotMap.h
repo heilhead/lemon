@@ -45,21 +45,21 @@ namespace lemon {
 
     using SlotMapDefaultHandle = SlotMapHandle<slotmap_detail::SlotMapDefaultHandleTag>;
 
-    template<SlotMapDataType TData, uint32_t Capacity, typename THandle = SlotMapDefaultHandle>
+    template<SlotMapDataType TData, typename THandle = SlotMapDefaultHandle>
     class SlotMap {
         using Key = slotmap_detail::SlotMapKey;
 
-        MaybeUninit<TData> data[Capacity];
-        Key keys[Capacity];
+        std::vector<MaybeUninit<TData>> data;
+        std::vector<Key> keys;
+        std::vector<uint32_t> keyLookup;
         size_t size;
         Key* pNextKey;
-        uint32_t keyLookup[Capacity];
 
     public:
         using HandleTag = THandle::Tag;
         using Handle = THandle;
 
-        SlotMap();
+        SlotMap(size_t initialCapacity = 0);
         ~SlotMap();
 
         template<typename... TArgs>
@@ -112,6 +112,9 @@ namespace lemon {
         getData(Handle handle);
 
     private:
+        void
+        reserve(size_t newCapacity);
+
         void
         removeImpl(size_t currDataIndex);
 

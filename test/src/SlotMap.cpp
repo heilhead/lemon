@@ -9,7 +9,7 @@ TEST_COUNTER(Counter);
 TEST_CASE("SlotMap")
 {
     {
-        SlotMap<Counter, 10> slotMap;
+        SlotMap<Counter> slotMap;
 
         {
             auto handle = slotMap.insert(1);
@@ -23,6 +23,7 @@ TEST_CASE("SlotMap")
         }
 
         REQUIRE(slotMap.getSize() == 0);
+        REQUIRE(slotMap.getCapacity() == 1);
 
         {
             auto h1 = slotMap.insert(1);
@@ -46,11 +47,16 @@ TEST_CASE("SlotMap")
             slotMap.clear();
         }
 
+        REQUIRE(slotMap.getCapacity() == 4);
+
         auto h1 = slotMap.insert(1);
         auto h2 = slotMap.insert(2);
         auto h3 = slotMap.insert(3);
+        auto h4 = slotMap.insert(4);
+        auto h5 = slotMap.insert(5);
 
-        REQUIRE(slotMap.getSize() == 3);
+        REQUIRE(slotMap.getSize() == 5);
+        REQUIRE(slotMap.getCapacity() == 8);
 
         REQUIRE(slotMap[0].data == 1);
         REQUIRE(slotMap[1].data == 2);
@@ -61,7 +67,7 @@ TEST_CASE("SlotMap")
         REQUIRE(!slotMap.remove(999));
 
         // `3` replaced `1` when it was removed.
-        REQUIRE(slotMap.getHandle(0) == h3);
+        REQUIRE(slotMap.getHandle(0) == h5);
     }
 
     REQUIRE(Counter::aliveCount == 0);

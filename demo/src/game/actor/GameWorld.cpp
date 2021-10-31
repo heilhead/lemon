@@ -4,7 +4,8 @@ using namespace lemon;
 using namespace lemon::game;
 
 GameWorld::GameWorld()
-    : store{}, actors{}, tickingActors{}, tickingComponents{}, renderableComponents{}, lastUpdateTime{0.f}
+    : store{}, actors{kMaxAliveGameObjects}, tickingActors{512}, tickingComponents{512},
+      renderableComponents{512}, lastUpdateTime{0.f}
 {
 }
 

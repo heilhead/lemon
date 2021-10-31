@@ -10,7 +10,7 @@ namespace lemon::game {
 
     struct GameObjectDescriptor {
         TypeInfo typeInfo;
-        GameObjectInternalHandle storeHandle;
+        GameObjectStoreHandle storeHandle;
     };
 
     enum class GameObjectTickType { Actor, Component };
@@ -133,7 +133,7 @@ namespace lemon::game {
         GameObject*
         getParent();
 
-        GameObjectInternalHandle
+        GameObjectStoreHandle
         getInternalHandle() const;
 
         void
@@ -199,12 +199,12 @@ namespace lemon::game {
     template<GameObjectBase TConcreteGameObject>
     struct GameObjectHandle {
     private:
-        GameObjectInternalHandle storeHandle;
+        GameObjectStoreHandle storeHandle;
 
     public:
         GameObjectHandle() = default;
 
-        GameObjectHandle(GameObjectInternalHandle handle);
+        GameObjectHandle(GameObjectStoreHandle handle);
 
         GameObjectHandle(const GameObject* pObject);
 
@@ -266,7 +266,7 @@ namespace lemon::game {
     }
 
     template<GameObjectBase TConcreteGameObject>
-    GameObjectHandle<TConcreteGameObject>::GameObjectHandle(GameObjectInternalHandle handle)
+    GameObjectHandle<TConcreteGameObject>::GameObjectHandle(GameObjectStoreHandle handle)
         : storeHandle{handle}
     {
     }

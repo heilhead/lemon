@@ -5,7 +5,7 @@ namespace lemon::game {
 
     using TypeInfo = const std::type_info*;
 
-    LEMON_SLOT_MAP_HANDLE(GameObjectInternalHandle);
+    LEMON_SLOT_MAP_HANDLE(GameObjectStoreHandle);
     LEMON_SLOT_MAP_HANDLE(GameObjectWorldHandle);
     LEMON_SLOT_MAP_HANDLE(GameObjectTickProxyHandle);
     LEMON_SLOT_MAP_HANDLE(GameObjectRenderProxyHandle);
@@ -27,15 +27,15 @@ namespace lemon::game {
     }
 
     GameObject*
-    upgradeHandle(GameObjectInternalHandle handle);
+    upgradeHandle(GameObjectStoreHandle handle);
 
     bool
-    validateHandle(GameObjectInternalHandle handle);
+    validateHandle(GameObjectStoreHandle handle);
 
     TypeInfo
     getTypeInfo(const GameObject* pObject);
 
     // TODO: Make internal.
-    GameObjectInternalHandle
+    GameObjectStoreHandle
     registerObject(GameObject* pObject, TypeInfo typeInfo);
 } // namespace lemon::game

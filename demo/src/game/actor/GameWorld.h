@@ -3,17 +3,17 @@
 #include "ActorComponent.h"
 #include "Actor.h"
 #include "GameObjectStore.h"
+#include "TickGroup.h"
 
 namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {
         GameObjectStore store;
 
         // TODO: SlotMap should probably by dynamically-sized?
-        SlotMap<Actor*, kMaxAliveGameObjects, GameObjectWorldHandle> actors;
-        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingActors;
-        SlotMap<GameObjectTickProxy, kMaxAliveGameObjects, GameObjectTickProxyHandle> tickingComponents;
-        SlotMap<GameObjectRenderProxy, kMaxAliveGameObjects, GameObjectRenderProxyHandle>
-            renderableComponents;
+        SlotMap<Actor*, GameObjectWorldHandle> actors;
+        SlotMap<GameObjectTickProxy, GameObjectTickProxyHandle> tickingActors;
+        SlotMap<GameObjectTickProxy, GameObjectTickProxyHandle> tickingComponents;
+        SlotMap<GameObjectRenderProxy, GameObjectRenderProxyHandle> renderableComponents;
 
         double lastUpdateTime;
 

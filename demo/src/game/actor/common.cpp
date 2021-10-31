@@ -5,13 +5,13 @@
 using namespace lemon::game;
 
 GameObject*
-lemon::game::upgradeHandle(GameObjectInternalHandle handle)
+lemon::game::upgradeHandle(GameObjectStoreHandle handle)
 {
     return GameWorld::getStoreInternal()->upgradeHandle(handle);
 }
 
 bool
-lemon::game::validateHandle(GameObjectInternalHandle handle)
+lemon::game::validateHandle(GameObjectStoreHandle handle)
 {
     return GameWorld::getStoreInternal()->validateHandle(handle);
 }
@@ -22,7 +22,7 @@ lemon::game::getTypeInfo(const GameObject* pObject)
     return &typeid(*pObject);
 }
 
-GameObjectInternalHandle
+GameObjectStoreHandle
 lemon::game::registerObject(GameObject* pObject, TypeInfo typeInfo)
 {
     return GameWorld::getStoreInternal()->registerObject(pObject, typeInfo);

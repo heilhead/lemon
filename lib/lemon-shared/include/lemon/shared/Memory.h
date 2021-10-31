@@ -33,6 +33,8 @@ namespace lemon {
         AlignedStorage<TData> data;
 
     public:
+        MaybeUninit() = default;
+
         template<typename... TArgs>
         TData*
         init(TArgs&&... args);

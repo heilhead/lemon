@@ -14,10 +14,10 @@ namespace lemon::game {
     };
 
     class GameObjectStore {
-        SlotMap<GameObjectWrapper, kMaxAliveGameObjects, GameObjectInternalHandle> gameObjects;
+        SlotMap<GameObjectWrapper, GameObjectStoreHandle> gameObjects;
 
     public:
-        GameObjectStore() {}
+        GameObjectStore();
 
         template<GameObjectBase TConcreteGameObject>
         TConcreteGameObject*
@@ -27,12 +27,12 @@ namespace lemon::game {
         destroy(GameObject* pObject);
 
         GameObject*
-        upgradeHandle(GameObjectInternalHandle handle);
+        upgradeHandle(GameObjectStoreHandle handle);
 
         bool
-        validateHandle(GameObjectInternalHandle handle);
+        validateHandle(GameObjectStoreHandle handle);
 
-        GameObjectInternalHandle
+        GameObjectStoreHandle
         registerObject(GameObject* pObject, TypeInfo typeInfo);
     };
 

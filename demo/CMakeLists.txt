@@ -12,7 +12,8 @@ add_executable(${PROJECT_NAME}
     "src/game/actor/GameObject.cpp"
     "src/game/actor/GameObjectStore.cpp"
     "src/game/actor/ActorComponent.cpp"
-    "src/game/actor/common.cpp")
+    "src/game/actor/common.cpp"
+    "src/game/actor/TickGroup.cpp")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>
