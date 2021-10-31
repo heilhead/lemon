@@ -148,14 +148,19 @@ main(int argc, char* argv[])
     auto hActor2 = world->createActor<CharacterActor>();
     hActor2.get()->setName("actor2");
 
+    auto* pActor1 = hActor1.get();
+    auto* pActor2 = hActor2.get();
+
+    pActor1->addTickDependency(pActor2);
+
     // world->updateInternal(time += 0.5f);
     // world->updateInternal(time += 0.5f);
 
-    auto* tickGroup = world->getComponentTickGroup();
-    const auto* p1 = tickGroup->getProxy(
-        hActor1.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
-    const auto* p2 = tickGroup->getProxy(
-        hActor2.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
+    // auto* tickGroup = world->getComponentTickGroup();
+    // const auto* p1 = tickGroup->getProxy(
+    //     hActor1.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
+    // const auto* p2 = tickGroup->getProxy(
+    //     hActor2.get()->getComponent<MovementComponent>()->getTickDescriptor().getHandle());
 
     logger::trace("time: ", time);
     world->updateInternal(time += 0.5f);

@@ -47,6 +47,12 @@ namespace lemon::game {
         void
         onStop() override;
 
+        void
+        addTickDependency(GameObject* pOtherComponent) override;
+
+        void
+        removeTickDependency(GameObject* pOtherComponent) override;
+
     private:
         void
         startInternal();

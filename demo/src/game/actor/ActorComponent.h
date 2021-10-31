@@ -32,6 +32,12 @@ namespace lemon::game {
         const Actor*
         getOwner() const;
 
+        void
+        addTickDependency(GameObject* pOtherComponent) override;
+
+        void
+        removeTickDependency(GameObject* pOtherComponent) override;
+
     protected:
         virtual void
         onRegister();
@@ -50,10 +56,7 @@ namespace lemon::game {
         setOwner(Actor* pOwner);
 
         void
-        attachTickRecursive(GameObject* pParent);
-
-        void
-        detachTickRecursive(GameObject* pParent);
+        updateTickRecursive(GameObject* pParent, TickProxyHandle newHandle);
 
         ActorComponent*
         findTickingParent();
@@ -115,7 +118,7 @@ namespace lemon::game {
     };
 
     class RenderableComponent : public PositionableComponent {
-        GameObjectRenderProxyHandle renderProxyHandle;
+        RenderProxyHandle renderProxyHandle;
 
     public:
         void

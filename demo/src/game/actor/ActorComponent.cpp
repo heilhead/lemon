@@ -25,10 +25,10 @@ ActorComponent::enableTick(float interval)
 
         auto* pTickingParent = findTickingParent();
         if (pTickingParent != nullptr) {
-            addTickDependencyInternal(pTickingParent->tick.getHandle());
+            tick.setTickingParent(pTickingParent->tick.getHandle());
         }
 
-        attachTickRecursive(this);
+        updateTickRecursive(this, tick.getHandle());
     }
 }
 
@@ -40,10 +40,10 @@ ActorComponent::disableTick()
 
         auto* pTickingParent = findTickingParent();
         if (pTickingParent != nullptr) {
-            removeTickDependencyInternal(pTickingParent->tick.getHandle());
+            updateTickRecursive(this, pTickingParent->tick.getHandle());
+        } else {
+            updateTickRecursive(this, TickProxyHandle());
         }
-
-        detachTickRecursive(this);
     }
 }
 
@@ -57,6 +57,28 @@ const Actor*
 ActorComponent::getOwner() const
 {
     return pOwner;
+}
+
+void
+ActorComponent::addTickDependency(GameObject* pOtherObject)
+{
+    if (auto* pComponent = cast<ActorComponent>(pOtherObject)) {
+        GameObject::addTickDependency(pOtherObject);
+    } else {
+        logger::warn("Failed to add tick dependency: actor component may only have other actor components as "
+                     "tick dependencies");
+    }
+}
+
+void
+ActorComponent::removeTickDependency(GameObject* pOtherObject)
+{
+    if (auto* pComponent = cast<ActorComponent>(pOtherObject)) {
+        GameObject::removeTickDependency(pOtherObject);
+    } else {
+        logger::warn("Failed to remove tick dependency: actor component may only have other actor components "
+                     "as tick dependencies");
+    }
 }
 
 void
@@ -90,28 +112,14 @@ ActorComponent::setOwner(Actor* pInOwner)
 }
 
 void
-ActorComponent::attachTickRecursive(GameObject* pParent)
+ActorComponent::updateTickRecursive(GameObject* pParent, TickProxyHandle newHandle)
 {
     pParent->iterateSubObjects([&](GameObject* pObject) {
         if (auto* pComponent = pObject->cast<ActorComponent>()) {
             if (pComponent->isTickEnabled()) {
-                pComponent->tick.addDependency(tick.getHandle());
+                pComponent->tick.setTickingParent(newHandle);
             } else {
-                attachTickRecursive(pComponent);
-            }
-        }
-    });
-}
-
-void
-ActorComponent::detachTickRecursive(GameObject* pParent)
-{
-    pParent->iterateSubObjects([&](GameObject* pObject) {
-        if (auto* pComponent = pObject->cast<ActorComponent>()) {
-            if (pComponent->isTickEnabled()) {
-                pComponent->tick.removeDependency(tick.getHandle());
-            } else {
-                detachTickRecursive(pComponent);
+                updateTickRecursive(pComponent, newHandle);
             }
         }
     });

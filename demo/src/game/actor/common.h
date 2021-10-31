@@ -7,8 +7,8 @@ namespace lemon::game {
 
     LEMON_SLOT_MAP_HANDLE(GameObjectStoreHandle);
     LEMON_SLOT_MAP_HANDLE(GameObjectWorldHandle);
-    LEMON_SLOT_MAP_HANDLE(GameObjectRenderProxyHandle);
-    LEMON_SLOT_MAP_HANDLE(TickGroupHandle);
+    LEMON_SLOT_MAP_HANDLE(RenderProxyHandle);
+    LEMON_SLOT_MAP_HANDLE(TickProxyHandle);
 
     static constexpr size_t kMaxAliveGameObjects = 16384;
 

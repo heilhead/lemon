@@ -5,7 +5,7 @@
 namespace lemon::game {
     class GameObject;
     class TickGroup;
-    struct GameObjectTickProxy;
+    struct TickProxy;
 
     template<class T>
     concept GameObjectBase = Base<T, GameObject> && std::is_default_constructible_v<T>;
@@ -19,22 +19,21 @@ namespace lemon::game {
     public:
         static constexpr size_t kMaxInlineTickDependencies = 4;
 
-        // TODO: Remove alias.
-        using ProxyHandle = TickGroupHandle;
-
-        // TODO: Store a wrapper instead of raw handle which will include a 'user added' flag to make handles
-        // permanent for user added dependencies.
-        using Dependencies = folly::small_vector<ProxyHandle, kMaxInlineTickDependencies>;
+        using Dependencies = folly::small_vector<GameObject*, kMaxInlineTickDependencies>;
 
     private:
-        TickGroup* group;
+        TickGroup* pGroup;
+        GameObject* pOwner;
         Dependencies dependencies;
-        ProxyHandle tickProxyHandle;
+        Dependencies dependants;
+        TickProxyHandle handle;
         float interval;
         bool bEnabled;
 
     public:
-        GameObjectTickDescriptor() : dependencies{}, tickProxyHandle{}, interval{0.f}, bEnabled{false} {}
+        GameObjectTickDescriptor(GameObject* pOwner);
+
+        ~GameObjectTickDescriptor();
 
         Dependencies&
         getDependencies();
@@ -43,12 +42,21 @@ namespace lemon::game {
         getDependencies() const;
 
         void
-        addDependency(ProxyHandle handle);
+        addDependency(GameObject* pObject);
 
         void
-        removeDependency(ProxyHandle handle);
+        removeDependency(GameObject* pObject);
 
-        ProxyHandle
+        void
+        addDependant(GameObject* pObject);
+
+        void
+        removeDependant(GameObject* pObject);
+
+        void
+        setTickingParent(TickProxyHandle handle);
+
+        TickProxyHandle
         getHandle() const;
 
         float
@@ -66,14 +74,14 @@ namespace lemon::game {
         void
         setGroup(TickGroup* group);
 
-        GameObjectTickProxy*
+        TickProxy*
         getProxy();
 
-        const GameObjectTickProxy*
+        const TickProxy*
         getProxy() const;
 
         void
-        enable(GameObject* pObject, float interval);
+        enable(float interval);
 
         void
         disable();
@@ -83,19 +91,10 @@ namespace lemon::game {
 
     private:
         void
-        setHandle(ProxyHandle handle);
+        setHandle(TickProxyHandle handle);
 
         void
         updateProxy();
-    };
-
-    struct GameObjectTickProxy {
-        GameObject* pObject;
-        double lastTickTime;
-        float interval;
-        uint32_t dependencyCount;
-
-        GameObjectTickProxy(GameObject* pObject, float interval, uint32_t dependencyCount);
     };
 
     class GameObject : NonCopyable {
@@ -114,7 +113,7 @@ namespace lemon::game {
         std::string objectName{};
 
     protected:
-        GameObjectTickDescriptor tick{};
+        GameObjectTickDescriptor tick;
 
     public:
         GameObject();
@@ -157,7 +156,7 @@ namespace lemon::game {
         getParent();
 
         GameObjectStoreHandle
-        getInternalHandle() const;
+        getStoreHandle() const;
 
         void
         iterateSubObjects(const std::function<void(const GameObject*)>& fn, bool bRecursive = false) const;
@@ -186,26 +185,23 @@ namespace lemon::game {
         const GameObjectTickDescriptor&
         getTickDescriptor() const;
 
-        void
-        addTickDependencyInternal(TickGroupHandle handle);
-
-        void
-        removeTickDependencyInternal(TickGroupHandle handle);
+        GameObjectTickDescriptor&
+        getTickDescriptor();
 
         bool
         isParentOf(const GameObject* pObject) const;
 
         void
-        setName(const std::string& name)
-        {
-            objectName = name;
-        }
+        setName(const std::string& name);
 
         const std::string&
-        getName() const
-        {
-            return objectName;
-        }
+        getName() const;
+
+        virtual void
+        addTickDependency(GameObject* pOther);
+
+        virtual void
+        removeTickDependency(GameObject* pOther);
 
     protected:
         void

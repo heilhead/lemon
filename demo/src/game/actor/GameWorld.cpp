@@ -22,7 +22,7 @@ GameWorld::removeActor(Actor* pActor)
 }
 
 GameObjectRenderProxy*
-GameWorld::getRenderProxy(GameObjectRenderProxyHandle handle)
+GameWorld::getRenderProxy(RenderProxyHandle handle)
 {
     return renderableComponents.getData(handle);
 }
@@ -54,7 +54,7 @@ GameWorld::unregisterActorInternal(GameObjectWorldHandle handle)
     actors.remove(handle);
 }
 
-GameObjectRenderProxyHandle
+RenderProxyHandle
 GameWorld::registerRenderableComponentInternal(const GameObjectRenderProxy& proxy)
 {
     LEMON_ASSERT(proxy.pRenderable != nullptr);
@@ -62,7 +62,7 @@ GameWorld::registerRenderableComponentInternal(const GameObjectRenderProxy& prox
 }
 
 void
-GameWorld::unregisterRenderableComponentInternal(GameObjectRenderProxyHandle handle)
+GameWorld::unregisterRenderableComponentInternal(RenderProxyHandle handle)
 {
     renderableComponents.remove(handle);
 }

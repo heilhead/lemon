@@ -54,6 +54,26 @@ Actor::onStop()
 }
 
 void
+Actor::addTickDependency(GameObject* pOtherObject)
+{
+    if (auto* pComponent = cast<Actor>(pOtherObject)) {
+        GameObject::addTickDependency(pOtherObject);
+    } else {
+        logger::warn("Failed to add tick dependency: actor may only have other actors as tick dependencies");
+    }
+}
+
+void
+Actor::removeTickDependency(GameObject* pOtherObject)
+{
+    if (auto* pComponent = cast<Actor>(pOtherObject)) {
+        GameObject::removeTickDependency(pOtherObject);
+    } else {
+        logger::warn("Failed to add tick dependency: actor may only have other actors as tick dependencies");
+    }
+}
+
+void
 Actor::startInternal()
 {
     if (!bComponentsInitialized) {

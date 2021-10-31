@@ -5,6 +5,22 @@
 using namespace lemon;
 using namespace lemon::game;
 
+GameObjectTickDescriptor::GameObjectTickDescriptor(GameObject* pOwner)
+    : pGroup{nullptr}, pOwner{pOwner}, dependencies{}, handle{}, interval{0.f}, bEnabled{false}
+{
+}
+
+GameObjectTickDescriptor::~GameObjectTickDescriptor()
+{
+    while (dependencies.size()) {
+        removeDependency(dependencies.back());
+    }
+
+    while (dependants.size()) {
+        dependants.back()->getTickDescriptor().removeDependency(pOwner);
+    }
+}
+
 GameObjectTickDescriptor::Dependencies&
 GameObjectTickDescriptor::getDependencies()
 {
@@ -18,48 +34,55 @@ GameObjectTickDescriptor::getDependencies() const
 }
 
 void
-GameObjectTickDescriptor::addDependency(ProxyHandle handle)
+GameObjectTickDescriptor::addDependency(GameObject* pObject)
 {
-    auto* pWorld = GameWorld::get();
-    auto* pNewObject = group->getProxy(handle)->pObject;
+    dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), pObject), dependencies.end());
+    dependencies.push_back(pObject);
 
-    LEMON_ASSERT(pNewObject != nullptr);
-
-    auto predicate = [&](auto hExisting) {
-        auto* pExistingObject = group->getProxy(hExisting)->pObject;
-
-        LEMON_ASSERT(pExistingObject != nullptr);
-
-        return pExistingObject->isParentOf(pNewObject);
-    };
-
-    // Make sure to remove existing dependencies which are parents of the new dependency.
-    dependencies.erase(std::remove_if(dependencies.begin(), dependencies.end(), predicate),
-                       dependencies.end());
-
-    dependencies.push_back(handle);
+    pObject->getTickDescriptor().addDependant(pOwner);
 
     updateProxy();
 }
 
 void
-GameObjectTickDescriptor::removeDependency(ProxyHandle handle)
+GameObjectTickDescriptor::removeDependency(GameObject* pObject)
 {
-    dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), handle), dependencies.end());
+    dependencies.erase(std::remove(dependencies.begin(), dependencies.end(), pObject), dependencies.end());
+
+    pObject->getTickDescriptor().removeDependant(pOwner);
 
     updateProxy();
 }
 
 void
-GameObjectTickDescriptor::setHandle(ProxyHandle handle)
+GameObjectTickDescriptor::addDependant(GameObject* pObject)
 {
-    tickProxyHandle = handle;
+    dependants.erase(std::remove(dependants.begin(), dependants.end(), pObject), dependants.end());
+    dependants.push_back(pObject);
 }
 
-GameObjectTickDescriptor::ProxyHandle
+void
+GameObjectTickDescriptor::removeDependant(GameObject* pObject)
+{
+    dependants.erase(std::remove(dependants.begin(), dependants.end(), pObject), dependants.end());
+}
+
+void
+GameObjectTickDescriptor::setTickingParent(TickProxyHandle handle)
+{
+    getProxy()->tickingParent = handle;
+}
+
+void
+GameObjectTickDescriptor::setHandle(TickProxyHandle inHandle)
+{
+    handle = inHandle;
+}
+
+TickProxyHandle
 GameObjectTickDescriptor::getHandle() const
 {
-    return tickProxyHandle;
+    return handle;
 }
 
 float
@@ -83,39 +106,39 @@ GameObjectTickDescriptor::setInterval(float value)
 TickGroup*
 GameObjectTickDescriptor::getGroup()
 {
-    return group;
+    return pGroup;
 }
 
 const TickGroup*
 GameObjectTickDescriptor::getGroup() const
 {
-    return group;
+    return pGroup;
 }
 
 void
-GameObjectTickDescriptor::setGroup(TickGroup* inGroup)
+GameObjectTickDescriptor::setGroup(TickGroup* pInGroup)
 {
-    group = inGroup;
+    pGroup = pInGroup;
 }
 
-GameObjectTickProxy*
+TickProxy*
 GameObjectTickDescriptor::getProxy()
 {
-    return group->getProxy(getHandle());
+    return pGroup->getProxy(getHandle());
 }
 
-const GameObjectTickProxy*
+const TickProxy*
 GameObjectTickDescriptor::getProxy() const
 {
-    return group->getProxy(getHandle());
+    return pGroup->getProxy(getHandle());
 }
 
 void
-GameObjectTickDescriptor::enable(GameObject* pObject, float interval)
+GameObjectTickDescriptor::enable(float interval)
 {
     if (!bEnabled) {
         bEnabled = true;
-        setHandle(group->add(GameObjectTickProxy(pObject, interval, dependencies.size())));
+        setHandle(pGroup->add(TickProxy(pOwner, interval, dependencies.size())));
     }
 }
 
@@ -124,7 +147,7 @@ GameObjectTickDescriptor::disable()
 {
     if (bEnabled) {
         bEnabled = false;
-        group->remove(getHandle());
+        pGroup->remove(getHandle());
     }
 }
 
@@ -137,17 +160,12 @@ GameObjectTickDescriptor::isEnabled() const
 inline void
 GameObjectTickDescriptor::updateProxy()
 {
-    auto* pProxy = getProxy();
-    LEMON_ASSERT(pProxy != nullptr);
-    pProxy->dependencyCount = dependencies.size();
+    if (auto* pProxy = getProxy()) {
+        pProxy->dependencyCount = dependencies.size();
+    }
 }
 
-GameObjectTickProxy::GameObjectTickProxy(GameObject* pObject, float interval, uint32_t dependencyCount)
-    : pObject{pObject}, interval{interval}, lastTickTime{0.f}, dependencyCount{dependencyCount}
-{
-}
-
-GameObject::GameObject()
+GameObject::GameObject() : tick{this}
 {
     LEMON_TRACE_FN();
 }
@@ -181,7 +199,7 @@ GameObject::getParent()
 };
 
 GameObjectStoreHandle
-GameObject::getInternalHandle() const
+GameObject::getStoreHandle() const
 {
     return objectDescriptor.storeHandle;
 }
@@ -189,7 +207,7 @@ GameObject::getInternalHandle() const
 void
 GameObject::enableTick(float interval)
 {
-    tick.enable(this, interval);
+    tick.enable(interval);
 }
 
 void
@@ -210,16 +228,10 @@ GameObject::getTickDescriptor() const
     return tick;
 }
 
-void
-GameObject::addTickDependencyInternal(TickGroupHandle handle)
+GameObjectTickDescriptor&
+GameObject::getTickDescriptor()
 {
-    tick.addDependency(handle);
-}
-
-void
-GameObject::removeTickDependencyInternal(TickGroupHandle handle)
-{
-    tick.removeDependency(handle);
+    return tick;
 }
 
 bool
@@ -239,6 +251,30 @@ GameObject::isParentOf(const GameObject* pObject) const
     }
 
     return false;
+}
+
+void
+GameObject::setName(const std::string& name)
+{
+    objectName = name;
+}
+
+const std::string&
+GameObject::getName() const
+{
+    return objectName;
+}
+
+void
+GameObject::addTickDependency(GameObject* pOther)
+{
+    tick.addDependency(pOther);
+}
+
+void
+GameObject::removeTickDependency(GameObject* pOther)
+{
+    tick.removeDependency(pOther);
 }
 
 void

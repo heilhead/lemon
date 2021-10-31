@@ -3,16 +3,21 @@
 using namespace lemon;
 using namespace lemon::game;
 
+TickProxy::TickProxy(GameObject* pObject, float interval, uint32_t dependencyCount)
+    : pObject{pObject}, interval{interval}, lastTickTime{0.f}, dependencyCount{dependencyCount}
+{
+}
+
 TickGroup::TickGroup() : proxies{kBaseCapacity}, lastTickTime{0.f} {}
 
-TickGroupHandle
-TickGroup::add(const GameObjectTickProxy& proxy)
+TickProxyHandle
+TickGroup::add(const TickProxy& proxy)
 {
     return proxies.insert(proxy);
 }
 
 void
-TickGroup::remove(TickGroupHandle handle)
+TickGroup::remove(TickProxyHandle handle)
 {
     proxies.remove(handle);
 }
@@ -28,13 +33,13 @@ TickGroup::tick(double time)
     }
 }
 
-GameObjectTickProxy*
-TickGroup::getProxy(TickGroupHandle handle)
+TickProxy*
+TickGroup::getProxy(TickProxyHandle handle)
 {
     return proxies.getData(handle);
 }
 
-void inline TickGroup::tickImpl(GameObjectTickProxy& proxy, float dt)
+void inline TickGroup::tickImpl(TickProxy& proxy, float dt)
 {
     bool bShouldTick =
         (lastTickTime != proxy.lastTickTime) && (lastTickTime - proxy.lastTickTime >= proxy.interval);
@@ -43,11 +48,14 @@ void inline TickGroup::tickImpl(GameObjectTickProxy& proxy, float dt)
         return;
     }
 
-    if (proxy.dependencyCount > 0) {
-        auto& tickDesc = proxy.pObject->getTickDescriptor();
+    if (proxy.tickingParent.getIndex() != kInvalidIndex) {
+        tickImpl(proxies[proxy.tickingParent], dt);
+    }
 
-        for (auto depHandle : tickDesc.getDependencies()) {
-            if (auto* pDepProxy = proxies.getData(depHandle)) {
+    if (proxy.dependencyCount > 0) {
+        for (auto* pDepObject : proxy.pObject->getTickDescriptor().getDependencies()) {
+            // The object listed as a dependency may not be ticking, and hence doesn't have a handle.
+            if (auto* pDepProxy = proxies.getData(pDepObject->getTickDescriptor().getHandle())) {
                 tickImpl(*pDepProxy, dt);
             }
         }

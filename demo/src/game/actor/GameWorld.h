@@ -12,7 +12,7 @@ namespace lemon::game {
         SlotMap<Actor*, GameObjectWorldHandle> actors;
         TickGroup tickingActors;
         TickGroup tickingComponents;
-        SlotMap<GameObjectRenderProxy, GameObjectRenderProxyHandle> renderableComponents;
+        SlotMap<GameObjectRenderProxy, RenderProxyHandle> renderableComponents;
 
         double lastUpdateTime;
 
@@ -37,7 +37,7 @@ namespace lemon::game {
         removeActor(Actor* pActor);
 
         GameObjectRenderProxy*
-        getRenderProxy(GameObjectRenderProxyHandle handle);
+        getRenderProxy(RenderProxyHandle handle);
 
         static GameObjectStore*
         getStoreInternal();
@@ -51,11 +51,11 @@ namespace lemon::game {
         void
         unregisterActorInternal(GameObjectWorldHandle handle);
 
-        GameObjectRenderProxyHandle
+        RenderProxyHandle
         registerRenderableComponentInternal(const GameObjectRenderProxy& proxy);
 
         void
-        unregisterRenderableComponentInternal(GameObjectRenderProxyHandle handle);
+        unregisterRenderableComponentInternal(RenderProxyHandle handle);
 
         TickGroup*
         getActorTickGroup();
@@ -65,7 +65,7 @@ namespace lemon::game {
 
     private:
         void
-        tick(GameObjectTickProxy& proxy, double time, float dt);
+        tick(TickProxy& proxy, double time, float dt);
     };
 
     template<ActorBase TActor>
