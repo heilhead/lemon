@@ -81,6 +81,18 @@ ActorComponent::removeTickDependency(GameObject* pOtherObject)
     }
 }
 
+PositionableComponent*
+ActorComponent::getRoot()
+{
+    return getOwner()->getRoot();
+}
+
+const PositionableComponent*
+ActorComponent::getRoot() const
+{
+    return getOwner()->getRoot();
+}
+
 void
 ActorComponent::onRegister()
 {
@@ -157,7 +169,7 @@ PositionableComponent::onRegister()
         }
 
         if (auto* pActorParent = cast<Actor>(pParentObj)) {
-            auto* pRootComp = pActorParent->getRootComponent();
+            auto* pRootComp = pActorParent->getRoot();
 
             if (pRootComp != this) {
                 transformCache.pParent = pRootComp;

@@ -8,17 +8,20 @@
 #include "game/actor/GameObjectStore.h"
 #include "game/actor/GameWorld.h"
 
+#include "common/DemoModelActor.h"
+#include "common/FlyingCameraActor.h"
+
 using namespace lemon;
 using namespace lemon::game;
 
-class MovementComponent : public ActorComponent {
+class LocalMovementComponent : public ActorComponent {
 public:
-    MovementComponent() : ActorComponent()
+    LocalMovementComponent() : ActorComponent()
     {
         LEMON_TRACE_FN();
     }
 
-    ~MovementComponent()
+    ~LocalMovementComponent()
     {
         LEMON_TRACE_FN();
     }
@@ -73,6 +76,17 @@ public:
 };
 
 class MeshRenderComponent : public RenderableComponent {
+    // render proxy?
+    // draw call?
+
+    // setMesh(mesh)
+    // setMaterial(index, material)
+};
+
+class SkeletalMeshRenderComponent : public RenderableComponent {
+};
+
+class NonPositionableComponent : public ActorComponent {
 };
 
 class CharacterActor : public Actor {
@@ -81,9 +95,9 @@ public:
     {
         LEMON_TRACE_FN();
 
-        rootComponent = addComponent<MeshRenderComponent>();
+        root = addComponent<MeshRenderComponent>();
 
-        auto* pMovementComponent = addComponent<MovementComponent>();
+        auto* pMovementComponent = addComponent<LocalMovementComponent>();
 
         LEMON_ASSERT(pMovementComponent != nullptr);
     }
@@ -178,6 +192,11 @@ main(int argc, char* argv[])
     // LEMON_ASSERT(hActor);
 
     // auto* pActor = hActor.get();
+
+    folly::small_vector<GameObject*, 4> comps;
+    bool bFound = pActor1->findComponents<MeshRenderComponent>(comps);
+
+    auto* pRenderable1 = pActor1->getComponent<SkeletalMeshRenderComponent>();
 
     world->destroyActor(hActor1);
     world->destroyActor(hActor2);

@@ -13,7 +13,14 @@ add_executable(${PROJECT_NAME}
     "src/game/actor/GameObjectStore.cpp"
     "src/game/actor/ActorComponent.cpp"
     "src/game/actor/common.cpp"
-    "src/game/actor/TickGroup.cpp")
+    "src/game/actor/TickGroup.cpp"
+    "src/common/MovementComponent.cpp"
+    "src/common/CameraComponent.cpp"
+    "src/common/FlyingCameraActor.cpp"
+    "src/common/DemoModelActor.cpp"
+    "src/common/MeshRenderComponent.cpp")
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>

@@ -72,7 +72,10 @@ namespace lemon::game {
     GameObjectHandle<TActor>
     GameWorld::createActor(const glm::f32vec3& pos, const glm::quat& rot, const glm::f32vec3& scale)
     {
-        return addActor(store.create<TActor>(), pos, rot, scale);
+        auto* pActor = store.create<TActor>();
+        pActor->seal();
+
+        return addActor(pActor, pos, rot, scale);
     }
 
     template<ActorBase TActor>
@@ -101,7 +104,7 @@ namespace lemon::game {
 
         pActor->bAddedToWorld = true;
 
-        auto* pRootComp = pActor->getRootComponent();
+        auto* pRootComp = pActor->getRoot();
 
         LEMON_ASSERT(pRootComp != nullptr, "actor must have root component assigned before spawning");
 
@@ -109,7 +112,7 @@ namespace lemon::game {
         pRootComp->setLocalRotation(rot);
         pRootComp->setLocalScale(scale);
 
-        pActor->startInternal();
+        pActor->start();
 
         return pActor;
     }

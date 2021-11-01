@@ -5,10 +5,17 @@
 namespace lemon::game {
     class Actor;
     class ActorComponent;
+    class PositionableComponent;
     class RenderableComponent;
 
     template<class T>
     concept ActorComponentBase = Base<T, ActorComponent> && GameObjectBase<T>;
+
+    template<class T>
+    concept PositionableComponentBase = Base<T, PositionableComponent> && GameObjectBase<T>;
+
+    template<class T>
+    concept RenderableComponentBase = Base<T, RenderableComponent> && GameObjectBase<T>;
 
     class ActorComponent : public GameObject {
         friend class Actor;
@@ -37,6 +44,12 @@ namespace lemon::game {
 
         void
         removeTickDependency(GameObject* pOtherComponent) override;
+
+        PositionableComponent*
+        getRoot();
+
+        const PositionableComponent*
+        getRoot() const;
 
     protected:
         virtual void

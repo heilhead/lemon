@@ -20,9 +20,15 @@ Actor::~Actor()
 }
 
 PositionableComponent*
-Actor::getRootComponent()
+Actor::getRoot()
 {
-    return rootComponent;
+    return root;
+}
+
+const PositionableComponent*
+Actor::getRoot() const
+{
+    return root;
 }
 
 void
@@ -74,7 +80,13 @@ Actor::removeTickDependency(GameObject* pOtherObject)
 }
 
 void
-Actor::startInternal()
+Actor::seal()
+{
+    bSealed = true;
+}
+
+void
+Actor::start()
 {
     if (!bComponentsInitialized) {
         onPreInitializeComponents();
@@ -97,7 +109,7 @@ Actor::startInternal()
 }
 
 void
-Actor::stopInternal()
+Actor::stop()
 {
     iterateSubObjects(
         [](GameObject* pObject) {

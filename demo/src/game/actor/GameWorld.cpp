@@ -18,7 +18,7 @@ GameWorld::removeActor(Actor* pActor)
         return;
     }
 
-    pActor->stopInternal();
+    pActor->stop();
 }
 
 GameObjectRenderProxy*
