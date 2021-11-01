@@ -39,6 +39,13 @@ set(SOURCE_FILES
         "src/lemon/device/input/MouseListener.cpp"
         "src/lemon/game/Camera.cpp"
         "src/lemon/game/Transform.cpp"
+        "src/lemon/game/actor/Actor.cpp"
+        "src/lemon/game/actor/GameWorld.cpp"
+        "src/lemon/game/actor/GameObject.cpp"
+        "src/lemon/game/actor/GameObjectStore.cpp"
+        "src/lemon/game/actor/ActorComponent.cpp"
+        "src/lemon/game/actor/common.cpp"
+        "src/lemon/game/actor/TickGroup.cpp"
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

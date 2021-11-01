@@ -2,11 +2,11 @@
 // #include "bundles.h"
 #include "mesh.h"
 
-#include "game/actor/GameObject.h"
-#include "game/actor/Actor.h"
-#include "game/actor/ActorComponent.h"
-#include "game/actor/GameObjectStore.h"
-#include "game/actor/GameWorld.h"
+#include <lemon/game/actor/GameObject.h>
+#include <lemon/game/actor/Actor.h>
+#include <lemon/game/actor/ActorComponent.h>
+#include <lemon/game/actor/GameObjectStore.h>
+#include <lemon/game/actor/GameWorld.h>
 
 #include "common/DemoModelActor.h"
 #include "common/FlyingCameraActor.h"

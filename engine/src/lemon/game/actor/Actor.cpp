@@ -1,5 +1,5 @@
-#include "Actor.h"
-#include "GameWorld.h"
+#include <lemon/game/actor/Actor.h>
+#include <lemon/game/actor/GameWorld.h>
 
 using namespace lemon;
 using namespace lemon::game;

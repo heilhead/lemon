@@ -1,4 +1,4 @@
-#include "GameWorld.h"
+#include <lemon/game/actor/GameWorld.h>
 
 using namespace lemon;
 using namespace lemon::game;

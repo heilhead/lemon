@@ -1,4 +1,4 @@
-#include "GameObjectStore.h"
+#include <lemon/game/actor/GameObjectStore.h>
 
 using namespace lemon;
 using namespace lemon::game;

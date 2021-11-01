@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ActorComponent.h"
-#include "Actor.h"
-#include "GameObjectStore.h"
-#include "TickGroup.h"
+#include <lemon/game/actor/ActorComponent.h>
+#include <lemon/game/actor/Actor.h>
+#include <lemon/game/actor/GameObjectStore.h>
+#include <lemon/game/actor/TickGroup.h>
 
 namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {

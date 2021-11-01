@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include <lemon/game/actor/common.h>
 
 namespace lemon::game {
     class GameObject;

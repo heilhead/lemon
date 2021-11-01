@@ -1,6 +1,7 @@
 #pragma once
 
-#include "GameObject.h"
+#include <lemon/game/actor/GameObject.h>
+#include <lemon/game/Transform.h>
 
 namespace lemon::game {
     class Actor;

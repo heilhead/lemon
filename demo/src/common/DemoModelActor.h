@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../game/actor/Actor.h"
+#include <lemon/game/actor/Actor.h>
 
 namespace lemon::demo {
     class DemoModelActor : public lemon::game::Actor {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../game/actor/ActorComponent.h"
+#include <lemon/game/actor/ActorComponent.h>
 
 namespace lemon::game {
     class MeshRenderComponent : public RenderableComponent {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../game/actor/Actor.h"
+#include <lemon/game/actor/Actor.h>
 
 namespace lemon::game {
     class FlyingCameraActor : public Actor {

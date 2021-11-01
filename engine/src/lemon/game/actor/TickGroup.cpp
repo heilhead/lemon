@@ -1,4 +1,4 @@
-#include "TickGroup.h"
+#include <lemon/game/actor/TickGroup.h>
 
 using namespace lemon;
 using namespace lemon::game;

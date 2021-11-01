@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.h"
-#include "GameObject.h"
+#include <lemon/game/actor/common.h>
+#include <lemon/game/actor/GameObject.h>
 
 namespace lemon::game {
     struct GameObjectWrapper {

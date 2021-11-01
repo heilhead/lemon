@@ -1,6 +1,6 @@
-#include "GameObject.h"
-#include "GameObjectStore.h"
-#include "GameWorld.h"
+#include <lemon/game/actor/GameObject.h>
+#include <lemon/game/actor/GameObjectStore.h>
+#include <lemon/game/actor/GameWorld.h>
 
 using namespace lemon;
 using namespace lemon::game;
