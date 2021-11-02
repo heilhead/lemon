@@ -40,6 +40,9 @@ namespace lemon {
         getGeneration() const;
 
         bool
+        isEmpty() const;
+
+        bool
         operator==(const SlotMapHandle& other) const;
     };
 

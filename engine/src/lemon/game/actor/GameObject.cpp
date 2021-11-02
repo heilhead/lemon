@@ -186,18 +186,6 @@ GameObject::getObjectDescriptor() const
     return objectDescriptor;
 }
 
-const GameObject*
-GameObject::getParent() const
-{
-    return pParent;
-};
-
-GameObject*
-GameObject::getParent()
-{
-    return pParent;
-};
-
 GameObjectStoreHandle
 GameObject::getStoreHandle() const
 {

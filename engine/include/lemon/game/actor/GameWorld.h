@@ -4,6 +4,7 @@
 #include <lemon/game/actor/Actor.h>
 #include <lemon/game/actor/GameObjectStore.h>
 #include <lemon/game/actor/TickGroup.h>
+#include <lemon/game/Camera.h>
 
 namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {
@@ -13,6 +14,7 @@ namespace lemon::game {
         TickGroup tickingActors;
         TickGroup tickingComponents;
         SlotMap<GameObjectRenderProxy, RenderProxyHandle> renderableComponents;
+        Camera camera;
 
         double lastUpdateTime;
 
@@ -63,6 +65,12 @@ namespace lemon::game {
         TickGroup*
         getComponentTickGroup();
 
+        const Camera&
+        getCamera() const;
+
+        Camera&
+        getCamera();
+
     private:
         void
         tick(TickProxy& proxy, double time, float dt);
@@ -112,6 +120,7 @@ namespace lemon::game {
         pRootComp->setLocalRotation(rot);
         pRootComp->setLocalScale(scale);
 
+        // TODO: Make sure that `onStart()` runs only when it's safe.
         pActor->start();
 
         return pActor;

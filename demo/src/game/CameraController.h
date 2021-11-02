@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lemon/game.h>
+
 namespace lemon::game {
     class CameraControllerBase : NonCopyable {
         Camera camera;

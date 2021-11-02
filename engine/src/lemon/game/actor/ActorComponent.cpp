@@ -47,18 +47,6 @@ ActorComponent::disableTick()
     }
 }
 
-Actor*
-ActorComponent::getOwner()
-{
-    return pOwner;
-}
-
-const Actor*
-ActorComponent::getOwner() const
-{
-    return pOwner;
-}
-
 void
 ActorComponent::addTickDependency(GameObject* pOtherObject)
 {
@@ -159,27 +147,12 @@ void
 PositionableComponent::onRegister()
 {
     LEMON_TRACE_FN();
+}
 
-    auto* pParentObj = getParent();
-    while (pParentObj != nullptr) {
-        if (auto* pPositionableParent = cast<PositionableComponent>(pParentObj)) {
-            transformCache.pParent = pPositionableParent;
-
-            break;
-        }
-
-        if (auto* pActorParent = cast<Actor>(pParentObj)) {
-            auto* pRootComp = pActorParent->getRoot();
-
-            if (pRootComp != this) {
-                transformCache.pParent = pRootComp;
-            }
-
-            break;
-        }
-
-        pParentObj = pParentObj->getParent();
-    }
+void
+PositionableComponent::onInitialize()
+{
+    LEMON_TRACE_FN();
 }
 
 glm::f32vec3
@@ -236,9 +209,8 @@ PositionableComponent::updateGlobalTransform() const
 {
     updateLocalTransform();
 
-    const auto* pParent = transformCache.pParent;
-
-    if (pParent != nullptr) {
+    auto* pParent = getParent<PositionableComponent>();
+    if (pParent == nullptr) {
         return;
     }
 
@@ -265,7 +237,12 @@ const glm::f32mat4&
 PositionableComponent::getGlobalTransformMatrix() const
 {
     updateGlobalTransform();
-    return transformCache.pParent != nullptr ? transformCache.globalMatrix : transformCache.localMatrix;
+
+    if (getParent() != nullptr) {
+        return transformCache.globalMatrix;
+    } else {
+        return transformCache.localMatrix;
+    }
 }
 
 GameObjectRenderProxy::GameObjectRenderProxy(RenderableComponent* pRenderable) : pRenderable{pRenderable} {}

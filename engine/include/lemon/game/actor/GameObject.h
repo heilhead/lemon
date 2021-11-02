@@ -149,11 +149,19 @@ namespace lemon::game {
         SubObjectList&
         getSubObjectList();
 
-        const GameObject*
-        getParent() const;
+        template<GameObjectBase TGameObject = GameObject>
+        inline const TGameObject*
+        getParent() const
+        {
+            return cast<TGameObject>(pParent);
+        };
 
-        GameObject*
-        getParent();
+        template<GameObjectBase TGameObject = GameObject>
+        inline TGameObject*
+        getParent()
+        {
+            return cast<TGameObject>(pParent);
+        };
 
         GameObjectStoreHandle
         getStoreHandle() const;
@@ -271,7 +279,7 @@ namespace lemon::game {
 
         registerObject(pObject, getTypeInfo(pObject));
 
-        pObject->setParent(this);
+        // pObject->setParent(this);
         subObjects.push_back(pObject);
 
         return pObject;

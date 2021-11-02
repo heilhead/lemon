@@ -1,5 +1,6 @@
 #pragma once
 
+#include <lemon/game/actor/common.h>
 #include <lemon/game/actor/GameObject.h>
 #include <lemon/game/Transform.h>
 
@@ -34,10 +35,12 @@ namespace lemon::game {
         void
         disableTick() override;
 
-        Actor*
+        template<Base<Actor> TActor = Actor>
+        TActor*
         getOwner();
 
-        const Actor*
+        template<Base<Actor> TActor = Actor>
+        const TActor*
         getOwner() const;
 
         void
@@ -78,7 +81,6 @@ namespace lemon::game {
 
     class PositionableComponent : public ActorComponent {
         struct TransformCache {
-            const PositionableComponent* pParent{nullptr};
             glm::f32mat4 globalMatrix{kMatrixIdentity};
             glm::f32mat4 localMatrix{kMatrixIdentity};
             uint32_t generation{0};
@@ -90,8 +92,13 @@ namespace lemon::game {
         mutable TransformCache transformCache{};
 
     public:
+        PositionableComponent() = default;
+
         void
         onRegister() override;
+
+        void
+        onInitialize() override;
 
         glm::f32vec3
         getLocalPosition() const;
@@ -148,4 +155,18 @@ namespace lemon::game {
         void
         updateRenderProxy();
     };
+
+    template<Base<Actor> TActor>
+    TActor*
+    ActorComponent::getOwner()
+    {
+        return cast<TActor>(pOwner);
+    }
+
+    template<Base<Actor> TActor>
+    const TActor*
+    ActorComponent::getOwner() const
+    {
+        return cast<TActor>(pOwner);
+    }
 } // namespace lemon::game

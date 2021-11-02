@@ -15,7 +15,10 @@ Actor::~Actor()
 {
     LEMON_TRACE_FN();
 
-    uninitializeComponents();
+    if (bComponentsInitialized) {
+        uninitializeComponents();
+    }
+
     unregisterComponents();
 }
 

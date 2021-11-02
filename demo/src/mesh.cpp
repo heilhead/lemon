@@ -1,5 +1,6 @@
 #include "mesh.h"
-#include "game/CameraController.h"
+#include "common/FlyingCameraActor.h"
+#include <lemon/game.h>
 
 using namespace lemon;
 using namespace lemon::device;
@@ -68,9 +69,8 @@ private:
     std::array<minirender::DrawCall, 4> drawCalls;
     std::chrono::time_point<std::chrono::steady_clock> timeStart = std::chrono::steady_clock::now();
 
-    bool bCapturingMouse = false;
-    FirstPersonCameraController cameraController;
-    glm::f64vec2 prevPos;
+    std::unique_ptr<GameWorld> world;
+    GameObjectHandle<FlyingCameraActor> hCameraActor;
 
 public:
     void
@@ -164,89 +164,17 @@ public:
             }
         }
 
-        auto& camera = cameraController.getCamera();
+        world = std::make_unique<GameWorld>();
 
-        camera.setClipping(1.f, 100000.f);
-        camera.setView(wndWidth, wndHeight);
+        hCameraActor = world->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
 
-        auto& tCamera = camera.getTransform();
-        tCamera.setPosition(kVectorZAxis * -1500.f);
-        tCamera.lookAt(0.f, 0.f, 0.f);
-
-        auto h1 = MouseListener::get()->getDelegate(MouseButton::Button2).add(&MiniRender::handleClick, this);
-    }
-
-    void
-    handleClick(KeyEvent evt, KeyMod mods)
-    {
-        logger::trace("click: event=", magic_enum::enum_name(evt),
-                      " mods=", magic_enum::flags::enum_name(mods));
-
-        if (evt == KeyEvent::Press) {
-            MouseListener::get()->setCursorMode(CursorMode::Raw);
-            bCapturingMouse = true;
-            prevPos = MouseListener::get()->getPos();
-        } else if (evt == KeyEvent::Release) {
-            MouseListener::get()->setCursorMode(CursorMode::Normal);
-            bCapturingMouse = false;
-        }
-    }
-
-    void
-    updateCamera(float dt)
-    {
-        auto* pMouse = MouseListener::get();
-        auto* pKeyboard = KeyboardListener::get();
-
-        if (bCapturingMouse) {
-            auto pos = pMouse->getPos();
-            auto delta = pos - prevPos;
-
-            if (!math::isNearlyZero(delta)) {
-                cameraController.handleRotationInput(delta, 1.f);
-            }
-
-            prevPos = pos;
-        }
-
-        auto movement = kVectorZero;
-
-        if (pKeyboard->isKeyPressed(KeyCode::W)) {
-            movement += kVectorForward;
-        }
-
-        if (pKeyboard->isKeyPressed(KeyCode::S)) {
-            movement += kVectorBackward;
-        }
-
-        if (pKeyboard->isKeyPressed(KeyCode::A)) {
-            movement += kVectorLeft;
-        }
-
-        if (pKeyboard->isKeyPressed(KeyCode::D)) {
-            movement += kVectorRight;
-        }
-
-        cameraController.handlePositionInput(movement, dt, true);
-
-        movement = kVectorZero;
-
-        if (pKeyboard->isKeyPressed(KeyCode::Space)) {
-            movement += kVectorUp;
-        }
-
-        if (pKeyboard->isKeyPressed(KeyCode::LeftControl)) {
-            movement += kVectorDown;
-        }
-
-        cameraController.handlePositionInput(movement, dt, false);
+        // auto* pCameraActor = hCameraActor.get();
+        // pCameraActor->getRoot()->setLocalRotation(glm::quatLookAt(kVectorZAxis, kVectorUp));
     }
 
     void
     update(float dt)
     {
-        updateCamera(dt);
-
         constexpr auto cameraParam = lemon::sid("sceneParams.camera");
         constexpr auto timeParam = lemon::sid("sceneParams.time");
 
@@ -255,7 +183,9 @@ public:
         float fTime = static_cast<float>(dTime);                     // time in seconds, float
         float fTimeFrac = static_cast<float>(std::fmod(dTime, 1.f)); // fractional part
 
-        pSharedData->setData(cameraParam, cameraController.getCamera().getUniformData());
+        world->updateInternal(dTime);
+
+        pSharedData->setData(cameraParam, world->getCamera().getUniformData());
         pSharedData->setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
     }
 

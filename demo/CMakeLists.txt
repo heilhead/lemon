@@ -23,7 +23,6 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/dawn.h>
     <lemon/pch/glm.h>
     <lemon/engine.h>
-    <lemon/game.h>
     <lemon/misc.h>
     <lemon/render.h>
     <lemon/resources.h>

@@ -21,14 +21,14 @@ namespace lemon::game {
         float width{1.f};
         float height{1.f};
         float zNear{1.f};
-        float zFar{100.f};
+        float zFar{10000.f};
         float fov{56.f};
         ProjectionType type{ProjectionType::Perspective};
         mutable UniformData uniformData;
         mutable bool bDirty{true};
 
     public:
-        Camera() {}
+        Camera();
 
         Transform&
         getTransform();
@@ -49,9 +49,24 @@ namespace lemon::game {
         const UniformData&
         getUniformData() const;
 
+        void
+        update();
+
+        void
+        update(const Transform& t);
+
+        void
+        update(const glm::f32mat4& matWorld);
+
     private:
         void
-        updateUniformData() const;
+        updateView(const Transform& t);
+
+        void
+        updateView(const glm::f32mat4& matWorld);
+
+        void
+        updateProjection();
     };
 } // namespace lemon::game
 

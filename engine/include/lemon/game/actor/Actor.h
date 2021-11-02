@@ -18,7 +18,7 @@ namespace lemon::game {
         bool bAddedToWorld = false;
 
     protected:
-        PositionableComponent* root;
+        PositionableComponent* root{nullptr};
 
     public:
         Actor();
@@ -31,7 +31,7 @@ namespace lemon::game {
 
         template<ActorComponentBase TComponent, class TContainer>
         bool
-        findComponents(TContainer& container);
+        findComponents(TContainer& container) const;
 
         PositionableComponent*
         getRoot();
@@ -86,8 +86,8 @@ namespace lemon::game {
         getComponentRecursive(const GameObject* pCurrentObject);
 
         template<ActorComponentBase TComponent, class TContainer>
-        void
-        findComponentsRecursive(const GameObject* pCurrentObject, TContainer& container);
+        size_t
+        findComponentsRecursive(const GameObject* pCurrentObject, TContainer& container) const;
     };
 
     template<ActorComponentBase TComponent>
@@ -99,11 +99,9 @@ namespace lemon::game {
 
     template<ActorComponentBase TComponent, class TContainer>
     bool
-    Actor::findComponents(TContainer& container)
+    Actor::findComponents(TContainer& container) const
     {
-        auto initialSize = container.size();
-        findComponentsRecursive<TComponent>(this, container);
-        return container.size() != initialSize;
+        return findComponentsRecursive<TComponent>(this, container);
     }
 
     template<ActorComponentBase TComponent>
@@ -111,13 +109,12 @@ namespace lemon::game {
     Actor::addComponent(PositionableComponent* pParentComponent)
     {
         LEMON_ASSERT(!bSealed, "components can be added only during actor construction");
-
-        static constexpr auto bPositionable = std::is_base_of_v<PositionableComponent, TComponent>;
-        LEMON_ASSERT(pParentComponent == nullptr || bPositionable,
+        LEMON_ASSERT((pParentComponent == nullptr || std::is_base_of_v<PositionableComponent, TComponent>),
                      "only positionable components can be nested into other components");
 
         auto* pComponent = pParentComponent == nullptr ? createSubObject<TComponent>()
                                                        : pParentComponent->createSubObject<TComponent>();
+        pComponent->setParent(pParentComponent);
         pComponent->setOwner(this);
         pComponent->onRegister();
 
@@ -142,14 +139,22 @@ namespace lemon::game {
     }
 
     template<ActorComponentBase TComponent, class TContainer>
-    void
-    Actor::findComponentsRecursive(const GameObject* pCurrentObject, TContainer& container)
+    size_t
+    Actor::findComponentsRecursive(const GameObject* pCurrentObject, TContainer& container) const
     {
+        size_t numFound = 0;
+
         for (auto* pObject : pCurrentObject->getSubObjectList()) {
             if (auto* pComponent = cast<TComponent>(pObject)) {
                 container.push_back(pComponent);
-                findComponentsRecursive<TComponent>(pComponent, container);
+                numFound++;
+            }
+
+            if (auto* pComponent = cast<PositionableComponent>(pObject)) {
+                numFound += findComponentsRecursive<TComponent>(pComponent, container);
             }
         }
+
+        return numFound;
     }
 } // namespace lemon::game

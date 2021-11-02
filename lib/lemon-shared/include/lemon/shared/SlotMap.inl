@@ -24,6 +24,13 @@ namespace lemon {
 
     template<typename Tag>
     inline bool
+    SlotMapHandle<Tag>::isEmpty() const
+    {
+        return index == kInvalidIndex;
+    }
+
+    template<typename Tag>
+    inline bool
     SlotMapHandle<Tag>::operator==(const SlotMapHandle& other) const
     {
         return index == other.index && generation == other.generation;

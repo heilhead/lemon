@@ -1,3 +1,5 @@
+#include "metadata.h"
+
 using namespace lemon::scheduler;
 using namespace lemon::res;
 

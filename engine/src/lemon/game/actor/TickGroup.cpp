@@ -39,7 +39,8 @@ TickGroup::getProxy(TickProxyHandle handle)
     return proxies.getData(handle);
 }
 
-void inline TickGroup::tickImpl(TickProxy& proxy, float dt)
+inline void
+TickGroup::tickImpl(TickProxy& proxy, float dt)
 {
     bool bShouldTick =
         (lastTickTime != proxy.lastTickTime) && (lastTickTime - proxy.lastTickTime >= proxy.interval);
@@ -48,7 +49,7 @@ void inline TickGroup::tickImpl(TickProxy& proxy, float dt)
         return;
     }
 
-    if (proxy.tickingParent.getIndex() != kInvalidIndex) {
+    if (!proxy.tickingParent.isEmpty()) {
         tickImpl(proxies[proxy.tickingParent], dt);
     }
 

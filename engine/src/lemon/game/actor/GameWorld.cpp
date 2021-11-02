@@ -1,11 +1,12 @@
 #include <lemon/game/actor/GameWorld.h>
+#include <lemon/game/Camera.h>
 
 using namespace lemon;
 using namespace lemon::game;
 
 GameWorld::GameWorld()
     : store{}, actors{kMaxAliveGameObjects}, tickingActors{}, tickingComponents{}, renderableComponents{512},
-      lastUpdateTime{0.f}
+      lastUpdateTime{0.f}, camera{}
 {
 }
 
@@ -77,4 +78,16 @@ TickGroup*
 GameWorld::getComponentTickGroup()
 {
     return &tickingComponents;
+}
+
+const Camera&
+GameWorld::getCamera() const
+{
+    return camera;
+}
+
+Camera&
+GameWorld::getCamera()
+{
+    return camera;
 }
