@@ -5,8 +5,6 @@ add_executable(${PROJECT_NAME}
 	"src/metadata.cpp"
 	"src/bundles.cpp"
 	"src/mesh.cpp"
-    "src/game/math.cpp"
-    "src/game/CameraController.cpp"
     "src/common/MovementComponent.cpp"
     "src/common/CameraComponent.cpp"
     "src/common/FlyingCameraActor.cpp"
