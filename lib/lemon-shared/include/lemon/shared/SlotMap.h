@@ -3,6 +3,7 @@
 #include <lemon/pch/folly.h>
 #include <lemon/shared/common.h>
 #include <lemon/shared/Memory.h>
+#include <lemon/shared/PtrRange.h>
 
 namespace lemon {
     template<typename Tag>
@@ -62,7 +63,7 @@ namespace lemon {
         using HandleTag = THandle::Tag;
         using Handle = THandle;
 
-        SlotMap(size_t initialCapacity = 0);
+        explicit SlotMap(size_t initialCapacity = 0);
         ~SlotMap();
 
         template<typename... TArgs>
@@ -113,6 +114,18 @@ namespace lemon {
 
         TData*
         getData(Handle handle);
+
+        const TData*
+        begin() const;
+
+        const TData*
+        end() const;
+
+        TData*
+        begin();
+
+        TData*
+        end();
 
     private:
         void

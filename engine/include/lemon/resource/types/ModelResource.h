@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lemon/scheduler.h>
+#include <lemon/render/MeshGPUBuffer.h>
 #include <lemon/resource/common.h>
 #include <lemon/resource/ResourceInstance.h>
 #include <lemon/resource/ResourceMetadata.h>
@@ -30,6 +31,11 @@ namespace lemon::res {
         // END Resource traits
         /////////////////////////////////////////////////////////////////////////////////////
 
+        struct MeshWrapper {
+            const model::ModelMesh* pMesh;
+            render::MeshGPUBuffer buffer;
+        };
+
         /// <summary>
         /// A simple wrapper around `model::ModelNode` that maps mesh pointers directly.
         ///
@@ -37,28 +43,29 @@ namespace lemon::res {
         /// it takes pointers to `std::vector` elements and assumes they won't be relocated.
         /// </summary>
         class Model : public ResourceObject {
+            const model::ModelNode* node;
+            folly::small_vector<MeshWrapper, kObjectCapacity> meshes;
+
         public:
             Model(const model::LemonModel* pModel, const model::ModelNode* pNode)
             {
                 node = pNode;
                 meshes.reserve(pNode->meshes.size());
                 for (auto idx : pNode->meshes) {
-                    meshes.push_back(&pModel->meshes[idx]);
+                    MeshWrapper wrapper;
+                    wrapper.pMesh = &pModel->meshes[idx];
+                    wrapper.buffer = render::createMeshGPUBuffer(wrapper.pMesh);
+                    meshes.emplace_back(wrapper);
                 }
             }
 
-        private:
-            const model::ModelNode* node;
-            folly::small_vector<const model::ModelMesh*, kObjectCapacity> meshes;
-
-        public:
             inline const std::string&
             getName() const
             {
                 return node->name;
             }
 
-            inline const folly::small_vector<const model::ModelMesh*, kObjectCapacity>&
+            inline const folly::small_vector<MeshWrapper, kObjectCapacity>&
             getMeshes() const
             {
                 return meshes;

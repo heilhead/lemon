@@ -46,7 +46,7 @@ set(SOURCE_FILES
         "src/lemon/game/actor/ActorComponent.cpp"
         "src/lemon/game/actor/common.cpp"
         "src/lemon/game/actor/TickGroup.cpp"
-)
+ "src/lemon/render/MeshGPUBuffer.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

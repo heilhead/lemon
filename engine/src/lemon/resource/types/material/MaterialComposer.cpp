@@ -37,7 +37,7 @@ MaterialComposer::loadTemplate(std::filesystem::path& path)
     if (res) {
         return tplEnv.parse(*res);
     } else {
-        std::string strErr = "Failed to resolve shader include: [" + path.string() +
+        std::string strErr = "failed to resolve shader include: [" + path.string() +
                              "] error: " + std::to_string((int)res.error());
         logger::err(strErr);
         return tplEnv.parse(strErr);

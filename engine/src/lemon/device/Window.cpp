@@ -43,7 +43,6 @@ Window::loop(const std::function<LoopControl(float)>& callback) const
         switch (ctrl) {
         case LoopControl::Continue:
             tLastFrame = tNow;
-            glfwPollEvents();
             break;
         case LoopControl::Abort:
             return;

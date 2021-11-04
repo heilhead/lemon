@@ -165,15 +165,10 @@ GameObjectTickDescriptor::updateProxy()
     }
 }
 
-GameObject::GameObject() : tick{this}
-{
-    LEMON_TRACE_FN();
-}
+GameObject::GameObject() : tick{this} {}
 
 GameObject::~GameObject()
 {
-    LEMON_TRACE_FN();
-
     auto* pStore = GameWorld::getStoreInternal();
     for (auto* pObject : getSubObjectList()) {
         pStore->destroy(pObject);
@@ -292,20 +287,16 @@ GameObject::iterateSubObjects(const std::function<void(const GameObject*)>& fn, 
 void
 GameObject::onStart()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 GameObject::onTick(float deltaTime)
 {
-    LEMON_TRACE_FN();
 }
 
 void
 GameObject::onStop()
 {
-    LEMON_TRACE_FN();
-
     tick.disable();
 }
 

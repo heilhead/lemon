@@ -242,6 +242,34 @@ namespace lemon {
     }
 
     template<SlotMapDataType TData, typename THandle>
+    const TData*
+    SlotMap<TData, THandle>::begin() const
+    {
+        return &getData(0);
+    }
+
+    template<SlotMapDataType TData, typename THandle>
+    const TData*
+    SlotMap<TData, THandle>::end() const
+    {
+        return &getData(0) + getSize();
+    }
+
+    template<SlotMapDataType TData, typename THandle>
+    TData*
+    SlotMap<TData, THandle>::begin()
+    {
+        return &getData(0);
+    }
+
+    template<SlotMapDataType TData, typename THandle>
+    TData*
+    SlotMap<TData, THandle>::end()
+    {
+        return &getData(0) + getSize();
+    }
+
+    template<SlotMapDataType TData, typename THandle>
     void
     SlotMap<TData, THandle>::reserve(size_t newCapacity)
     {

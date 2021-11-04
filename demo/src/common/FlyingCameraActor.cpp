@@ -46,6 +46,16 @@ FlyingCameraActor::onTick(float dt)
         prevMousePos = pos;
     }
 
+    auto speedModifier = 1.f;
+
+    if (pKeyboard->isKeyPressed(KeyCode::LeftShift)) {
+        speedModifier *= 5.f;
+    }
+
+    if (pKeyboard->isKeyPressed(KeyCode::LeftAlt)) {
+        speedModifier *= 0.2f;
+    }
+
     auto movement = kVectorZero;
 
     if (pKeyboard->isKeyPressed(KeyCode::W)) {
@@ -65,7 +75,7 @@ FlyingCameraActor::onTick(float dt)
     }
 
     if (!math::isNearlyZero(movement)) {
-        pMovement->move(movement, dt, true);
+        pMovement->move(movement * speedModifier, dt, true);
     }
 
     movement = kVectorZero;
@@ -79,7 +89,7 @@ FlyingCameraActor::onTick(float dt)
     }
 
     if (!math::isNearlyZero(movement)) {
-        pMovement->move(movement, dt, true);
+        pMovement->move(movement * speedModifier, dt, true);
     }
 }
 

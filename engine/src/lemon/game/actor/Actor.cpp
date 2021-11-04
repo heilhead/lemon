@@ -6,15 +6,11 @@ using namespace lemon::game;
 
 Actor::Actor() : GameObject()
 {
-    LEMON_TRACE_FN();
-
     tick.setGroup(GameWorld::get()->getActorTickGroup());
 }
 
 Actor::~Actor()
 {
-    LEMON_TRACE_FN();
-
     if (bComponentsInitialized) {
         uninitializeComponents();
     }
@@ -37,27 +33,23 @@ Actor::getRoot() const
 void
 Actor::onPreInitializeComponents()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 Actor::onPostInitializeComponents()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 Actor::onStart()
 {
     GameObject::onStart();
-    LEMON_TRACE_FN();
     worldHandle = GameWorld::get()->registerActorInternal(this);
 }
 
 void
 Actor::onStop()
 {
-    LEMON_TRACE_FN();
     GameWorld::get()->unregisterActorInternal(worldHandle);
     GameObject::onStop();
 }
@@ -68,7 +60,7 @@ Actor::addTickDependency(GameObject* pOtherObject)
     if (auto* pComponent = cast<Actor>(pOtherObject)) {
         GameObject::addTickDependency(pOtherObject);
     } else {
-        logger::warn("Failed to add tick dependency: actor may only have other actors as tick dependencies");
+        logger::warn("failed to add tick dependency: actor may only have other actors as tick dependencies");
     }
 }
 
@@ -78,7 +70,7 @@ Actor::removeTickDependency(GameObject* pOtherObject)
     if (auto* pComponent = cast<Actor>(pOtherObject)) {
         GameObject::removeTickDependency(pOtherObject);
     } else {
-        logger::warn("Failed to add tick dependency: actor may only have other actors as tick dependencies");
+        logger::warn("failed to add tick dependency: actor may only have other actors as tick dependencies");
     }
 }
 

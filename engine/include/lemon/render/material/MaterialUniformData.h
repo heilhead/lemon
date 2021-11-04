@@ -18,6 +18,16 @@ namespace lemon::render {
 
         MaterialUniformData(const KeepAlive<MaterialLayout>& kaLayout);
 
+        void
+        copyFrom(const MaterialUniformData& other)
+        {
+            if (kaLayout == other.kaLayout) {
+                data = other.data;
+            } else {
+                logger::warn("failed to copy material uniform data: layout mismatch");
+            }
+        }
+
         // TODO: Figure out proper constraints for uniform data types. `std::semiregular` is not enough here.
         template<std::semiregular TData>
         void

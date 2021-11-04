@@ -124,12 +124,13 @@ namespace lemon::game {
         const glm::f32mat4&
         getGlobalTransformMatrix() const;
 
+    protected:
+        uint32_t
+        updateGlobalTransform() const;
+
     private:
         void
         updateLocalTransform() const;
-
-        void
-        updateGlobalTransform() const;
     };
 
     struct GameObjectRenderProxy {

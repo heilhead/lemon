@@ -20,9 +20,9 @@ namespace lemon::render {
 
         std::array<wgpu::VertexAttribute, kMaxAttributes> attributes{};
         uint64_t stride = 0;
+        MeshComponents components = MeshComponents::None;
         uint8_t attributeCount = 0;
         uint8_t locationCount = 0;
-        MeshComponents components = MeshComponents::None;
 
     public:
         MeshVertexFormat() {}

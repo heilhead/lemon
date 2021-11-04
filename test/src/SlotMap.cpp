@@ -77,4 +77,21 @@ TEST_CASE("SlotMap")
     REQUIRE(Counter::copyCtors == 0);
     REQUIRE(Counter::moveAssigns == 0);
     REQUIRE(Counter::copyAssigns == 0);
+
+    {
+        SlotMap<size_t> slotMap;
+
+        auto h1 = slotMap.insert(1);
+        auto h2 = slotMap.insert(2);
+        auto h3 = slotMap.insert(3);
+        auto h4 = slotMap.insert(4);
+        auto h5 = slotMap.insert(5);
+
+        size_t sum = 0;
+        for (const auto& num : slotMap) {
+            sum += num;
+        }
+
+        REQUIRE(sum == 15);
+    }
 }

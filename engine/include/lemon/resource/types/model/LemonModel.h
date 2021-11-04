@@ -54,8 +54,6 @@ namespace lemon::res::model {
 
     struct ModelMesh {
     public:
-        uint8_t material;
-
         render::MeshComponents components;
         render::MeshVertexFormat vertexFormat;
         wgpu::IndexFormat indexFormat;
@@ -65,6 +63,8 @@ namespace lemon::res::model {
         UnalignedMemory indexData;
 
         std::optional<std::vector<glm::mat4>> joints{};
+
+        uint8_t material;
 
     public:
         template<class Archive>

@@ -9,7 +9,8 @@ add_executable(${PROJECT_NAME}
     "src/common/CameraComponent.cpp"
     "src/common/FlyingCameraActor.cpp"
     "src/common/DemoModelActor.cpp"
-    "src/common/MeshRenderComponent.cpp")
+    "src/common/MeshComponent.cpp"
+    "src/render/RenderQueue.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 

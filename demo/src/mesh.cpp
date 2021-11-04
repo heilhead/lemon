@@ -1,18 +1,55 @@
 #include "mesh.h"
 #include "common/FlyingCameraActor.h"
+#include "common/DemoModelActor.h"
+#include "render/RenderQueue.h"
 #include <lemon/game.h>
 
 using namespace lemon;
+using namespace lemon::game;
 using namespace lemon::device;
 using namespace lemon::utils;
 using namespace lemon::res;
 using namespace lemon::scheduler;
 using namespace lemon::render;
-using namespace game;
+using namespace demo;
+
+glm::f32vec3
+hsv2rgb(glm::f32vec3 hsv)
+{
+    glm::f32vec3 rgb;
+    double h = hsv.x, s = hsv.y, v = hsv.z, p, q, t, fract;
+
+    if (h == 360.f) {
+        h = 0.f;
+    } else {
+        h /= 60.f;
+    };
+
+    fract = h - std::floor(h);
+
+    p = v * (1. - s);
+    q = v * (1. - s * fract);
+    t = v * (1. - s * (1. - fract));
+
+    if (0.f <= h && h < 1.f)
+        rgb = glm::f32vec3(v, t, p);
+    else if (1.f <= h && h < 2.f)
+        rgb = glm::f32vec3(q, v, p);
+    else if (2.f <= h && h < 3.f)
+        rgb = glm::f32vec3(p, v, t);
+    else if (3.f <= h && h < 4.f)
+        rgb = glm::f32vec3(p, q, v);
+    else if (4.f <= h && h < 5.f)
+        rgb = glm::f32vec3(t, p, v);
+    else if (5.f <= h && h < 6.f)
+        rgb = glm::f32vec3(v, p, q);
+    else
+        rgb = glm::f32vec3(0.f, 0.f, 0.f);
+
+    return rgb;
+}
 
 namespace minirender {
-    using MeshHandle = const ModelResource::Mesh*;
-
     const ModelResource::Model*
     loadModel()
     {
@@ -38,14 +75,6 @@ namespace minirender {
 
         return *result;
     }
-
-    struct DrawCall {
-        MeshHandle mesh;
-        MaterialInstance material;
-        wgpu::Buffer vbuf;
-        wgpu::Buffer ibuf;
-        Transform transform;
-    };
 } // namespace minirender
 
 class MiniRender {
@@ -64,13 +93,13 @@ private:
 
     MaterialUniformData* pSharedData;
 
-    minirender::MeshHandle mesh;
-
-    std::array<minirender::DrawCall, 4> drawCalls;
     std::chrono::time_point<std::chrono::steady_clock> timeStart = std::chrono::steady_clock::now();
 
-    std::unique_ptr<GameWorld> world;
+    std::unique_ptr<GameWorld> pWorld;
+    std::unique_ptr<RenderQueue> pRenderQueue;
     GameObjectHandle<FlyingCameraActor> hCameraActor;
+
+    std::vector<GameObjectHandle<DemoModelActor>> demoActorHandles;
 
 public:
     void
@@ -90,86 +119,40 @@ public:
         depthStencilView = createDefaultDepthStencilView(device, wndWidth, wndHeight);
 
         auto model = loadModel();
-        mesh = model->getMeshes()[0];
-
+        auto& meshData = model->getMeshes()[0];
         auto* pMaterial = loadMaterial();
-
-        vertexBuffer = createBufferFromData(device, mesh->vertexData, mesh->vertexData.size(),
-                                            wgpu::BufferUsage::Vertex);
-        indexBuffer =
-            createBufferFromData(device, mesh->indexData, mesh->indexData.size(), wgpu::BufferUsage::Index);
-
-        auto material = MaterialManager::get()->getMaterialInstance(*pMaterial, mesh->vertexFormat);
+        auto material = MaterialManager::get()->getMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
 
         pSharedData = &PipelineManager::get()->getSharedUniformData();
+        pWorld = std::make_unique<GameWorld>();
+        pRenderQueue = std::make_unique<RenderQueue>();
 
-        {
-            constexpr auto tint = lemon::sid("materialParams.tint");
-            constexpr auto colWhite = glm::f32vec4(1.f, 1.f, 1.f, 1.f);
-            constexpr auto colRed = glm::f32vec4(1.f, 0.f, 0.f, 1.f);
-            constexpr auto colGreen = glm::f32vec4(0.f, 1.f, 0.f, 1.f);
-            constexpr auto colBlue = glm::f32vec4(0.f, 0.f, 1.f, 1.f);
+        hCameraActor = pWorld->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
 
-            auto idx = 0;
-            {
-                DrawCall dc{.mesh = mesh,
-                            .material = material,
-                            .vbuf = vertexBuffer,
-                            .ibuf = indexBuffer,
-                            .transform = Transform{}};
-                dc.material.setParameter(tint, colWhite);
-                dc.transform.setPosition(0.f, 0.f, 0.f);
-                dc.transform.setRotation(kQuatUEOrientation);
-                dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                drawCalls[idx++] = std::move(dc);
-            }
+        static constexpr float spreadFactor = 100.f;
 
-            {
-                DrawCall dc{.mesh = mesh,
-                            .material = material,
-                            .vbuf = vertexBuffer,
-                            .ibuf = indexBuffer,
-                            .transform = Transform{}};
-                dc.material.setParameter(tint, colRed);
-                dc.transform.setPosition(kVectorXAxis * 500.f);
-                dc.transform.setRotation(kQuatUEOrientation);
-                dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                drawCalls[idx++] = std::move(dc);
-            }
+        int maxRings = 10;
+        for (int i = 1; i < maxRings; i++) {
+            int maxActors = i * 4;
+            for (int j = 0; j < maxActors; j++) {
+                float angleDeg = 360.f / maxActors * j;
+                float angleRad = glm::radians(angleDeg);
 
-            {
-                DrawCall dc{.mesh = mesh,
-                            .material = material,
-                            .vbuf = vertexBuffer,
-                            .ibuf = indexBuffer,
-                            .transform = Transform{}};
-                dc.material.setParameter(tint, colGreen);
-                dc.transform.setPosition(kVectorYAxis * 500.f);
-                dc.transform.setRotation(kQuatUEOrientation);
-                dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                drawCalls[idx++] = std::move(dc);
-            }
+                glm::f32vec3 pos{std::sin(angleRad), 0.f, std::cos(angleRad)};
 
-            {
-                DrawCall dc{.mesh = mesh,
-                            .material = material,
-                            .vbuf = vertexBuffer,
-                            .ibuf = indexBuffer,
-                            .transform = Transform{}};
-                dc.material.setParameter(tint, colBlue);
-                dc.transform.setPosition(kVectorZAxis * 500.f);
-                dc.transform.setRotation(kQuatUEOrientation);
-                dc.transform.setScale(0.5f, 0.5f, 0.5f);
-                drawCalls[idx++] = std::move(dc);
+                auto hsv = glm::f32vec3(angleDeg, static_cast<float>(i) / static_cast<float>(maxRings), 1.f);
+                auto rgb = hsv2rgb(hsv);
+
+                auto hDemoActor = pWorld->createActor<demo::DemoModelActor>(
+                    pos * i * spreadFactor, glm::quatLookAt(-pos, kVectorUp) * kQuatUEOrientation);
+
+                auto* pDemoActor = hDemoActor.get();
+                pDemoActor->setColor(rgb);
+                pDemoActor->setWave(i);
+
+                demoActorHandles.emplace_back(hDemoActor);
             }
         }
-
-        world = std::make_unique<GameWorld>();
-
-        hCameraActor = world->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
-
-        // auto* pCameraActor = hCameraActor.get();
-        // pCameraActor->getRoot()->setLocalRotation(glm::quatLookAt(kVectorZAxis, kVectorUp));
     }
 
     void
@@ -183,9 +166,9 @@ public:
         float fTime = static_cast<float>(dTime);                     // time in seconds, float
         float fTimeFrac = static_cast<float>(std::fmod(dTime, 1.f)); // fractional part
 
-        world->updateInternal(dTime);
+        pWorld->updateInternal(dTime);
 
-        pSharedData->setData(cameraParam, world->getCamera().getUniformData());
+        pSharedData->setData(cameraParam, pWorld->getCamera().getUniformData());
         pSharedData->setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
     }
 
@@ -194,6 +177,7 @@ public:
     {
         auto* pPipelineMan = PipelineManager::get();
         auto* pRenderMan = RenderManager::get();
+        auto* pRenderQueue = RenderQueue::get();
 
         auto& cbuffer = pRenderMan->getConstantBuffer();
         cbuffer.reset();
@@ -208,12 +192,14 @@ public:
         {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
 
-            for (auto& dc : drawCalls) {
-                constexpr auto matModel = lemon::sid("packetParams.matModel");
+            constexpr auto matModel = lemon::sid("packetParams.matModel");
 
-                auto& mat = dc.material;
+            for (auto& renderProxy : pRenderQueue->getMeshes()) {
+                renderProxy.pOwner->updateRenderProxy(renderProxy);
+
+                auto& mat = renderProxy.material;
                 auto& matData = mat.getUniformData();
-                matData.setData(matModel, dc.transform.getMatrix());
+                matData.setData(matModel, renderProxy.matrix);
                 matData.merge(cbuffer);
 
                 pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
@@ -224,9 +210,9 @@ public:
                 pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
                                   matData.getOffsets());
 
-                pass.SetVertexBuffer(0, dc.vbuf);
-                pass.SetIndexBuffer(dc.ibuf, dc.mesh->indexFormat);
-                pass.DrawIndexed(dc.mesh->indexCount);
+                pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
+                pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
+                pass.DrawIndexed(renderProxy.indexCount);
             }
 
             pass.EndPass();

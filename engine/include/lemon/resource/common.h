@@ -68,8 +68,8 @@ namespace lemon::res {
     };
 
     /// <summary>
-    /// Creates a hash-based class ID. Note that the ID is based on the mangled C++ class name
-    /// and will change if the class is renamed, moved to another namespace etc.
+    /// Creates a hash-based class ID. Note that the ID can change if the class is renamed, moved to another
+    /// namespace etc.
     /// </summary>
     /// <typeparam name="TResource">`ResourceInstance` subclass</typeparam>
     /// <returns>Hash-based class ID (`uint64_t`)</returns>

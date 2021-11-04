@@ -89,7 +89,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
     auto& primitiveState = desc.primitive;
     primitiveState.topology = wgpu::PrimitiveTopology::TriangleList;
     primitiveState.stripIndexFormat = wgpu::IndexFormat::Undefined;
-    primitiveState.frontFace = wgpu::FrontFace::CW;
+    primitiveState.frontFace = wgpu::FrontFace::CCW;
     primitiveState.cullMode = wgpu::CullMode::Back;
 
     // Depth-stencil state.

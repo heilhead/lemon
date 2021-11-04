@@ -16,8 +16,8 @@ namespace lemon {
     public:
         UnsafeSingleton() noexcept
         {
-            LEMON_ASSERT(singleton == nullptr,
-                         "only one instance a singleton class can be alive at the same time");
+            LEMON_ASSERT(singleton == nullptr, "only one instance of ", typeid(TDerived).name(),
+                         " can be alive at the same time");
             singleton = static_cast<TDerived*>(this);
         }
 
@@ -29,6 +29,8 @@ namespace lemon {
         static TDerived*
         get() noexcept
         {
+            LEMON_ASSERT(singleton != nullptr, "singleton is not initialized for class ",
+                         typeid(TDerived).name());
             return singleton;
         }
     };

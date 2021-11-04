@@ -71,6 +71,12 @@ namespace lemon::game {
         Camera&
         getCamera();
 
+        double
+        getTime() const
+        {
+            return lastUpdateTime;
+        }
+
     private:
         void
         tick(TickProxy& proxy, double time, float dt);
@@ -105,7 +111,7 @@ namespace lemon::game {
                         const glm::f32vec3& scale)
     {
         if (pActor->bAddedToWorld) {
-            logger::warn("Failed to add actor to the world: actor is already in the world: ",
+            logger::warn("failed to add actor to the world: actor is already in the world: ",
                          typeid(*pActor).name());
             return GameObjectHandle<TActor>();
         }

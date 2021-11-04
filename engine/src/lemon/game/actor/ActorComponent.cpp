@@ -7,15 +7,10 @@ using namespace lemon::game;
 
 ActorComponent::ActorComponent() : GameObject()
 {
-    LEMON_TRACE_FN();
-
     tick.setGroup(GameWorld::get()->getComponentTickGroup());
 }
 
-ActorComponent::~ActorComponent()
-{
-    LEMON_TRACE_FN();
-}
+ActorComponent::~ActorComponent() {}
 
 void
 ActorComponent::enableTick(float interval)
@@ -53,7 +48,7 @@ ActorComponent::addTickDependency(GameObject* pOtherObject)
     if (auto* pComponent = cast<ActorComponent>(pOtherObject)) {
         GameObject::addTickDependency(pOtherObject);
     } else {
-        logger::warn("Failed to add tick dependency: actor component may only have other actor components as "
+        logger::warn("failed to add tick dependency: actor component may only have other actor components as "
                      "tick dependencies");
     }
 }
@@ -64,7 +59,7 @@ ActorComponent::removeTickDependency(GameObject* pOtherObject)
     if (auto* pComponent = cast<ActorComponent>(pOtherObject)) {
         GameObject::removeTickDependency(pOtherObject);
     } else {
-        logger::warn("Failed to remove tick dependency: actor component may only have other actor components "
+        logger::warn("failed to remove tick dependency: actor component may only have other actor components "
                      "as tick dependencies");
     }
 }
@@ -84,25 +79,21 @@ ActorComponent::getRoot() const
 void
 ActorComponent::onRegister()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 ActorComponent::onInitialize()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 ActorComponent::onUninitialize()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 ActorComponent::onUnregister()
 {
-    LEMON_TRACE_FN();
 }
 
 void
@@ -146,13 +137,11 @@ ActorComponent::findTickingParent()
 void
 PositionableComponent::onRegister()
 {
-    LEMON_TRACE_FN();
 }
 
 void
 PositionableComponent::onInitialize()
 {
-    LEMON_TRACE_FN();
 }
 
 glm::f32vec3
@@ -204,26 +193,28 @@ PositionableComponent::updateLocalTransform() const
     }
 }
 
-inline void
+uint32_t
 PositionableComponent::updateGlobalTransform() const
 {
     updateLocalTransform();
 
     auto* pParent = getParent<PositionableComponent>();
     if (pParent == nullptr) {
-        return;
+        return transformCache.generation;
     }
 
     pParent->updateGlobalTransform();
 
     auto parentGeneration = pParent->transformCache.generation;
     if (parentGeneration == transformCache.parentGeneration) {
-        return;
+        return transformCache.generation;
     }
 
     transformCache.globalMatrix = pParent->transformCache.globalMatrix * transformCache.localMatrix;
     transformCache.parentGeneration = parentGeneration;
     transformCache.generation++;
+
+    return transformCache.generation;
 }
 
 const glm::f32mat4&
@@ -251,14 +242,12 @@ void
 RenderableComponent::onStart()
 {
     PositionableComponent::onStart();
-    LEMON_TRACE_FN();
     renderProxyHandle = GameWorld::get()->registerRenderableComponentInternal(createRenderProxy());
 }
 
 void
 RenderableComponent::onStop()
 {
-    LEMON_TRACE_FN();
     GameWorld::get()->unregisterRenderableComponentInternal(renderProxyHandle);
     PositionableComponent::onStop();
 }

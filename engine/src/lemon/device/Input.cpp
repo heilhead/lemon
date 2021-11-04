@@ -10,5 +10,6 @@ Input::Input(WindowHandle inHandle) : keyboardListener{inHandle}, mouseListener{
 void
 Input::update()
 {
+    glfwPollEvents();
     mouseListener.update();
 }

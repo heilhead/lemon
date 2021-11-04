@@ -28,8 +28,8 @@ TickGroup::tick(double time)
     auto dt = static_cast<float>(time - lastTickTime);
     lastTickTime = time;
 
-    for (size_t i = 0, length = proxies.getSize(); i < length; i++) {
-        tickImpl(proxies[i], dt);
+    for (auto& proxy : proxies) {
+        tickImpl(proxy, dt);
     }
 }
 

@@ -14,7 +14,7 @@ void
 GameWorld::removeActor(Actor* pActor)
 {
     if (!pActor->bAddedToWorld) {
-        logger::warn("Failed to remove actor from the world: actor is not in the world: ",
+        logger::warn("failed to remove actor from the world: actor is not in the world: ",
                      typeid(*pActor).name());
         return;
     }
