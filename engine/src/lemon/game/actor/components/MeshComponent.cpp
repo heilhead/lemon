@@ -1,4 +1,7 @@
-#include "MeshComponent.h"
+#include <lemon/game/actor/components/MeshComponent.h>
+#include <lemon/game/actor/GameWorld.h>
+#include <lemon/resource/ResourceManager.h>
+#include <lemon/resource/types/MaterialResource.h>
 
 using namespace lemon;
 using namespace lemon::game;
@@ -157,7 +160,7 @@ MeshComponent::addRenderProxy(MeshDescriptor& mesh)
                           .matrix = kMatrixIdentity,
                           .matrixGeneration = 0};
 
-    mesh.renderHandle = RenderQueue::get()->addMeshProxy(std::move(proxy));
+    mesh.renderHandle = GameWorld::get()->getRenderQueue().addMeshProxy(std::move(proxy));
 }
 
 void
@@ -165,7 +168,7 @@ MeshComponent::removeRenderProxy(MeshDescriptor& mesh)
 {
     LEMON_ASSERT(mesh.hasRenderHandle());
 
-    RenderQueue::get()->removeMeshProxy(mesh.renderHandle);
+    GameWorld::get()->getRenderQueue().removeMeshProxy(mesh.renderHandle);
 
     mesh.renderHandle = MeshRenderHandle();
 }

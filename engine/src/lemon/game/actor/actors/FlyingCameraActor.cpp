@@ -1,6 +1,6 @@
-#include "FlyingCameraActor.h"
-#include "CameraComponent.h"
-#include "MovementComponent.h"
+#include <lemon/game/actor/actors/FlyingCameraActor.h>
+#include <lemon/game/actor/components/CameraComponent.h>
+#include <lemon/game/actor/components/MovementComponent.h>
 
 using namespace lemon;
 using namespace lemon::game;
@@ -27,6 +27,18 @@ void
 FlyingCameraActor::onStop()
 {
     MouseListener::get()->getDelegate(MouseButton::Button2).remove(hMouseClick);
+}
+
+void
+FlyingCameraActor::activateCamera() const
+{
+    pCamera->activateCamera();
+}
+
+void
+FlyingCameraActor::deactivateCamera() const
+{
+    pCamera->deactivateCamera();
 }
 
 void

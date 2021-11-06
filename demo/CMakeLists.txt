@@ -5,12 +5,7 @@ add_executable(${PROJECT_NAME}
 	"src/metadata.cpp"
 	"src/bundles.cpp"
 	"src/mesh.cpp"
-    "src/common/MovementComponent.cpp"
-    "src/common/CameraComponent.cpp"
-    "src/common/FlyingCameraActor.cpp"
-    "src/common/DemoModelActor.cpp"
-    "src/common/MeshComponent.cpp"
-    "src/render/RenderQueue.cpp")
+    "src/common/DemoModelActor.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 

@@ -10,6 +10,12 @@ GameWorld::GameWorld()
 {
 }
 
+render::RenderQueue&
+GameWorld::getRenderQueue()
+{
+    return renderQueue;
+}
+
 void
 GameWorld::removeActor(Actor* pActor)
 {
@@ -40,6 +46,8 @@ GameWorld::updateInternal(double time)
     lastUpdateTime = time;
     tickingActors.tick(time);
     tickingComponents.tick(time);
+
+    updateCamera();
 }
 
 GameObjectWorldHandle
@@ -90,4 +98,37 @@ Camera&
 GameWorld::getCamera()
 {
     return camera;
+}
+
+double
+GameWorld::getTime() const
+{
+    return lastUpdateTime;
+}
+
+void
+GameWorld::setCameraActive(const CameraComponent* pCameraComponent)
+{
+    LEMON_ASSERT(pCameraComponent != nullptr);
+
+    hCameraObject = pCameraComponent;
+}
+
+void
+GameWorld::setCameraInactive(const CameraComponent* pCameraComponent)
+{
+    LEMON_ASSERT(pCameraComponent != nullptr);
+
+    auto* pCurrentCamera = hCameraObject.get();
+    if (pCurrentCamera == pCameraComponent) {
+        hCameraObject.clear();
+    }
+}
+
+void
+GameWorld::updateCamera()
+{
+    if (auto* pCameraComponent = hCameraObject.get()) {
+        pCameraComponent->updateWorldCamera(camera);
+    }
 }

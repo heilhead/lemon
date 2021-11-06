@@ -1,4 +1,4 @@
-#include "MovementComponent.h"
+#include <lemon/game/actor/components/MovementComponent.h>
 
 using namespace lemon;
 using namespace lemon::game;

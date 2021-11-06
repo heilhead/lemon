@@ -34,6 +34,8 @@ set(SOURCE_FILES
         "src/lemon/render/material/MaterialLayout.cpp"
         "src/lemon/render/PipelineManager.cpp"
         "src/lemon/render/MeshVertexFormat.cpp"
+        "src/lemon/render/MeshGPUBuffer.cpp"
+        "src/lemon/render/RenderQueue.cpp"
         "src/lemon/device/Input.cpp"
         "src/lemon/device/input/KeyboardListener.cpp"
         "src/lemon/device/input/MouseListener.cpp"
@@ -46,7 +48,10 @@ set(SOURCE_FILES
         "src/lemon/game/actor/ActorComponent.cpp"
         "src/lemon/game/actor/common.cpp"
         "src/lemon/game/actor/TickGroup.cpp"
- "src/lemon/render/MeshGPUBuffer.cpp")
+        "src/lemon/game/actor/components/CameraComponent.cpp"
+        "src/lemon/game/actor/components/MovementComponent.cpp"
+        "src/lemon/game/actor/actors/FlyingCameraActor.cpp"
+        "src/lemon/game/actor/components/MeshComponent.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

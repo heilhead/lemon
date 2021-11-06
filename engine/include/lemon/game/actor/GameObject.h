@@ -216,7 +216,7 @@ namespace lemon::game {
         setParent(GameObject* pParent);
     };
 
-    template<GameObjectBase TConcreteGameObject>
+    template<GameObjectBase TConcreteGameObject = GameObject>
     struct GameObjectHandle {
     private:
         GameObjectStoreHandle storeHandle;
@@ -236,6 +236,9 @@ namespace lemon::game {
 
         bool
         isValid() const;
+
+        void
+        clear();
 
         operator bool() const;
 
@@ -302,7 +305,11 @@ namespace lemon::game {
     TConcreteGameObject*
     GameObjectHandle<TConcreteGameObject>::get()
     {
-        return cast<TConcreteGameObject>(upgradeHandle(storeHandle));
+        if (!storeHandle.isEmpty()) {
+            return cast<TConcreteGameObject>(upgradeHandle(storeHandle));
+        }
+
+        return nullptr;
     }
 
     template<GameObjectBase TConcreteGameObject>
@@ -317,6 +324,13 @@ namespace lemon::game {
     GameObjectHandle<TConcreteGameObject>::isValid() const
     {
         return validateHandle(storeHandle);
+    }
+
+    template<GameObjectBase TConcreteGameObject>
+    inline void
+    GameObjectHandle<TConcreteGameObject>::clear()
+    {
+        storeHandle = GameObjectStoreHandle();
     }
 
     template<GameObjectBase TConcreteGameObject>

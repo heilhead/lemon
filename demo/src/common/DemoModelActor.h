@@ -1,7 +1,6 @@
 #pragma once
 
-#include <lemon/game/actor/Actor.h>
-#include "MeshComponent.h"
+#include <lemon/game.h>
 
 namespace demo {
     class DemoModelActor : public lemon::game::Actor {

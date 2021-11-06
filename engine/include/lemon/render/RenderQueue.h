@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lemon/render/material/MaterialInstance.h>
+
 namespace lemon::render {
     class MeshRenderProxyOwner;
     class LightRenderProxyOwner;
@@ -38,8 +40,7 @@ namespace lemon::render {
     using MeshRenderList = SlotMap<MeshRenderProxy, MeshRenderHandle>;
     using LightRenderList = SlotMap<LightRenderProxy, LightRenderHandle>;
 
-    // TODO: Remove singleton and make it a part of `GameWorld`?
-    class RenderQueue : public UnsafeSingleton<RenderQueue> {
+    class RenderQueue {
         static constexpr auto kMeshStoreCapacity = 1024;
         static constexpr auto kLightStoreCapacity = 256;
 

@@ -1,7 +1,5 @@
 #include "mesh.h"
-#include "common/FlyingCameraActor.h"
 #include "common/DemoModelActor.h"
-#include "render/RenderQueue.h"
 #include <lemon/game.h>
 
 using namespace lemon;
@@ -16,7 +14,6 @@ using namespace demo;
 glm::f32vec3
 hsv2rgb(glm::f32vec3 hsv)
 {
-    glm::f32vec3 rgb;
     double h = hsv.x, s = hsv.y, v = hsv.z, p, q, t, fract;
 
     if (h == 360.f) {
@@ -32,21 +29,19 @@ hsv2rgb(glm::f32vec3 hsv)
     t = v * (1. - s * (1. - fract));
 
     if (0.f <= h && h < 1.f)
-        rgb = glm::f32vec3(v, t, p);
+        return {v, t, p};
     else if (1.f <= h && h < 2.f)
-        rgb = glm::f32vec3(q, v, p);
+        return {q, v, p};
     else if (2.f <= h && h < 3.f)
-        rgb = glm::f32vec3(p, v, t);
+        return {p, v, t};
     else if (3.f <= h && h < 4.f)
-        rgb = glm::f32vec3(p, q, v);
+        return {p, q, v};
     else if (4.f <= h && h < 5.f)
-        rgb = glm::f32vec3(t, p, v);
+        return {t, p, v};
     else if (5.f <= h && h < 6.f)
-        rgb = glm::f32vec3(v, p, q);
+        return {v, p, q};
     else
-        rgb = glm::f32vec3(0.f, 0.f, 0.f);
-
-    return rgb;
+        return {0.f, 0.f, 0.f};
 }
 
 namespace minirender {
@@ -128,6 +123,7 @@ public:
         pRenderQueue = std::make_unique<RenderQueue>();
 
         hCameraActor = pWorld->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
+        hCameraActor.get()->activateCamera();
 
         static constexpr float spreadFactor = 100.f;
 
@@ -177,7 +173,7 @@ public:
     {
         auto* pPipelineMan = PipelineManager::get();
         auto* pRenderMan = RenderManager::get();
-        auto* pRenderQueue = RenderQueue::get();
+        auto& renderQueue = GameWorld::get()->getRenderQueue();
 
         auto& cbuffer = pRenderMan->getConstantBuffer();
         cbuffer.reset();
@@ -194,7 +190,7 @@ public:
 
             constexpr auto matModel = lemon::sid("packetParams.matModel");
 
-            for (auto& renderProxy : pRenderQueue->getMeshes()) {
+            for (auto& renderProxy : renderQueue.getMeshes()) {
                 renderProxy.pOwner->updateRenderProxy(renderProxy);
 
                 auto& mat = renderProxy.material;

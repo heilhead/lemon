@@ -1,6 +1,8 @@
 #pragma once
 
 #include <lemon/game/actor/Actor.h>
+#include <lemon/misc/Delegate.h>
+#include <lemon/device/Device.h>
 
 namespace lemon::game {
     class FlyingCameraActor : public Actor {
@@ -22,6 +24,12 @@ namespace lemon::game {
 
         void
         onStop() override;
+
+        void
+        activateCamera() const;
+
+        void
+        deactivateCamera() const;
 
     private:
         void

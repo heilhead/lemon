@@ -1,7 +1,10 @@
 #pragma once
 
 #include <lemon/game/actor/ActorComponent.h>
-#include "../render/RenderQueue.h"
+#include <lemon/render/material/MaterialManager.h>
+#include <lemon/render/MeshGPUBuffer.h>
+#include <lemon/render/RenderQueue.h>
+#include <lemon/resource/types/ModelResource.h>
 
 namespace lemon::game {
     class MeshComponent : public RenderableComponent, public render::MeshRenderProxyOwner {

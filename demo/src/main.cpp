@@ -8,9 +8,6 @@
 #include <lemon/game/actor/GameObjectStore.h>
 #include <lemon/game/actor/GameWorld.h>
 
-#include "common/DemoModelActor.h"
-#include "common/FlyingCameraActor.h"
-
 using namespace lemon;
 using namespace lemon::game;
 

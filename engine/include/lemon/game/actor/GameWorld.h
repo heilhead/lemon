@@ -5,6 +5,8 @@
 #include <lemon/game/actor/GameObjectStore.h>
 #include <lemon/game/actor/TickGroup.h>
 #include <lemon/game/Camera.h>
+#include <lemon/game/actor/components/CameraComponent.h>
+#include <lemon/render/RenderQueue.h>
 
 namespace lemon::game {
     class GameWorld : public UnsafeSingleton<GameWorld> {
@@ -15,11 +17,15 @@ namespace lemon::game {
         TickGroup tickingComponents;
         SlotMap<GameObjectRenderProxy, RenderProxyHandle> renderableComponents;
         Camera camera;
-
+        GameObjectHandle<CameraComponent> hCameraObject;
+        render::RenderQueue renderQueue;
         double lastUpdateTime;
 
     public:
         GameWorld();
+
+        render::RenderQueue&
+        getRenderQueue();
 
         template<ActorBase TActor>
         GameObjectHandle<TActor>
@@ -72,14 +78,20 @@ namespace lemon::game {
         getCamera();
 
         double
-        getTime() const
-        {
-            return lastUpdateTime;
-        }
+        getTime() const;
+
+        void
+        setCameraActive(const CameraComponent* pCameraComponent);
+
+        void
+        setCameraInactive(const CameraComponent* pCameraComponent);
 
     private:
         void
         tick(TickProxy& proxy, double time, float dt);
+
+        void
+        updateCamera();
     };
 
     template<ActorBase TActor>

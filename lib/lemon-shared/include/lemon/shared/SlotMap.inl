@@ -245,28 +245,28 @@ namespace lemon {
     const TData*
     SlotMap<TData, THandle>::begin() const
     {
-        return &getData(0);
+        return reinterpret_cast<const TData*>(data.data());
     }
 
     template<SlotMapDataType TData, typename THandle>
     const TData*
     SlotMap<TData, THandle>::end() const
     {
-        return &getData(0) + getSize();
+        return begin() + getSize();
     }
 
     template<SlotMapDataType TData, typename THandle>
     TData*
     SlotMap<TData, THandle>::begin()
     {
-        return &getData(0);
+        return reinterpret_cast<TData*>(data.data());
     }
 
     template<SlotMapDataType TData, typename THandle>
     TData*
     SlotMap<TData, THandle>::end()
     {
-        return &getData(0) + getSize();
+        return begin() + getSize();
     }
 
     template<SlotMapDataType TData, typename THandle>

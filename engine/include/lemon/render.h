@@ -7,6 +7,8 @@
 #include <lemon/render/ComboRenderPipelineDescriptor.h>
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/MeshVertexFormat.h>
+#include <lemon/render/MeshGPUBuffer.h>
 #include <lemon/render/PipelineManager.h>
 #include <lemon/render/RenderManager.h>
+#include <lemon/render/RenderQueue.h>
 #include <lemon/render/utils.h>

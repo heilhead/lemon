@@ -38,6 +38,12 @@ Camera::update(const glm::f32mat4& matWorld)
     updateProjection();
 }
 
+bool
+Camera::isDirty() const
+{
+    return bDirty;
+}
+
 inline void
 Camera::updateView(const glm::f32mat4& matWorld)
 {

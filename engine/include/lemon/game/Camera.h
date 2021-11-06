@@ -58,6 +58,9 @@ namespace lemon::game {
         void
         update(const glm::f32mat4& matWorld);
 
+        bool
+        isDirty() const;
+
     private:
         void
         updateView(const Transform& t);
