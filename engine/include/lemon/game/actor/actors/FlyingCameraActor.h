@@ -31,6 +31,12 @@ namespace lemon::game {
         void
         deactivateCamera() const;
 
+        void
+        setSpeed(float speed);
+
+        void
+        setSensitivity(float sensitivity);
+
     private:
         void
         handleClick(device::KeyEvent evt, device::KeyMod mods);

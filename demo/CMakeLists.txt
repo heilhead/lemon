@@ -5,7 +5,8 @@ add_executable(${PROJECT_NAME}
 	"src/metadata.cpp"
 	"src/bundles.cpp"
 	"src/mesh.cpp"
-    "src/common/DemoModelActor.cpp")
+    "src/common/DemoModelActor.cpp"
+    "src/render/Renderer.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 
@@ -18,7 +19,6 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/glm.h>
     <lemon/engine.h>
     <lemon/misc.h>
-    <lemon/render.h>
     <lemon/resources.h>
     <lemon/scheduler.h>
     <lemon/serialization.h>

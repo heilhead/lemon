@@ -23,10 +23,19 @@ namespace lemon::game {
         float verticalSensitivity = 0.025f;
         float movementSpeed = 350.f;
 
+        float globalSensitivity = 1.f;
+        float globalSpeed = 1.f;
+
         void
         move(const glm::f32vec3& axis, float factor, bool bRelative) override;
 
         void
         rotate(const glm::f64vec2& delta, float factor) override;
+
+        void
+        setSpeed(float factor);
+
+        void
+        setSensitivity(float factor);
     };
 } // namespace lemon::game

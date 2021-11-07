@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include "common/DemoModelActor.h"
+#include "render/Renderer.h"
 #include <lemon/game.h>
+#include <lemon/render.h>
 
 using namespace lemon;
 using namespace lemon::game;
@@ -77,24 +79,16 @@ public:
     MiniRender() {}
 
 private:
-    std::unique_ptr<lemon::device::Platform> platform;
-
-    wgpu::Device device;
-    wgpu::Buffer indexBuffer;
-    wgpu::Buffer vertexBuffer;
-    wgpu::Queue queue;
-    wgpu::SwapChain swapChain;
-    wgpu::TextureView depthStencilView;
-
     MaterialUniformData* pSharedData;
 
     std::chrono::time_point<std::chrono::steady_clock> timeStart = std::chrono::steady_clock::now();
 
     std::unique_ptr<GameWorld> pWorld;
-    std::unique_ptr<RenderQueue> pRenderQueue;
     GameObjectHandle<FlyingCameraActor> hCameraActor;
 
     std::vector<GameObjectHandle<DemoModelActor>> demoActorHandles;
+
+    std::unique_ptr<Renderer> pRenderer;
 
 public:
     void
@@ -102,16 +96,7 @@ public:
     {
         using namespace minirender;
 
-        auto* gpu = Device::get()->getGPU();
-
-        device = gpu->getDevice();
-        swapChain = gpu->getSwapChain();
-        queue = gpu->getQueue();
-
-        const auto& swapChainImpl = gpu->getSwapChainImpl();
-        auto [wndWidth, wndHeight] = window->getSize();
-
-        depthStencilView = createDefaultDepthStencilView(device, wndWidth, wndHeight);
+        pRenderer = std::make_unique<Renderer>();
 
         auto model = loadModel();
         auto& meshData = model->getMeshes()[0];
@@ -120,10 +105,12 @@ public:
 
         pSharedData = &PipelineManager::get()->getSharedUniformData();
         pWorld = std::make_unique<GameWorld>();
-        pRenderQueue = std::make_unique<RenderQueue>();
 
         hCameraActor = pWorld->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
-        hCameraActor.get()->activateCamera();
+
+        auto* pCameraActor = hCameraActor.get();
+        pCameraActor->activateCamera();
+        pCameraActor->setSensitivity(3.f);
 
         static constexpr float spreadFactor = 100.f;
 
@@ -171,54 +158,7 @@ public:
     void
     render()
     {
-        auto* pPipelineMan = PipelineManager::get();
-        auto* pRenderMan = RenderManager::get();
-        auto& renderQueue = GameWorld::get()->getRenderQueue();
-
-        auto& cbuffer = pRenderMan->getConstantBuffer();
-        cbuffer.reset();
-
-        pSharedData->merge(cbuffer);
-
-        wgpu::TextureView backbufferView = swapChain.GetCurrentTextureView();
-        ComboRenderPassDescriptor renderPass({backbufferView}, depthStencilView);
-
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-
-        {
-            wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
-
-            constexpr auto matModel = lemon::sid("packetParams.matModel");
-
-            for (auto& renderProxy : renderQueue.getMeshes()) {
-                renderProxy.pOwner->updateRenderProxy(renderProxy);
-
-                auto& mat = renderProxy.material;
-                auto& matData = mat.getUniformData();
-                matData.setData(matModel, renderProxy.matrix);
-                matData.merge(cbuffer);
-
-                pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
-
-                pass.SetBindGroup(kSharedBindGroupIndex, pPipelineMan->getSharedBindGroup(),
-                                  pSharedData->getOffsetCount(), pSharedData->getOffsets());
-
-                pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
-                                  matData.getOffsets());
-
-                pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
-                pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
-                pass.DrawIndexed(renderProxy.indexCount);
-            }
-
-            pass.EndPass();
-        }
-
-        cbuffer.upload(pRenderMan->getDevice());
-
-        wgpu::CommandBuffer commands = encoder.Finish();
-        queue.Submit(1, &commands);
-        swapChain.Present();
+        Scheduler::get()->block(CPUTask(pRenderer->render()));
     }
 };
 

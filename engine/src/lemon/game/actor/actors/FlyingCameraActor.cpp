@@ -42,6 +42,18 @@ FlyingCameraActor::deactivateCamera() const
 }
 
 void
+FlyingCameraActor::setSpeed(float speed)
+{
+    pMovement->setSpeed(speed);
+}
+
+void
+FlyingCameraActor::setSensitivity(float sensitivity)
+{
+    pMovement->setSensitivity(sensitivity);
+}
+
+void
 FlyingCameraActor::onTick(float dt)
 {
     auto* pMouse = MouseListener::get();
