@@ -1,6 +1,7 @@
 #include "mesh.h"
 #include "common/DemoModelActor.h"
 #include "render/Renderer.h"
+#include "game/GameStateManager.h"
 #include <lemon/game.h>
 #include <lemon/render.h>
 
@@ -12,6 +13,129 @@ using namespace lemon::res;
 using namespace lemon::scheduler;
 using namespace lemon::render;
 using namespace demo;
+
+class DemoGameState : public GameState {
+public:
+    void
+    onStart() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onStop() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onPause() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onResume() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    Transition
+    onPostUpdate(float dt) override
+    {
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+            logger::trace("GAME STATE ENTER!");
+        }
+
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+            return Transition::pop();
+        }
+
+        return std::nullopt;
+    }
+};
+
+class DemoMenuState : public GameState {
+public:
+    void
+    onStart() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onStop() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onPause() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onResume() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    Transition
+    onPostUpdate(float dt) override
+    {
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+            return Transition::push<DemoGameState>();
+        }
+
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+            return Transition::pop();
+        }
+
+        return std::nullopt;
+    }
+};
+
+class DemoRootState : public GameState {
+public:
+    void
+    onStart() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onStop() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onPause() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    void
+    onResume() override
+    {
+        LEMON_TRACE_FN();
+    }
+
+    Transition
+    onPostUpdate(float dt) override
+    {
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+            return Transition::push<DemoMenuState>();
+        }
+
+        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+            return Transition::shutdown();
+        }
+
+        return std::nullopt;
+    }
+};
 
 glm::f32vec3
 hsv2rgb(glm::f32vec3 hsv)
@@ -90,6 +214,8 @@ private:
 
     std::unique_ptr<Renderer> pRenderer;
 
+    std::unique_ptr<GameStateManager> pGameStateMan;
+
 public:
     void
     init(Window* window)
@@ -165,6 +291,8 @@ public:
 void
 testMeshRendering()
 {
+    using namespace std::chrono_literals;
+
     lemon::Engine engine;
 
     engine.init(R"(C:\git\lemon\resources)");
@@ -172,15 +300,22 @@ testMeshRendering()
     {
         MiniRender render;
         render.init(Device::get()->getWindow());
+
+        auto pGameStateMan = std::make_unique<GameStateManager>();
+        pGameStateMan->init(std::make_unique<DemoRootState>());
+
         engine.loop([&](float dt) {
+            // std::this_thread::sleep_for(50ms);
+
+            pGameStateMan->onPreUpdate(dt);
+
             render.update(dt);
+
+            auto ctrl = pGameStateMan->onPostUpdate(dt);
+
             render.render();
 
-            if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
-                return LoopControl::Abort;
-            }
-
-            return LoopControl::Continue;
+            return ctrl;
         });
     }
 
