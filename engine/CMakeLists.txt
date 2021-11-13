@@ -36,6 +36,7 @@ set(SOURCE_FILES
         "src/lemon/render/MeshVertexFormat.cpp"
         "src/lemon/render/MeshGPUBuffer.cpp"
         "src/lemon/render/RenderQueue.cpp"
+        "src/lemon/render/DebugUI.cpp"
         "src/lemon/device/Input.cpp"
         "src/lemon/device/input/KeyboardListener.cpp"
         "src/lemon/device/input/MouseListener.cpp"
@@ -69,6 +70,7 @@ target_include_directories(${PROJECT_NAME}
 include(${LEMON_CPM_CMAKE_PATH})
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/dawn_static)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/imgui)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(folly CONFIG REQUIRED)
@@ -92,6 +94,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/std.h>
     <lemon/pch/cereal.h>
     <lemon/pch/dawn.h>
+    <lemon/pch/imgui.h>
     <lemon/pch/glm.h>
 )
 
@@ -112,6 +115,7 @@ CPMAddPackage("gh:pantor/inja#635e1fb")
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon::dawn_static
+        lemon::imgui
         lemon::shader
         lemon::shared
         Folly::folly

@@ -6,9 +6,12 @@ add_executable(${PROJECT_NAME}
 	"src/bundles.cpp"
 	"src/mesh.cpp"
     "src/common/DemoModelActor.cpp"
-    "src/render/Renderer.cpp"
     "src/game/GameState.cpp"
-    "src/game/GameStateManager.cpp")
+    "src/game/GameStateManager.cpp"
+    "src/render/Renderer.cpp"
+    "src/render/RenderPass.cpp"
+    "src/render/passes/MainRenderPass.cpp"
+    "src/render/passes/DebugUIRenderPass.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 
@@ -18,6 +21,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/std.h>
     <lemon/pch/cereal.h>
     <lemon/pch/dawn.h>
+    <lemon/pch/imgui.h>
     <lemon/pch/glm.h>
     <lemon/engine.h>
     <lemon/misc.h>

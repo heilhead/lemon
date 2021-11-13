@@ -42,6 +42,18 @@ GameStateManager::onPostUpdate(float dt)
     return ctrl;
 }
 
+void
+GameStateManager::onDebugUI()
+{
+    if (stateStack.size()) {
+        for (auto& state : stateStack) {
+            state->onShadowDebugUI();
+        }
+
+        stateStack.back()->onDebugUI();
+    }
+}
+
 GameStateManager::Control
 GameStateManager::processTansition(GameState::Transition trans)
 {

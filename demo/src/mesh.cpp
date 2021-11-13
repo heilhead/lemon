@@ -97,6 +97,8 @@ public:
 };
 
 class DemoRootState : public GameState {
+    bool bShowDemoWindow = true;
+
 public:
     void
     onStart() override
@@ -134,6 +136,23 @@ public:
         }
 
         return std::nullopt;
+    }
+
+    void
+    onShadowUpdate(float dt) override
+    {
+    }
+
+    void
+    onDebugUI() override
+    {
+    }
+
+    void
+    onShadowDebugUI() override
+    {
+        if (bShowDemoWindow)
+            ImGui::ShowDemoWindow(&bShowDemoWindow);
     }
 };
 
@@ -297,6 +316,8 @@ testMeshRendering()
 
     engine.init(R"(C:\git\lemon\resources)");
 
+    auto& debugUI = RenderManager::get()->getDebugUI();
+
     {
         MiniRender render;
         render.init(Device::get()->getWindow());
@@ -312,6 +333,11 @@ testMeshRendering()
             render.update(dt);
 
             auto ctrl = pGameStateMan->onPostUpdate(dt);
+
+            if (debugUI.isEnabled()) {
+                debugUI.update();
+                pGameStateMan->onDebugUI();
+            }
 
             render.render();
 

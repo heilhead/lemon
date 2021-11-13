@@ -1,3 +1,6 @@
 [submodule "tools/vcpkg"]
 	path = buildtools/vcpkg
 	url = https://github.com/heilhead/vcpkg.git
+[submodule "engine/lib/imgui/imgui"]
+	path = engine/lib/imgui/imgui
+	url = git@github.com:ocornut/imgui.git

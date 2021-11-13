@@ -122,5 +122,15 @@ namespace lemon::game {
         onShadowUpdate(float dt)
         {
         }
+
+        virtual void
+        onDebugUI()
+        {
+        }
+
+        virtual void
+        onShadowDebugUI()
+        {
+        }
     };
 } // namespace lemon::game

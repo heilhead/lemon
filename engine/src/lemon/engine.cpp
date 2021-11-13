@@ -3,6 +3,7 @@
 
 using namespace lemon;
 using namespace lemon::device;
+using namespace lemon::render;
 
 void
 printGLFWError(int code, gsl::czstring<> message)
@@ -22,6 +23,8 @@ Engine::init(const std::string& assetPath)
     schedMan = std::make_unique<scheduler::Scheduler>();
     resMan = std::make_unique<res::ResourceManager>(assetPath);
     device = std::make_unique<device::Device>();
+
+    RenderManager::get()->getDebugUI().enable();
 
     logger::log("initialization complete!");
 }
@@ -45,6 +48,8 @@ Engine::shutdown()
 {
     // Let the resources release any keep-alive handles before the stores are destroyed.
     resMan->getStore().clear();
+
+    RenderManager::get()->getDebugUI().disable();
 
     glfwTerminate();
 }

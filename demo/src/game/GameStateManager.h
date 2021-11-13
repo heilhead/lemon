@@ -24,6 +24,9 @@ namespace lemon::game {
         Control
         onPostUpdate(float dt);
 
+        void
+        onDebugUI();
+
     private:
         Control
         processTansition(GameState::Transition trans);

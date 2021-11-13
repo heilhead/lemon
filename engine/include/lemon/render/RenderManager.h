@@ -3,6 +3,7 @@
 #include <lemon/render/material/MaterialManager.h>
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/PipelineManager.h>
+#include <lemon/render/DebugUI.h>
 
 namespace lemon::render {
     class RenderManager : public UnsafeSingleton<RenderManager> {
@@ -10,6 +11,7 @@ namespace lemon::render {
         ConstantBuffer cbuffer;
         MaterialManager materialManager;
         PipelineManager pipelineManager;
+        DebugUI debugUI;
 
     public:
         RenderManager();
@@ -40,6 +42,12 @@ namespace lemon::render {
         {
             LEMON_ASSERT(pDevice != nullptr);
             return *pDevice;
+        }
+
+        inline DebugUI&
+        getDebugUI()
+        {
+            return debugUI;
         }
     };
 } // namespace lemon::render
