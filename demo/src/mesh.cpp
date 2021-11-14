@@ -1,7 +1,6 @@
 #include "mesh.h"
 #include "common/DemoModelActor.h"
 #include "render/Renderer.h"
-#include "game/GameStateManager.h"
 #include <lemon/game.h>
 #include <lemon/render.h>
 

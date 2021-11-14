@@ -1,4 +1,6 @@
-#include "GameStateManager.h"
+#include <lemon/game/state/GameStateManager.h>
+#include <lemon/device/input/KeyboardListener.h>
+#include <lemon/device/input/MouseListener.h>
 
 using namespace lemon;
 using namespace lemon::game;

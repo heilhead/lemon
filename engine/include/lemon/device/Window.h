@@ -6,8 +6,6 @@
 namespace lemon::device {
     enum class WindowKind { Window, Fullscreen, WindowedFullscreen };
 
-    enum class LoopControl { Abort = 0, Continue = 1 };
-
     struct WindowDescriptor {
         WindowKind kind{WindowKind::Window};
         uint32_t width{1280};

@@ -4,4 +4,6 @@
 
 namespace lemon::device {
     using WindowHandle = GLFWwindow*;
-}
+
+    enum class LoopControl { Abort = 0, Continue = 1 };
+} // namespace lemon::device

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "GameState.h"
-#include "InputEvent.h"
+#include <lemon/game/state/GameState.h>
+#include <lemon/game/state/InputEvent.h>
+#include <lemon/device/common.h>
+#include <lemon/misc/Delegate.h>
 
 namespace lemon::game {
     class GameStateManager : public UnsafeSingleton<GameStateManager> {

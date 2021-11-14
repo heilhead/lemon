@@ -53,6 +53,9 @@ set(SOURCE_FILES
         "src/lemon/game/actor/components/MovementComponent.cpp"
         "src/lemon/game/actor/actors/FlyingCameraActor.cpp"
         "src/lemon/game/actor/components/MeshComponent.cpp"
+        "src/lemon/game/state/GameState.cpp"
+        "src/lemon/game/state/GameStateManager.cpp"
+        "src/lemon/game/state/InputEvent.cpp"
         "src/lemon/platform/windows.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

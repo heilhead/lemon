@@ -13,3 +13,6 @@
 #include <lemon/game/actor/components/CameraComponent.h>
 #include <lemon/game/actor/components/MeshComponent.h>
 #include <lemon/game/actor/components/MovementComponent.h>
+#include <lemon/game/state/InputEvent.h>
+#include <lemon/game/state/GameState.h>
+#include <lemon/game/state/GameStateManager.h>

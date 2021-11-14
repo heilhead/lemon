@@ -1,6 +1,6 @@
 #pragma once
 
-#include "InputEvent.h"
+#include <lemon/game/state/InputEvent.h>
 
 namespace lemon::game {
     class GameState;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lemon/device/input/common.h>
+
 namespace lemon::game {
     struct InputEvent {
         enum class Type {
