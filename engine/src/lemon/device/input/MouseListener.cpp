@@ -53,7 +53,7 @@ MouseListener::setCursorMode(CursorMode inMode)
 void
 MouseListener::processButtonEvent(MouseButton btn, KeyEvent evt, KeyMod mods)
 {
-    buttonState.insert_or_assign(btn, evt);
+    getGlobalDelegate().invoke(btn, evt, mods);
     getDelegate(btn).invoke(evt, mods);
 }
 
@@ -63,7 +63,6 @@ MouseListener::mouseButtonCallback(WindowHandle handle, int iBtn, int iEvt, int 
     auto btn = static_cast<MouseButton>(iBtn);
     auto evt = static_cast<KeyEvent>(iEvt);
     auto mods = static_cast<KeyMod>(iMods);
-
     get()->processButtonEvent(btn, evt, mods);
 }
 
@@ -77,4 +76,10 @@ MouseListener::getDelegate(MouseButton btn)
 
     auto [iter, bInserted] = buttonListeners.emplace(btn, MulticastDelegate<KeyEvent, KeyMod>());
     return iter->second;
+}
+
+MulticastDelegate<MouseButton, KeyEvent, KeyMod>&
+MouseListener::getGlobalDelegate()
+{
+    return globalListeners;
 }

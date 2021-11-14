@@ -2,13 +2,22 @@
 
 using namespace lemon;
 using namespace lemon::game;
+using namespace lemon::device;
 
-GameStateManager::GameStateManager() : stateStack{} {}
+GameStateManager::GameStateManager() : stateStack{}
+{
+    hMouseListener = MouseListener::get()->getGlobalDelegate().add(&GameStateManager::handleMouseEvent, this);
+    hKeyboardListener =
+        KeyboardListener::get()->getGlobalDelegate().add(&GameStateManager::handleKeyboardEvent, this);
+}
 
 GameStateManager::~GameStateManager()
 {
     // Required to call lifecylce events in the correct order.
     clearInternal();
+
+    MouseListener::get()->getGlobalDelegate().remove(hMouseListener);
+    KeyboardListener::get()->getGlobalDelegate().remove(hKeyboardListener);
 }
 
 void
@@ -32,26 +41,45 @@ GameStateManager::onPostUpdate(float dt)
         return Control::Continue;
     }
 
-    auto ctrl = processTansition(stateStack.back()->onPostUpdate(dt));
-    if (ctrl != Control::Abort) {
-        for (auto& state : stateStack) {
-            state->onShadowUpdate(dt);
-        }
+    for (auto& state : stateStack) {
+        state->onShadowUpdate(dt);
     }
 
-    return ctrl;
+    return processTansition(stateStack.back()->onPostUpdate(dt));
 }
 
-void
-GameStateManager::onDebugUI()
+GameStateManager::Control
+GameStateManager::onUI()
 {
     if (stateStack.size()) {
         for (auto& state : stateStack) {
-            state->onShadowDebugUI();
+            state->onShadowUI();
         }
 
-        stateStack.back()->onDebugUI();
+        return processTansition(stateStack.back()->onUI());
     }
+
+    return Control::Continue;
+}
+
+GameStateManager::Control
+GameStateManager::onInput()
+{
+    for (auto& evt : inputQueue) {
+        if (stateStack.size()) {
+            for (auto& state : stateStack) {
+                state->onShadowInput(evt);
+            }
+
+            if (processTansition(stateStack.back()->onInput(evt)) == Control::Abort) {
+                return Control::Abort;
+            }
+        }
+    }
+
+    inputQueue.clear();
+
+    return Control::Continue;
 }
 
 GameStateManager::Control
@@ -126,4 +154,16 @@ GameStateManager::clearInternal()
     while (stateStack.size() > 0) {
         pop();
     }
+}
+
+void
+GameStateManager::handleKeyboardEvent(device::KeyCode keyCode, device::KeyEvent evt, device::KeyMod mods)
+{
+    inputQueue.emplace_back(keyCode, evt, mods);
+}
+
+void
+GameStateManager::handleMouseEvent(device::MouseButton btn, device::KeyEvent evt, device::KeyMod mods)
+{
+    inputQueue.emplace_back(btn, evt, mods);
 }

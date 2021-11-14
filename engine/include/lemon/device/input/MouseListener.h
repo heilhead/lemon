@@ -9,8 +9,8 @@ namespace lemon::device {
     enum class CursorMode { Normal, Disabled, Raw };
 
     class MouseListener : public UnsafeSingleton<MouseListener> {
-        std::unordered_map<MouseButton, KeyEvent> buttonState;
         std::unordered_map<MouseButton, MulticastDelegate<KeyEvent, KeyMod>> buttonListeners;
+        MulticastDelegate<MouseButton, KeyEvent, KeyMod> globalListeners;
         WindowHandle handle;
         CursorMode mode{CursorMode::Normal};
         double x{0.f};
@@ -45,6 +45,9 @@ namespace lemon::device {
 
         MulticastDelegate<KeyEvent, KeyMod>&
         getDelegate(MouseButton btn);
+
+        MulticastDelegate<MouseButton, KeyEvent, KeyMod>&
+        getGlobalDelegate();
 
     private:
         void

@@ -20,15 +20,9 @@ loadData(std::filesystem::path& file)
     }
 }
 
-ModelResource::ModelResource()
-{
-    logger::trace(__FUNCTION__);
-}
+ModelResource::ModelResource() {}
 
-ModelResource::~ModelResource()
-{
-    logger::trace(__FUNCTION__);
-}
+ModelResource::~ModelResource() {}
 
 VoidTask<ResourceLoadingError>
 ModelResource::load(ResourceMetadata&& meta)

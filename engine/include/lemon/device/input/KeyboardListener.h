@@ -8,6 +8,7 @@
 namespace lemon::device {
     class KeyboardListener : public UnsafeSingleton<KeyboardListener> {
         std::unordered_map<KeyCode, MulticastDelegate<KeyEvent, KeyMod>> keyListeners;
+        MulticastDelegate<KeyCode, KeyEvent, KeyMod> globalListeners;
         WindowHandle handle;
 
     public:
@@ -15,6 +16,9 @@ namespace lemon::device {
 
         MulticastDelegate<KeyEvent, KeyMod>&
         getDelegate(KeyCode key);
+
+        MulticastDelegate<KeyCode, KeyEvent, KeyMod>&
+        getGlobalDelegate();
 
         KeyEvent
         getKeyState(KeyCode key) const;

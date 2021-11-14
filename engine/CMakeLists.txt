@@ -52,7 +52,8 @@ set(SOURCE_FILES
         "src/lemon/game/actor/components/CameraComponent.cpp"
         "src/lemon/game/actor/components/MovementComponent.cpp"
         "src/lemon/game/actor/actors/FlyingCameraActor.cpp"
-        "src/lemon/game/actor/components/MeshComponent.cpp")
+        "src/lemon/game/actor/components/MeshComponent.cpp"
+        "src/lemon/platform/windows.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

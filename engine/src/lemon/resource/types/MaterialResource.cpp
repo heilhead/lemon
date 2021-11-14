@@ -37,15 +37,9 @@ mergeResources(const MaterialResource::ResourceList<TValue>& src, MaterialResour
     }
 }
 
-MaterialResource::MaterialResource()
-{
-    logger::trace(__FUNCTION__);
-}
+MaterialResource::MaterialResource() {}
 
-MaterialResource::~MaterialResource()
-{
-    logger::trace(__FUNCTION__);
-}
+MaterialResource::~MaterialResource() {}
 
 VoidTask<ResourceLoadingError>
 MaterialResource::load(ResourceMetadata&& md)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "InputEvent.h"
+
 namespace lemon::game {
     class GameState;
 
@@ -115,7 +117,7 @@ namespace lemon::game {
         virtual Transition
         onPostUpdate(float dt)
         {
-            return std::nullopt;
+            return Transition::none();
         }
 
         virtual void
@@ -123,13 +125,25 @@ namespace lemon::game {
         {
         }
 
-        virtual void
-        onDebugUI()
+        virtual Transition
+        onInput(const InputEvent& evt)
         {
+            return Transition::none();
         }
 
         virtual void
-        onShadowDebugUI()
+        onShadowInput(const InputEvent& evt)
+        {
+        }
+
+        virtual Transition
+        onUI()
+        {
+            return Transition::none();
+        }
+
+        virtual void
+        onShadowUI()
         {
         }
     };

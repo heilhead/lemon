@@ -21,4 +21,10 @@ namespace lemon::utils {
             return os << "[nullopt]";
         }
     }
+
+    std::string
+    ws2s(const std::wstring& str);
+
+    std::wstring
+    s2ws(const std::string& str);
 } // namespace lemon::utils

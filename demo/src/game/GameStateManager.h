@@ -1,14 +1,20 @@
 #pragma once
 
 #include "GameState.h"
+#include "InputEvent.h"
 
 namespace lemon::game {
     class GameStateManager : public UnsafeSingleton<GameStateManager> {
         using Control = device::LoopControl;
 
         static constexpr size_t kMaxInlineStates = 8;
+        static constexpr size_t kMaxInlineInputEvents = 16;
 
         folly::small_vector<std::unique_ptr<GameState>, kMaxInlineStates> stateStack;
+        folly::small_vector<InputEvent, kMaxInlineInputEvents> inputQueue;
+
+        DelegateHandle hKeyboardListener;
+        DelegateHandle hMouseListener;
 
     public:
         GameStateManager();
@@ -24,8 +30,11 @@ namespace lemon::game {
         Control
         onPostUpdate(float dt);
 
-        void
-        onDebugUI();
+        Control
+        onUI();
+
+        Control
+        onInput();
 
     private:
         Control
@@ -45,5 +54,11 @@ namespace lemon::game {
 
         void
         clearInternal();
+
+        void
+        handleKeyboardEvent(device::KeyCode keyCode, device::KeyEvent evt, device::KeyMod mods);
+
+        void
+        handleMouseEvent(device::MouseButton btn, device::KeyEvent evt, device::KeyMod mods);
     };
 } // namespace lemon::game

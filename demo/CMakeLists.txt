@@ -11,7 +11,8 @@ add_executable(${PROJECT_NAME}
     "src/render/Renderer.cpp"
     "src/render/RenderPass.cpp"
     "src/render/passes/MainRenderPass.cpp"
-    "src/render/passes/DebugUIRenderPass.cpp")
+    "src/render/passes/DebugUIRenderPass.cpp"
+    "src/game/InputEvent.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 

@@ -1,4 +1,5 @@
 //# include "BaseSurface.wgsl"
+//# include "ToneMapping.wgsl"
 
 [[block]]
 struct PacketParams {
@@ -73,6 +74,8 @@ fn fs_main(fragData: FragmentInput) -> FragmentOutput {
     vec4<f32>(1.0, 1.0, 1.0, 1.0),
   );
 
-  return FragmentOutput(vec4<f32>(surfaceAttributres.baseColor));
+  let toneMappedColor = TonemapACES(surfaceAttributres.baseColor.xyz);
+
+  return FragmentOutput(vec4<f32>(toneMappedColor, 1.0));
 //#endif
 }

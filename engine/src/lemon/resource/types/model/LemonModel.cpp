@@ -43,12 +43,6 @@ ModelMesh::updateVertexFormat()
     vertexFormat.setComponents(components);
 }
 
-LemonModel::LemonModel()
-{
-    logger::trace(__FUNCTION__);
-}
+LemonModel::LemonModel() {}
 
-LemonModel::~LemonModel()
-{
-    logger::trace(__FUNCTION__);
-}
+LemonModel::~LemonModel() {}

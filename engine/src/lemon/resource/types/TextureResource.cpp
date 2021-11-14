@@ -36,15 +36,9 @@ loadTexture(const std::filesystem::path& filePath, TextureResource::Decoder deco
     co_return {};
 }
 
-TextureResource::TextureResource()
-{
-    logger::trace(__FUNCTION__);
-}
+TextureResource::TextureResource() {}
 
-TextureResource::~TextureResource()
-{
-    logger::trace(__FUNCTION__);
-}
+TextureResource::~TextureResource() {}
 
 VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata&& meta)

@@ -41,17 +41,35 @@ public:
     }
 
     Transition
-    onPostUpdate(float dt) override
+    onInput(const InputEvent& evt) override
     {
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+        if (evt.isKeyPress(KeyCode::Enter)) {
             logger::trace("GAME STATE ENTER!");
         }
 
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+        if (evt.isKeyPress(KeyCode::Escape)) {
             return Transition::pop();
         }
 
         return std::nullopt;
+    }
+
+    Transition
+    onUI() override
+    {
+        Transition trans;
+
+        ImGui::Begin("DemoGameState");
+
+        ImGui::Text("Game state!");
+
+        if (ImGui::Button("<- DemoMenuState")) {
+            trans = Transition::pop();
+        }
+
+        ImGui::End();
+
+        return trans;
     }
 };
 
@@ -82,17 +100,39 @@ public:
     }
 
     Transition
-    onPostUpdate(float dt) override
+    onInput(const InputEvent& evt) override
     {
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+        if (evt.isKeyPress(KeyCode::Enter)) {
             return Transition::push<DemoGameState>();
         }
 
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+        if (evt.isKeyPress(KeyCode::Escape)) {
             return Transition::pop();
         }
 
         return std::nullopt;
+    }
+
+    Transition
+    onUI() override
+    {
+        Transition trans;
+
+        ImGui::Begin("DemoMenuState");
+
+        ImGui::Text("Menu state!");
+
+        if (ImGui::Button("-> DemoGameState")) {
+            trans = Transition::push<DemoGameState>();
+        }
+
+        if (ImGui::Button("<- DemoRootState")) {
+            trans = Transition::pop();
+        }
+
+        ImGui::End();
+
+        return trans;
     }
 };
 
@@ -125,13 +165,13 @@ public:
     }
 
     Transition
-    onPostUpdate(float dt) override
+    onInput(const InputEvent& evt) override
     {
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Enter)) {
+        if (evt.isKeyPress(KeyCode::Enter)) {
             return Transition::push<DemoMenuState>();
         }
 
-        if (KeyboardListener::get()->isKeyPressed(KeyCode::Escape)) {
+        if (evt.isKeyPress(KeyCode::Escape)) {
             return Transition::shutdown();
         }
 
@@ -143,16 +183,33 @@ public:
     {
     }
 
-    void
-    onDebugUI() override
+    Transition
+    onUI() override
     {
+        Transition trans;
+
+        ImGui::Begin("DemoRootState");
+
+        ImGui::Text("Root state!");
+
+        if (ImGui::Button("-> DemoMenuState")) {
+            trans = Transition::push<DemoMenuState>();
+        }
+
+        if (ImGui::Button("<- Quit")) {
+            trans = Transition::shutdown();
+        }
+
+        ImGui::End();
+
+        return trans;
     }
 
     void
-    onShadowDebugUI() override
+    onShadowUI() override
     {
-        if (bShowDemoWindow)
-            ImGui::ShowDemoWindow(&bShowDemoWindow);
+        // if (bShowDemoWindow)
+        //     ImGui::ShowDemoWindow(&bShowDemoWindow);
     }
 };
 
@@ -326,22 +383,29 @@ testMeshRendering()
         pGameStateMan->init(std::make_unique<DemoRootState>());
 
         engine.loop([&](float dt) {
-            // std::this_thread::sleep_for(50ms);
+            if (LoopControl::Abort == pGameStateMan->onInput()) {
+                return LoopControl::Abort;
+            }
 
             pGameStateMan->onPreUpdate(dt);
 
             render.update(dt);
 
-            auto ctrl = pGameStateMan->onPostUpdate(dt);
+            if (LoopControl::Abort == pGameStateMan->onPostUpdate(dt)) {
+                return LoopControl::Abort;
+            }
 
             if (debugUI.isEnabled()) {
                 debugUI.update();
-                pGameStateMan->onDebugUI();
+
+                if (LoopControl::Abort == pGameStateMan->onUI()) {
+                    return LoopControl::Abort;
+                }
             }
 
             render.render();
 
-            return ctrl;
+            return LoopControl::Continue;
         });
     }
 

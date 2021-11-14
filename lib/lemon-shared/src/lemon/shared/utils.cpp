@@ -1,3 +1,7 @@
+#include <locale>
+#include <codecvt>
+#include <string>
+
 #include <lemon/shared/logger.h>
 #include <lemon/shared/utils.h>
 
@@ -21,4 +25,18 @@ void
 lemon::utils::terminate()
 {
     std::terminate();
+}
+
+std::string
+lemon::utils::ws2s(const std::wstring& str)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes(str);
+}
+
+std::wstring
+lemon::utils::s2ws(const std::string& str)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes(str);
 }

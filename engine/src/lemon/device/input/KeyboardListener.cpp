@@ -12,6 +12,7 @@ KeyboardListener::KeyboardListener(WindowHandle inHandle)
 void
 KeyboardListener::processKeyEvent(KeyCode key, KeyEvent evt, KeyMod mods)
 {
+    getGlobalDelegate().invoke(key, evt, mods);
     getDelegate(key).invoke(evt, mods);
 }
 
@@ -21,7 +22,6 @@ KeyboardListener::keyPressCallback(WindowHandle handle, int iKey, int iScanCode,
     auto key = static_cast<KeyCode>(iKey);
     auto evt = static_cast<KeyEvent>(iEvt);
     auto mods = static_cast<KeyMod>(iMods);
-
     get()->processKeyEvent(key, evt, mods);
 }
 
@@ -35,6 +35,12 @@ KeyboardListener::getDelegate(KeyCode key)
 
     auto [iter, bInserted] = keyListeners.emplace(key, MulticastDelegate<KeyEvent, KeyMod>());
     return iter->second;
+}
+
+MulticastDelegate<KeyCode, KeyEvent, KeyMod>&
+KeyboardListener::getGlobalDelegate()
+{
+    return globalListeners;
 }
 
 KeyEvent

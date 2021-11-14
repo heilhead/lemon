@@ -10,15 +10,9 @@ loadBundle(BundleResource& mat, ResourceMetadata& meta)
     co_return std::nullopt;
 }
 
-BundleResource::BundleResource()
-{
-    logger::trace(__FUNCTION__);
-}
+BundleResource::BundleResource() {}
 
-BundleResource::~BundleResource()
-{
-    logger::trace(__FUNCTION__);
-}
+BundleResource::~BundleResource() {}
 
 VoidTask<ResourceLoadingError>
 BundleResource::load(ResourceMetadata&& meta)
