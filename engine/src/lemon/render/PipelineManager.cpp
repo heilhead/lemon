@@ -61,7 +61,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
     auto& vertexState = desc.vertex;
     vertexState.bufferCount = 1;
     vertexState.buffers = config.pVertexLayout;
-    vertexState.entryPoint = "vs_main";
+    vertexState.entryPoint = "VSMain";
     vertexState.module = *config.pColorShaderModule;
 
     // Fragment state.
@@ -82,7 +82,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
     wgpu::FragmentState fragmentState;
     fragmentState.targetCount = 1;
     fragmentState.targets = &target;
-    fragmentState.entryPoint = "fs_main";
+    fragmentState.entryPoint = "FSMain";
     fragmentState.module = *config.pColorShaderModule;
 
     // Primitive state.

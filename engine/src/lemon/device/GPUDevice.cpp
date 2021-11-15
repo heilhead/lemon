@@ -57,7 +57,12 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
         LEMON_ASSERT(backendAdapter, "no suitable adapter found");
     }
 
-    auto backendDevice = backendAdapter.CreateDevice();
+    dawn_native::DeviceDescriptor desc;
+    desc.forceEnabledToggles.push_back("disable_symbol_renaming");
+    desc.forceEnabledToggles.push_back("emit_hlsl_debug_symbols");
+    // desc.forceEnabledToggles.push_back("dump_shaders");
+
+    auto backendDevice = backendAdapter.CreateDevice(&desc);
 
     {
         const auto& backendProcs = dawn_native::GetProcs();

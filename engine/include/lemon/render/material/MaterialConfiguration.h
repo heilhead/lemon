@@ -1,6 +1,6 @@
 #pragma once
 
-#include <inja/inja.hpp>
+#include <lemon/pch/inja.h>
 
 namespace lemon::render {
     using ComposerDefinitions = inja::json;

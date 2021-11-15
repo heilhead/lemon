@@ -1,5 +1,5 @@
-//# include "BaseSurface.wgsl"
-//# include "ToneMapping.wgsl"
+{{require("BaseSurface.wgsl")}}
+{{require("ToneMapping.wgsl")}}
 
 [[block]]
 struct PacketParams {
@@ -28,7 +28,7 @@ var tAlbedo: texture_2d<f32>;
 var tNormal: texture_2d<f32>;
 
 [[stage(vertex)]]
-fn vs_main(vertexData: VertexInput) -> FragmentInput {
+fn VSMain(vertexData: VertexInput) -> FragmentInput {
   let positionWorldSpace: vec4<f32> = packetParams.matModel * vec4<f32>(vertexData.position.xyz, 1.0);
   let position: vec4<f32> = sceneParams.camera.matProjection * sceneParams.camera.matView * positionWorldSpace;
   
@@ -46,17 +46,17 @@ fn vs_main(vertexData: VertexInput) -> FragmentInput {
     tangent,
     uv0,
 
-//#if MESH_ENABLE_TEXTURE1
+#if MESH_ENABLE_TEXTURE1
     uv1,
-//#endif
+#endif
   );
 }
 
 [[stage(fragment)]]
-fn fs_main(fragData: FragmentInput) -> FragmentOutput {
-//#if PIPELINE_DEPTH_ONLY
+fn FSMain(fragData: FragmentInput) -> FragmentOutput {
+#if PIPELINE_DEPTH_ONLY
   return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
-//#else
+#else
   let color = vec4<f32>(textureSample(tAlbedo, surfaceSampler, fragData.uv0).xyz * materialParams.tint.xyz, 1.0);
   // let depth = fragData.position.z / fragData.position.w;
   // let depth = linearizeDepth(fragData.position.z / fragData.position.w);
@@ -77,5 +77,5 @@ fn fs_main(fragData: FragmentInput) -> FragmentOutput {
   let toneMappedColor = TonemapACES(surfaceAttributres.baseColor.xyz);
 
   return FragmentOutput(vec4<f32>(toneMappedColor, 1.0));
-//#endif
+#endif
 }

@@ -2,23 +2,18 @@
 
 #include <lemon/resource/types/material/common.h>
 #include <lemon/resource/types/material/MaterialBlueprint.h>
-#include <inja/inja.hpp>
-#include <inja/environment.hpp>
+#include <lemon/resource/types/material/MaterialComposerEnvironment.h>
+#include <lemon/pch/inja.h>
 
 namespace lemon::res::material {
     class MaterialComposer {
         AtomicCache<tl::expected<inja::Template, CompositionError>> cache;
-        std::filesystem::path baseDir;
-        inja::Environment tplEnv;
+        MaterialComposerEnvironment env;
 
     public:
-        MaterialComposer(std::filesystem::path& inBaseDir);
+        MaterialComposer(const std::filesystem::path& inBaseDir);
 
         tl::expected<MaterialBlueprint, CompositionError>
-        getBlueprint(std::filesystem::path& fullPath);
-
-    private:
-        inja::Template
-        loadTemplate(std::filesystem::path& path);
+        getBlueprint(const std::filesystem::path& fullPath);
     };
 } // namespace lemon::res::material

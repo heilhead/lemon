@@ -56,7 +56,9 @@ set(SOURCE_FILES
         "src/lemon/game/state/GameState.cpp"
         "src/lemon/game/state/GameStateManager.cpp"
         "src/lemon/game/state/InputEvent.cpp"
-        "src/lemon/platform/windows.cpp")
+        "src/lemon/platform/windows.cpp"
+        "src/lemon/resource/types/material/MaterialComposerEnvironment.cpp"
+        "src/lemon/resource/types/material/MaterialBlueprint.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -114,7 +116,17 @@ CPMAddPackage(
 	"ozz_build_tests OFF"
 	"ozz_build_msvc_rt_dll OFF")
 
-CPMAddPackage("gh:pantor/inja#635e1fb")
+CPMAddPackage(
+	GITHUB_REPOSITORY "heilhead/inja"
+	GIT_TAG "d0f991a"
+	OPTIONS
+	"INJA_USE_EMBEDDED_JSON OFF"
+	"INJA_INSTALL OFF"
+	"INJA_EXPORT OFF"
+	"BUILD_TESTING OFF"
+	"INJA_BUILD_TESTS OFF"
+	"BUILD_BENCHMARK OFF"
+	"COVERALLS OFF")
 
 target_link_libraries(${PROJECT_NAME}
         PUBLIC

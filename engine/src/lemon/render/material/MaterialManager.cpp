@@ -34,7 +34,7 @@ MaterialManager::getShader(const MaterialResource& material, const render::Mater
     render::MaterialConfiguration finalConfig = material.getConfig();
     finalConfig.merge(config);
 
-    return std::move(getShader(*blueprint, finalConfig));
+    return getShader(*blueprint, finalConfig);
 }
 
 KeepAlive<ShaderProgram>
@@ -43,11 +43,11 @@ MaterialManager::getShader(const MaterialBlueprint& blueprint,
 {
     uint64_t hash = computeMaterialHash(blueprint, finalConfig);
 
-    return std::move(shaderProgramCache.get(hash, [&]() {
+    return shaderProgramCache.get(hash, [&]() {
         // TODO: Handle compilation errors, e.g. `template variable not found`
         auto sourceCode = blueprint.renderShaderSource(finalConfig);
         return shaderCompiler.compile(hash, sourceCode).release();
-    }));
+    });
 }
 
 StringID
@@ -66,8 +66,8 @@ MaterialManager::getMaterialLayout(const MaterialResource& material, const Shade
 
     auto id = computeMaterialLayoutID(program, bindGroupIndex);
 
-    return std::move(
-        materialLayoutCache.get(id, [&]() { return new MaterialLayout(material, program, bindGroupIndex); }));
+    return materialLayoutCache.get(id,
+                                   [&]() { return new MaterialLayout(material, program, bindGroupIndex); });
 }
 
 KeepAlive<MaterialLayout>
@@ -79,8 +79,7 @@ MaterialManager::getMaterialLayout(const ShaderProgram& program, uint8_t bindGro
 
     auto id = computeMaterialLayoutID(program, bindGroupIndex);
 
-    return std::move(
-        materialLayoutCache.get(id, [&]() { return new MaterialLayout(program, bindGroupIndex); }));
+    return materialLayoutCache.get(id, [&]() { return new MaterialLayout(program, bindGroupIndex); });
 }
 
 MaterialInstance
@@ -143,8 +142,7 @@ MaterialManager::getTexture(const TextureResource& texture)
 {
     uint64_t id = lemon::hash(texture);
 
-    return std::move(
-        textureCache.get(id, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); }));
+    return textureCache.get(id, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); });
 }
 
 KeepAlive<wgpu::Sampler>
@@ -162,7 +160,7 @@ MaterialManager::getSampler(const SamplerDescriptor& inDesc)
     desc.compare = inDesc.compare;
     desc.maxAnisotropy = inDesc.maxAnisotropy;
 
-    return std::move(getSampler(desc));
+    return getSampler(desc);
 }
 
 KeepAlive<wgpu::Sampler>
@@ -170,8 +168,8 @@ MaterialManager::getSampler(const wgpu::SamplerDescriptor& desc)
 {
     uint64_t id = lemon::hash(desc);
 
-    return std::move(
-        samplerCache.get(id, [&]() { return new wgpu::Sampler(std::move(pDevice->CreateSampler(&desc))); }));
+    return samplerCache.get(id,
+                            [&]() { return new wgpu::Sampler(std::move(pDevice->CreateSampler(&desc))); });
 }
 
 void

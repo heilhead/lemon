@@ -372,7 +372,7 @@ testMeshRendering()
 
     engine.init(R"(C:\git\lemon\resources)");
 
-    auto& debugUI = RenderManager::get()->getDebugUI();
+    auto& ui = RenderManager::get()->getDebugUI();
 
     {
         MiniRender render;
@@ -394,8 +394,8 @@ testMeshRendering()
                 return LoopControl::Abort;
             }
 
-            if (debugUI.isEnabled()) {
-                debugUI.update();
+            if (ui.isEnabled()) {
+                ui.update();
 
                 if (LoopControl::Abort == pGameStateMan->onUI()) {
                     return LoopControl::Abort;

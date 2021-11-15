@@ -1,9 +1,9 @@
 #pragma once
 
-#include <lemon/resource/types/material/common.h>
 #include <lemon/render/material/MaterialConfiguration.h>
-#include <inja/inja.hpp>
-#include <inja/environment.hpp>
+#include <lemon/resource/types/material/common.h>
+#include <lemon/resource/types/material/MaterialComposerEnvironment.h>
+#include <lemon/pch/inja.h>
 
 namespace lemon::res::material {
     class MaterialBlueprint {
@@ -12,30 +12,17 @@ namespace lemon::res::material {
         using TemplateRef = KeepAlive<tl::expected<inja::Template, CompositionError>>;
 
         TemplateRef tplRef;
-        inja::Environment* env;
+        MaterialComposerEnvironment* env;
         uint64_t hash;
 
     public:
-        MaterialBlueprint(TemplateRef inTplRef, inja::Environment* inEnv) : env{inEnv}
-        {
-            tplRef = std::move(inTplRef);
-            hash = lemon::hash(*this);
-        }
+        MaterialBlueprint(TemplateRef inTplRef, MaterialComposerEnvironment* inEnv);
 
-        inline std::string
-        renderShaderSource(const render::MaterialConfiguration& config) const
-        {
-            LEMON_ASSERT(tplRef);
-            LEMON_ASSERT(tplRef->has_value());
-            LEMON_ASSERT(env != nullptr);
-            return env->render(tplRef->value(), config.getDefinitions());
-        }
+        std::string
+        renderShaderSource(const render::MaterialConfiguration& config) const;
 
-        inline uint64_t
-        getHash() const
-        {
-            return hash;
-        }
+        uint64_t
+        getHash() const;
     };
 } // namespace lemon::res::material
 
