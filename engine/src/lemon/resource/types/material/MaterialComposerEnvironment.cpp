@@ -18,7 +18,7 @@ MaterialComposerEnvironment::MaterialComposerEnvironment(const std::filesystem::
 
     baseDir = resourceRootDir / "internal" / "shaders";
 
-    set_include_callback([&](auto&, auto& name) { return loadTemplate(baseDir / name); });
+    set_include_callback([&](auto&, auto& name) { return loadTemplateByName(name); });
 
     add_callback_with_context("defined", 1, [](const inja::Arguments& args, const void* pContext) {
         const auto* arg = args[0];
@@ -56,10 +56,7 @@ MaterialComposerEnvironment::MaterialComposerEnvironment(const std::filesystem::
 
         pRenderContext->dynamicDefinitions.insert(guardKey);
 
-        // TODO: This template should be cached somehow.
-        const auto tpl = loadTemplate(baseDir / name);
-
-        return render(tpl, *pRenderContext->definitions, pContext);
+        return render(loadTemplateByName(name), *pRenderContext->definitions, pContext);
     });
 }
 
@@ -75,13 +72,34 @@ MaterialComposerEnvironment::renderShaderSource(const inja::Template& tpl,
 inja::Template
 MaterialComposerEnvironment::loadTemplate(const std::filesystem::path& path)
 {
-    auto res = lemon::io::readTextFile(path);
+    // Inja mutates internal template storage, and is not thread-safe, so we use an external lock.
+    const std::lock_guard<std::mutex> lg(parserLock);
+
+    return loadTemplateByPath(path.string());
+}
+
+inja::Template
+MaterialComposerEnvironment::loadTemplateByName(const std::string& name)
+{
+    if (const auto* tpl = find_template(name)) {
+        return *tpl;
+    }
+
+    inja::Template tpl = loadTemplateByPath(baseDir / name);
+    include_template(name, tpl);
+    return tpl;
+}
+
+inja::Template
+MaterialComposerEnvironment::loadTemplateByPath(const std::filesystem::path& fullPath)
+{
+    auto res = lemon::io::readTextFile(fullPath);
     if (res) {
         return parse(*res);
     } else {
-        std::string strErr = "failed to resolve shader include: [" + path.string() +
-                             "] error: " + std::to_string((int)res.error());
-        logger::err(strErr);
-        return parse(strErr);
+        std::string err = "failed to read shader file: [" + fullPath.string() +
+                          "] error: " + std::to_string((int)res.error());
+        logger::err(err);
+        return parse(err);
     }
 }
