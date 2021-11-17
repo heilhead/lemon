@@ -57,4 +57,16 @@ namespace lemon::render {
         wgpu::TextureView swapChainBackbufferView;
         wgpu::BindGroup postProcessBindGroup;
     };
+
+    struct RenderPassContext {
+        RenderPassResources* pCurrentFrame{nullptr};
+        RenderPassResources* pPreviousFrame{nullptr};
+
+        inline void
+        swap(const wgpu::TextureView& swapChainBackbufferView)
+        {
+            std::swap(pCurrentFrame, pPreviousFrame);
+            pCurrentFrame->swapChainBackbufferView = swapChainBackbufferView;
+        }
+    };
 } // namespace lemon::render

@@ -2,47 +2,14 @@
 
 #include <lemon/render/material/MaterialConfiguration.h>
 #include <lemon/render/material/MaterialUniformData.h>
+#include <lemon/render/pipeline/SurfacePipeline.h>
+#include <lemon/render/pipeline/PostProcessPipeline.h>
 
 namespace lemon::render {
     struct SurfaceMaterialSharedResources;
     class MeshVertexFormat;
     struct MaterialLayout;
     class ShaderProgram;
-
-    class SurfacePipeline {
-        struct PipelineConfiguration {
-            const wgpu::PipelineLayoutDescriptor* pPipelineLayoutDesc;
-            const wgpu::VertexBufferLayout* pVertexLayout;
-            const wgpu::ShaderModule* pColorShaderModule;
-            const wgpu::ShaderModule* pDepthShaderModule;
-        };
-
-        wgpu::RenderPipeline color;
-        wgpu::RenderPipeline depth;
-
-    public:
-        SurfacePipeline(const SurfaceMaterialSharedResources& matShared,
-                        const MeshVertexFormat& vertexFormat);
-
-        const wgpu::RenderPipeline&
-        getColorPipeline() const
-        {
-            return color;
-        }
-
-        const wgpu::RenderPipeline&
-        getDepthPipeline() const
-        {
-            return depth;
-        }
-
-    private:
-        void
-        createColorPipeline(const PipelineConfiguration& config);
-
-        void
-        createDepthPipeline(const PipelineConfiguration& config);
-    };
 
     class PipelineManager : public UnsafeSingleton<PipelineManager> {
         enum class PipelineType { Color, Depth };
@@ -62,6 +29,7 @@ namespace lemon::render {
         MaterialConfiguration postProcessConfig;
 
         AtomicCache<SurfacePipeline> surfacePipelineCache{512};
+        AtomicCache<PostProcessPipeline> postProcessPipelineCache{512};
 
     public:
         PipelineManager();
@@ -70,21 +38,15 @@ namespace lemon::render {
         init(wgpu::Device& device);
 
         inline const MaterialConfiguration&
-        getColorConfig()
+        getSurfaceColorConfig()
         {
             return colorConfig;
         }
 
         inline const MaterialConfiguration&
-        getDepthConfig()
+        getSurfaceDepthConfig()
         {
             return depthConfig;
-        }
-
-        inline const MaterialConfiguration&
-        getPostProcessConfig()
-        {
-            return postProcessConfig;
         }
 
         inline const KeepAlive<MaterialLayout>&
@@ -99,19 +61,26 @@ namespace lemon::render {
             return surfaceBindGroup;
         }
 
-        inline const KeepAlive<MaterialLayout>&
-        getPostProcessBindGroupLayout() const
-        {
-            return kaPostProcessBindGroupLayout;
-        }
-
-        void
-        assignPipelines(SurfaceMaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
+        KeepAlive<SurfacePipeline>
+        getSurfacePipeline(const SurfaceMaterialSharedResources& matShared,
+                           const MeshVertexFormat& vertexFormat);
 
         inline MaterialUniformData&
         getSurfaceUniformData()
         {
             return surfaceUniformData;
+        }
+
+        inline const MaterialConfiguration&
+        getPostProcessConfig()
+        {
+            return postProcessConfig;
+        }
+
+        inline const KeepAlive<MaterialLayout>&
+        getPostProcessBindGroupLayout() const
+        {
+            return kaPostProcessBindGroupLayout;
         }
 
         inline MaterialUniformData&
@@ -123,14 +92,14 @@ namespace lemon::render {
         wgpu::BindGroup
         createPostProcessBindGroup(const wgpu::TextureView& colorTargetView);
 
+        KeepAlive<PostProcessPipeline>
+        getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
+
     private:
         void
         initSurfaceBindGroup();
 
         void
         initPostProcessBindGroup();
-
-        KeepAlive<SurfacePipeline>
-        getPipeline(const SurfaceMaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
     };
 } // namespace lemon::render

@@ -75,3 +75,25 @@ lemon::math::isNearlyZero(const glm::vec<N, T, Q>& v, float tolerance)
 
     return bResult;
 }
+
+template<std::integral T>
+inline constexpr T
+lemon::math::fpack(float v)
+{
+    return static_cast<T>(std::numeric_limits<T>::max() * v);
+}
+
+template<typename T, size_t N, glm::qualifier Q>
+inline constexpr glm::vec<N, T, Q>
+lemon::math::fpack(const glm::vec<N, float, Q>& v)
+{
+    if constexpr (N == 1) {
+        return glm::vec<N, T, Q>(fpack<T>(v.x));
+    } else if constexpr (N == 2) {
+        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y));
+    } else if constexpr (N == 3) {
+        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y), fpack<T>(v.z));
+    } else if constexpr (N == 4) {
+        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y), fpack<T>(v.z), fpack<T>(v.w));
+    }
+}

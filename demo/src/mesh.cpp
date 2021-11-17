@@ -5,7 +5,7 @@
 
 #include "render/passes/MainRenderPass.h"
 #include "render/passes/DebugUIRenderPass.h"
-#include "render/passes/ColorCorrectionRenderPass.h"
+#include "render/passes/PostProcessRenderPass.h"
 
 using namespace lemon;
 using namespace lemon::game;
@@ -294,12 +294,6 @@ private:
 
 public:
     void
-    initBloom()
-    {
-        auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
-    }
-
-    void
     init(Window* window)
     {
         using namespace minirender;
@@ -307,7 +301,8 @@ public:
         auto model = loadModel("ozz-sample\\MannequinSkeleton.lem:SK_Mannequin");
         auto& meshData = model->getMeshes()[0];
         auto* pMaterial = loadMaterial("misc\\M_Mannequin2");
-        auto material = MaterialManager::get()->getMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
+        auto material =
+            MaterialManager::get()->getSurfaceMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
 
         pSharedData = &PipelineManager::get()->getSurfaceUniformData();
         pWorld = std::make_unique<GameWorld>();
@@ -377,9 +372,12 @@ testMeshRendering()
 
     engine.init(R"(C:\git\lemon\resources)");
 
+    auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
+    auto postProcessMaterial = MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
+
     auto* pRenderMan = RenderManager::get();
     pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
-    pRenderMan->addRenderPass(std::make_unique<ColorCorrectionRenderPass>());
+    pRenderMan->addRenderPass(std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
     pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
 
     auto& ui = pRenderMan->getDebugUI();
@@ -387,7 +385,6 @@ testMeshRendering()
     {
         MiniRender render;
         render.init(Device::get()->getWindow());
-        render.initBloom();
 
         auto pGameStateMan = std::make_unique<GameStateManager>();
         pGameStateMan->init(std::make_unique<DemoRootState>());

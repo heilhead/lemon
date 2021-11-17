@@ -11,6 +11,7 @@ namespace lemon::render {
     class MeshVertexFormat;
     class ShaderProgram;
     class SurfacePipeline;
+    class PostProcessPipeline;
 
     struct MaterialResourceDescriptor {
         const res::MaterialResource* pResource;
@@ -29,6 +30,10 @@ namespace lemon::render {
         folly::small_vector<KeepAlive<wgpu::Sampler>, 4> kaSamplers;
         folly::small_vector<KeepAlive<wgpu::Texture>, 8> kaTextures;
         KeepAlive<MaterialLayout> kaLayout;
+
+    protected:
+        void
+        init(const res::MaterialResource& matRes, const ShaderProgram& program);
     };
 
     struct SurfaceMaterialSharedResources : MaterialSharedResources {
@@ -38,6 +43,25 @@ namespace lemon::render {
 
         SurfaceMaterialSharedResources(const res::MaterialResource& matRes,
                                        const MeshVertexFormat& vertexFormat);
+
+        inline const KeepAlive<SurfacePipeline>&
+        getRenderPipeline() const
+        {
+            return kaPipeline;
+        }
+    };
+
+    struct PostProcessMaterialSharedResources : MaterialSharedResources {
+        KeepAlive<ShaderProgram> kaMainProgram;
+        KeepAlive<PostProcessPipeline> kaPipeline;
+
+        PostProcessMaterialSharedResources(const res::MaterialResource& matRes);
+
+        inline const KeepAlive<PostProcessPipeline>&
+        getRenderPipeline() const
+        {
+            return kaPipeline;
+        }
     };
 
     template<class TSharedResources>
@@ -66,11 +90,11 @@ namespace lemon::render {
             return kaSharedResources;
         }
 
-        inline const SurfacePipeline&
+        inline auto
         getRenderPipeline() const
         {
             LEMON_ASSERT(isValid());
-            return *kaSharedResources->kaPipeline;
+            return *kaSharedResources->getRenderPipeline();
         }
 
         // TODO: Figure out a better interface.
@@ -105,6 +129,7 @@ namespace lemon::render {
     };
 
     using SurfaceMaterialInstance = MaterialInstance<SurfaceMaterialSharedResources>;
+    using PostProcessMaterialInstance = MaterialInstance<PostProcessMaterialSharedResources>;
 } // namespace lemon::render
 
 template<>

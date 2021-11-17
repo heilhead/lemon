@@ -14,6 +14,6 @@ namespace lemon::render {
         DebugUIRenderPass();
 
         Task<wgpu::CommandBuffer, RenderPassError>
-        execute(const RenderPassResources& resources) override;
+        execute(const RenderPassContext& context) override;
     };
 } // namespace lemon::render

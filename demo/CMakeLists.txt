@@ -8,7 +8,7 @@ add_executable(${PROJECT_NAME}
     "src/common/DemoModelActor.cpp"
     "src/render/passes/MainRenderPass.cpp"
     "src/render/passes/DebugUIRenderPass.cpp"
-    "src/render/passes/ColorCorrectionRenderPass.cpp")
+    "src/render/passes/PostProcessRenderPass.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
 

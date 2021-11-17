@@ -28,22 +28,18 @@ MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilA
 }
 
 Task<wgpu::CommandBuffer, RenderPassError>
-MainRenderPass::execute(const RenderPassResources& resources)
+MainRenderPass::execute(const RenderPassContext& context)
 {
-    colorAttachments[0].view = resources.swapChainBackbufferView;
-    // colorAttachments[0].view = resources.colorTargetView;
-    depthStencilAttachmentInfo.view = resources.depthStencilView;
+    // colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
+    colorAttachments[0].view = context.pCurrentFrame->colorTargetView;
+    depthStencilAttachmentInfo.view = context.pCurrentFrame->depthStencilView;
 
-    auto* pPipelineMan = PipelineManager::get();
     auto* pRenderMan = RenderManager::get();
+    auto* pPipelineMan = PipelineManager::get();
 
     auto& device = pRenderMan->getDevice();
     auto& cbuffer = pRenderMan->getConstantBuffer();
-
-    cbuffer.reset();
-
-    auto& sharedData = pPipelineMan->getSurfaceUniformData();
-    sharedData.merge(cbuffer);
+    auto& surfaceSharedData = pPipelineMan->getSurfaceUniformData();
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -63,7 +59,7 @@ MainRenderPass::execute(const RenderPassResources& resources)
             pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
 
             pass.SetBindGroup(kSurfaceSharedBindGroupIndex, pPipelineMan->getSurfaceBindGroup(),
-                              sharedData.getOffsetCount(), sharedData.getOffsets());
+                              surfaceSharedData.getOffsetCount(), surfaceSharedData.getOffsets());
 
             pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
                               matData.getOffsets());

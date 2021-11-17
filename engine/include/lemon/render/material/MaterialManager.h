@@ -19,11 +19,12 @@ namespace lemon::render {
     class MaterialManager : public UnsafeSingleton<MaterialManager> {
         wgpu::Device* pDevice;
         ShaderCompiler shaderCompiler;
-        AtomicCache<ShaderProgram> shaderProgramCache{256};
-        AtomicCache<MaterialLayout> materialLayoutCache{128};
+        AtomicCache<ShaderProgram> shaderProgramCache{512};
+        AtomicCache<MaterialLayout> materialLayoutCache{512};
         AtomicCache<wgpu::Sampler> samplerCache{64};
-        AtomicCache<wgpu::Texture> textureCache{128};
-        AtomicCache<SurfaceMaterialSharedResources> sharedResourcesCache{128};
+        AtomicCache<wgpu::Texture> textureCache{512};
+        AtomicCache<SurfaceMaterialSharedResources> surfaceSharedResourcesCache{512};
+        AtomicCache<PostProcessMaterialSharedResources> postProcessSharedResourcesCache{16};
 
     public:
         MaterialManager();
@@ -49,7 +50,11 @@ namespace lemon::render {
         getMaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex);
 
         SurfaceMaterialInstance
-        getMaterialInstance(const res::MaterialResource& material, const MeshVertexFormat& vertexFormat);
+        getSurfaceMaterialInstance(const res::MaterialResource& material,
+                                   const MeshVertexFormat& vertexFormat);
+
+        PostProcessMaterialInstance
+        getPostProcessMaterialInstance(const res::MaterialResource& material);
 
         KeepAlive<wgpu::Sampler>
         getSampler(const res::material::SamplerDescriptor& desc);

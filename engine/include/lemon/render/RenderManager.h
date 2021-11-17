@@ -20,9 +20,7 @@ namespace lemon::render {
 
         std::vector<std::unique_ptr<RenderPass>> passes;
         std::array<RenderPassResources, 2> resources;
-
-        RenderPassResources* currentFrameResources{nullptr};
-        RenderPassResources* previousFrameResources{nullptr};
+        RenderPassContext context;
 
     public:
         RenderManager();

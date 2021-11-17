@@ -83,25 +83,37 @@ MaterialManager::getMaterialLayout(const ShaderProgram& program, uint8_t bindGro
 }
 
 SurfaceMaterialInstance
-MaterialManager::getMaterialInstance(const res::MaterialResource& material,
-                                     const MeshVertexFormat& vertexFormat)
+MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
+                                            const MeshVertexFormat& vertexFormat)
 {
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::Surface);
+
     const MaterialResourceDescriptor desc{.pResource = &material,
                                           .meshComponents = vertexFormat.getComponents()};
-
-    auto id = lemon::hash(desc);
-
-    auto kaSharedResources = std::move(sharedResourcesCache.get(id, [&]() {
+    const auto id = lemon::hash(desc);
+    const auto kaSharedResources = surfaceSharedResourcesCache.get(id, [&]() {
         auto* pMatShared = new SurfaceMaterialSharedResources(material, vertexFormat);
-
-        // TODO: Sanity check `pMatShared` for validity.
-
-        PipelineManager::get()->assignPipelines(*pMatShared, vertexFormat);
-
+        pMatShared->kaPipeline = PipelineManager::get()->getSurfacePipeline(*pMatShared, vertexFormat);
         return pMatShared;
-    }));
+    });
 
     return SurfaceMaterialInstance(kaSharedResources);
+}
+
+PostProcessMaterialInstance
+MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
+{
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
+
+    const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
+    const auto id = lemon::hash(desc);
+    const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
+        auto* pMatShared = new PostProcessMaterialSharedResources(material);
+        pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
+        return pMatShared;
+    });
+
+    return PostProcessMaterialInstance(kaSharedResources);
 }
 
 wgpu::Texture

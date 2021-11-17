@@ -40,8 +40,8 @@ RenderManager::init(wgpu::Device& device)
         res.postProcessBindGroup = pipelineManager.createPostProcessBindGroup(res.colorTargetView);
     }
 
-    currentFrameResources = &resources[0];
-    previousFrameResources = &resources[1];
+    context.pCurrentFrame = &resources[0];
+    context.pPreviousFrame = &resources[1];
 }
 
 void
@@ -57,13 +57,20 @@ RenderManager::render()
     auto& swapChain = pGPU->getSwapChain();
     auto& queue = pGPU->getQueue();
 
-    std::swap(currentFrameResources, previousFrameResources);
-    currentFrameResources->swapChainBackbufferView = swapChain.GetCurrentTextureView();
+    cbuffer.reset();
+    context.swap(swapChain.GetCurrentTextureView());
+
+    pipelineManager.getSurfaceUniformData().merge(cbuffer);
+    pipelineManager.getPostProcessUniformData().merge(cbuffer);
+
+    for (auto& pass : passes) {
+        pass->prepare(context);
+    }
 
     folly::small_vector<wgpu::CommandBuffer, kNumRenderPasses> commands;
 
     for (auto& pass : passes) {
-        auto passResult = co_await pass->execute(*currentFrameResources);
+        auto passResult = co_await pass->execute(context);
         if (passResult) {
             commands.emplace_back(*passResult);
         } else {
