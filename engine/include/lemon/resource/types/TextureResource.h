@@ -9,20 +9,22 @@
 namespace lemon::res {
     class TextureResource : public ResourceInstance {
     public:
-        enum class Decoder { PNG, DDS };
+        enum class Type { Texture, RenderTarget };
+        enum class Decoder { None, PNG, DDS };
 
         /////////////////////////////////////////////////////////////////////////////////////
         // BEGIN Resource traits
         /////////////////////////////////////////////////////////////////////////////////////
 
         struct Metadata : ResourceMetadataBase {
-            Decoder decoder;
-            texture::InputColorChannels inputChannels;
-            uint8_t inputChannelDepth;
-
-            // TODO: Can one texture have multiple variants, e.g. SRGB and non-SRGB?
-            // If so, it may make sense to expose several subojects for each format.
-            wgpu::TextureFormat GPUFormat;
+            Type type = Type::Texture;
+            wgpu::TextureFormat GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
+            uint32_t mipLevelCount = 1;
+            uint32_t width = 0;
+            uint32_t height = 0;
+            Decoder sourceDecoder;
+            texture::InputColorChannels sourceChannels = texture::InputColorChannels::RGBA;
+            uint8_t sourceChannelDepth = 8;
 
             template<class TArchive>
             void
@@ -30,10 +32,19 @@ namespace lemon::res {
             {
                 ResourceMetadataBase::serialize(ar);
 
-                LEMON_SERIALIZE(ar, decoder);
-                LEMON_SERIALIZE(ar, inputChannels);
-                LEMON_SERIALIZE(ar, inputChannelDepth);
+                LEMON_SERIALIZE(ar, type);
                 LEMON_SERIALIZE(ar, GPUFormat);
+                LEMON_SERIALIZE(ar, mipLevelCount);
+                LEMON_SERIALIZE(ar, sourceDecoder);
+
+                // `Decoder::None` means it's a render target, so we must define dimensions.
+                if (sourceDecoder == Decoder::None) {
+                    LEMON_SERIALIZE(ar, width);
+                    LEMON_SERIALIZE(ar, height);
+                } else {
+                    LEMON_SERIALIZE(ar, sourceChannels);
+                    LEMON_SERIALIZE(ar, sourceChannelDepth);
+                }
             }
         };
 
@@ -47,6 +58,11 @@ namespace lemon::res {
         texture::ImageData imageData;
         wgpu::TextureFormat GPUFormat;
         uint64_t hash = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t mipLevelCount = 0;
+        bool bIsRenderTarget = false;
+        bool bHasImageData = false;
 
     public:
         TextureResource();
@@ -54,6 +70,12 @@ namespace lemon::res {
 
         VoidTask<ResourceLoadingError>
         load(ResourceMetadata&& meta) override;
+
+        inline bool
+        hasImageData() const
+        {
+            return bHasImageData;
+        }
 
         inline const texture::ImageData&
         getImageData() const
@@ -65,6 +87,24 @@ namespace lemon::res {
         getGPUFormat() const
         {
             return GPUFormat;
+        }
+
+        inline uint32_t
+        getMipLevelCount() const
+        {
+            return mipLevelCount;
+        }
+
+        inline bool
+        isRenderTarget() const
+        {
+            return bIsRenderTarget;
+        }
+
+        inline std::pair<uint32_t, uint32_t>
+        getRenderTargetDimensions() const
+        {
+            return {width, height};
         }
 
         // TODO: Currently, texture hash is based on the file path, completely ignoring other parameters,

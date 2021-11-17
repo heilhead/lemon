@@ -10,7 +10,7 @@ namespace lemon::render {
         static constexpr size_t kNumRenderPasses = 2;
 
         std::vector<std::unique_ptr<RenderPass>> passes;
-        RendererResources resources;
+        RenderPassResources resources;
 
     public:
         Renderer();

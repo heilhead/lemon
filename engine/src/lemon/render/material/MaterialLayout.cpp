@@ -126,14 +126,14 @@ createBindGroupLayout(const MaterialResource* pMaterial, const ShaderProgram& pr
             entry.buffer.minBindingSize = resDesc.size;
             break;
         case ResourceType::kSampledTexture:
-            LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
+            // LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
 
             entry.texture.sampleType = convertSampleType(resDesc.sampledKind);
             entry.texture.viewDimension = convertViewDimension(resDesc.dim);
             entry.texture.multisampled = false;
             break;
         case ResourceType::kSampler:
-            LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
+            // LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
 
             // TODO: Use `SamplerDescriptor` to figure out sampling parameters.
             entry.sampler.type = wgpu::SamplerBindingType::Filtering;
@@ -154,14 +154,13 @@ createBindGroupLayout(const MaterialResource* pMaterial, const ShaderProgram& pr
 
 MaterialLayout::MaterialLayout(const MaterialResource& material, const ShaderProgram& program,
                                uint8_t bindGroupIndex)
-    : bindGroupLayout{std::move(createBindGroupLayout(&material, program, bindGroupIndex))},
-      uniformLayout{program, bindGroupIndex}
+    : bindGroupLayout{createBindGroupLayout(&material, program, bindGroupIndex)}, uniformLayout{
+                                                                                      program, bindGroupIndex}
 {
 }
 
 MaterialLayout::MaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex)
-    : bindGroupLayout{std::move(createBindGroupLayout(nullptr, program, bindGroupIndex))}, uniformLayout{
-                                                                                               program,
-                                                                                               bindGroupIndex}
+    : bindGroupLayout{createBindGroupLayout(nullptr, program, bindGroupIndex)}, uniformLayout{program,
+                                                                                              bindGroupIndex}
 {
 }

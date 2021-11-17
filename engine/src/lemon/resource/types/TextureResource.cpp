@@ -44,16 +44,41 @@ VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata&& meta)
 {
     auto* pMeta = meta.get<Metadata>();
-    GPUFormat = pMeta->GPUFormat;
-
     auto filePath = ResourceManager::get()->resolvePath(meta.name);
-    auto loadingError = co_await loadTexture(filePath, pMeta->decoder, pMeta->inputChannels,
-                                             pMeta->inputChannelDepth, imageData);
-    if (loadingError) {
-        co_return loadingError;
+
+    GPUFormat = pMeta->GPUFormat;
+    bIsRenderTarget = pMeta->type == Type::RenderTarget;
+    bHasImageData = pMeta->sourceDecoder != Decoder::None;
+    mipLevelCount = pMeta->mipLevelCount;
+    hash = lemon::hash(filePath.c_str());
+
+    if (bIsRenderTarget) {
+        width = pMeta->width;
+        height = pMeta->height;
+
+        if (width == 0 || height == 0) {
+            logger::warn("render targets must have valid dimensions. texture path: ", filePath);
+            co_return ResourceLoadingError::InitializationError;
+        }
     }
 
-    hash = lemon::hash(filePath.c_str());
+    if (bHasImageData) {
+        auto loadingError = co_await loadTexture(filePath, pMeta->sourceDecoder, pMeta->sourceChannels,
+                                                 pMeta->sourceChannelDepth, imageData);
+        if (loadingError) {
+            logger::warn("texture decoding failed. texture path: ", filePath);
+            co_return loadingError;
+        }
+
+        if (bIsRenderTarget && (width != imageData.width || height != imageData.height)) {
+            logger::warn("render target dimensions must match source image data dimensions. texture path: ",
+                         filePath);
+            co_return ResourceLoadingError::DataDecodingError;
+        }
+    } else if (!bIsRenderTarget) {
+        logger::warn("texture binding textures must have image data. texture path: ", filePath);
+        co_return ResourceLoadingError::DataMissing;
+    }
 
     co_return {};
 }

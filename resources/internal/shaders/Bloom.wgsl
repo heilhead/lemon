@@ -1,5 +1,5 @@
-{{require("Sampling.wgsl")}}
-{{require("ToneMapping.wgsl")}}
+{{require("include/Sampling.wgsl")}}
+{{require("include/ToneMapping.wgsl")}}
 
 // Based on: https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.render-pipelines.universal/Shaders/PostProcessing/Bloom.shader
 

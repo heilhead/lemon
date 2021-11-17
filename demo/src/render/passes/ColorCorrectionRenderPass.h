@@ -4,15 +4,14 @@
 #include <lemon/render/RenderPass.h>
 
 namespace lemon::render {
-    class MainRenderPass : public RenderPass {
-        static constexpr wgpu::Color kMainClearColor = {0.2f, 0.2f, 0.2f, 0.0f};
-
+    class ColorCorrectionRenderPass : public RenderPass {
         wgpu::RenderPassDescriptor passDesc;
         std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
-        wgpu::RenderPassDepthStencilAttachment depthStencilAttachmentInfo;
+
+        bool bShowDemoWindow = true;
 
     public:
-        MainRenderPass();
+        ColorCorrectionRenderPass();
 
         Task<wgpu::CommandBuffer, RenderPassError>
         execute(const RenderPassResources& resources) override;

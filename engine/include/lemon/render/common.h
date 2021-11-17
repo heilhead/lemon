@@ -22,13 +22,16 @@ namespace lemon::render {
         };
     }
 
-    static constexpr uint8_t kSharedBindGroupIndex = 0;
+    static constexpr uint8_t kSurfaceSharedBindGroupIndex = 0;
+    static constexpr uint8_t kPostProcessSharedBindGroupIndex = 0;
     static constexpr uint8_t kMaterialBindGroupIndex = 1;
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
     static constexpr gsl::czstring<> kShaderSurfaceSharedGroupBlueprint =
-        "internal/shaders/BaseSurfaceShared.wgsl";
+        "internal/shaders/base/SurfaceBindGroup.wgsl";
+    static constexpr gsl::czstring<> kShaderPostProcessSharedGroupBlueprint =
+        "internal/shaders/base/PostProcessBindGroup.wgsl";
 
     static constexpr gsl::czstring<> kShaderDefinePipelineDepthOnly = "PIPELINE_DEPTH_ONLY";
     static constexpr gsl::czstring<> kShaderDefineMeshNormal = "MESH_ENABLE_NORMAL";
@@ -44,4 +47,14 @@ namespace lemon::render {
     {
         return gVertexFormatSize[format];
     }
+
+    enum class RenderPassError { Unknown };
+    enum class FrameRenderError { Unknown };
+
+    struct RenderPassResources {
+        wgpu::TextureView colorTargetView;
+        wgpu::TextureView depthStencilView;
+        wgpu::TextureView swapChainBackbufferView;
+        wgpu::BindGroup postProcessBindGroup;
+    };
 } // namespace lemon::render

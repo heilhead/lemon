@@ -49,12 +49,18 @@ namespace lemon::render {
 
         wgpu::Device* pDevice;
 
-        wgpu::BindGroup sharedBindGroup;
-        KeepAlive<MaterialLayout> kaSharedBindGroupLayout;
-        MaterialUniformData sharedUniformData;
+        wgpu::BindGroup surfaceBindGroup;
+        KeepAlive<MaterialLayout> kaSurfaceBindGroupLayout;
+        MaterialUniformData surfaceUniformData;
+
+        KeepAlive<MaterialLayout> kaPostProcessBindGroupLayout;
+        MaterialUniformData postProcessUniformData;
+        wgpu::Sampler postProcessColorTargetSampler;
 
         MaterialConfiguration colorConfig;
         MaterialConfiguration depthConfig;
+        MaterialConfiguration postProcessConfig;
+
         AtomicCache<MeshSurfacePipeline> pipelineCache{512};
 
     public:
@@ -75,30 +81,54 @@ namespace lemon::render {
             return depthConfig;
         }
 
-        inline const KeepAlive<MaterialLayout>&
-        getSharedBindGroupLayout() const
+        inline const MaterialConfiguration&
+        getPostProcessConfig()
         {
-            return kaSharedBindGroupLayout;
+            return postProcessConfig;
+        }
+
+        inline const KeepAlive<MaterialLayout>&
+        getSurfaceBindGroupLayout() const
+        {
+            return kaSurfaceBindGroupLayout;
         }
 
         inline const wgpu::BindGroup&
-        getSharedBindGroup() const
+        getSurfaceBindGroup() const
         {
-            return sharedBindGroup;
+            return surfaceBindGroup;
+        }
+
+        inline const KeepAlive<MaterialLayout>&
+        getPostProcessBindGroupLayout() const
+        {
+            return kaPostProcessBindGroupLayout;
         }
 
         void
         assignPipelines(MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
 
         inline MaterialUniformData&
-        getSharedUniformData()
+        getSurfaceUniformData()
         {
-            return sharedUniformData;
+            return surfaceUniformData;
         }
+
+        inline MaterialUniformData&
+        getPostProcessUniformData()
+        {
+            return postProcessUniformData;
+        }
+
+        wgpu::BindGroup
+        createPostProcessBindGroup(const wgpu::TextureView& colorTargetView);
 
     private:
         void
-        initSharedBindGroup();
+        initSurfaceBindGroup();
+
+        void
+        initPostProcessBindGroup();
 
         KeepAlive<MeshSurfacePipeline>
         getPipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);

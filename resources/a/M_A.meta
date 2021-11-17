@@ -3,7 +3,7 @@ MaterialResource:
     references:
       []
   baseType: Shader
-  basePath: internal\shaders\BaseSurfacePBR.wgsl
+  basePath: internal\shaders\BaseSurface.wgsl
   domain:
     type: Surface
     usage: StaticMesh|SkeletalMesh

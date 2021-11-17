@@ -43,14 +43,14 @@ namespace lemon::res {
         using ResourceList = std::vector<std::pair<StringID, T>>;
 
         enum class BaseType { Shader, Material };
-        enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
+        enum class Usage { Unknown = 1 << 0, StaticMesh = 1 << 1, SkeletalMesh = 1 << 2 };
         enum class Domain { Surface, PostProcess, UserInterface };
         enum class ShadingModel { Lit, Unlit };
         enum class BlendMode { Opaque, Masked, Translucent };
 
         struct DomainDescriptor {
-            Usage usage = Usage::Unknown;
             Domain type = Domain::Surface;
+            Usage usage = Usage::StaticMesh;
             ShadingModel shadingModel = ShadingModel::Lit;
             BlendMode blendMode = BlendMode::Opaque;
 

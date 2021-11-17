@@ -17,6 +17,7 @@ namespace lemon::render {
         MeshComponents meshComponents;
     };
 
+    template<class TRenderPipeline>
     class MaterialSharedResources : NonMovable {
         friend class MaterialInstance;
         friend class PipelineManager;
@@ -33,12 +34,15 @@ namespace lemon::render {
         folly::small_vector<KeepAlive<wgpu::Sampler>, 4> kaSamplers;
         folly::small_vector<KeepAlive<wgpu::Texture>, 8> kaTextures;
         KeepAlive<MaterialLayout> kaLayout;
-        KeepAlive<ShaderProgram> kaColorProgram;
-        KeepAlive<ShaderProgram> kaDepthProgram;
-        KeepAlive<MeshSurfacePipeline> kaPipeline;
+        KeepAlive<TRenderPipeline> kaPipeline;
 
     public:
         MaterialSharedResources(const res::MaterialResource& matRes, const MeshVertexFormat& vertexFormat);
+    };
+
+    class SurfaceMaterialSharedResources : MaterialSharedResources<MeshSurfacePipeline> {
+        KeepAlive<ShaderProgram> kaColorProgram;
+        KeepAlive<ShaderProgram> kaDepthProgram;
     };
 
     class MaterialInstance {

@@ -1,4 +1,4 @@
-#include "DebugUIRenderPass.h"
+#include "ColorCorrectionRenderPass.h"
 
 #include <lemon/device/Device.h>
 #include <lemon/game/actor/GameWorld.h>
@@ -6,9 +6,8 @@
 using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::device;
-using namespace lemon::game;
 
-DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
+ColorCorrectionRenderPass::ColorCorrectionRenderPass() : passDesc{}, colorAttachments{}
 {
     passDesc.colorAttachmentCount = colorAttachments.size();
     passDesc.colorAttachments = colorAttachments.data();
@@ -20,7 +19,7 @@ DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
 }
 
 Task<wgpu::CommandBuffer, RenderPassError>
-DebugUIRenderPass::execute(const RenderPassResources& resources)
+ColorCorrectionRenderPass::execute(const RenderPassResources& resources)
 {
     colorAttachments[0].view = resources.swapChainBackbufferView;
 
@@ -31,7 +30,7 @@ DebugUIRenderPass::execute(const RenderPassResources& resources)
     {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
 
-        pRenderMan->getDebugUI().render(pass);
+        // pRenderMan->getDebugUI().render(pass);
 
         pass.EndPass();
     }

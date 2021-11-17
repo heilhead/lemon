@@ -37,6 +37,7 @@ set(SOURCE_FILES
         "src/lemon/render/MeshGPUBuffer.cpp"
         "src/lemon/render/RenderQueue.cpp"
         "src/lemon/render/DebugUI.cpp"
+        "src/lemon/render/RenderPass.cpp"
         "src/lemon/device/Input.cpp"
         "src/lemon/device/input/KeyboardListener.cpp"
         "src/lemon/device/input/MouseListener.cpp"

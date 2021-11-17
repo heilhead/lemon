@@ -1,0 +1,10 @@
+TextureResource:
+  common:
+    references:
+      []
+  type: RenderTarget
+  GPUFormat: RGBA8Unorm
+  mipLevelCount: 6
+  sourceDecoder: None
+  width: 640
+  height: 400

@@ -23,7 +23,7 @@ MeshSurfacePipeline::MeshSurfacePipeline(const MaterialSharedResources& matShare
     auto* pRenderMan = RenderManager::get();
     auto& device = pRenderMan->getDevice();
 
-    auto bgl0 = pPipelineMan->getSharedBindGroupLayout()->bindGroupLayout;
+    auto bgl0 = pPipelineMan->getSurfaceBindGroupLayout()->bindGroupLayout;
     auto bgl1 = matShared.kaLayout->bindGroupLayout;
 
     wgpu::BindGroupLayout bindGroupLayouts[2] = {bgl0, bgl1};
@@ -75,6 +75,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
     blendState.alpha = blendComponent;
 
     wgpu::ColorTargetState target;
+    // target.format = wgpu::TextureFormat::RGBA16Float;
     target.format = pGPUDevice->getColorTargetFormat();
     target.blend = &blendState;
     target.writeMask = wgpu::ColorWriteMask::All;
@@ -144,20 +145,21 @@ void
 PipelineManager::init(wgpu::Device& device)
 {
     pDevice = &device;
-    initSharedBindGroup();
+    initSurfaceBindGroup();
+    initPostProcessBindGroup();
 }
 
 void
-PipelineManager::initSharedBindGroup()
+PipelineManager::initSurfaceBindGroup()
 {
     auto* pMaterialMan = MaterialManager::get();
     auto* pRenderMan = RenderManager::get();
     auto* pScheduler = Scheduler::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
-    auto blueprint = std::move(
+    auto blueprint =
         pScheduler->block(IOTask(MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
-            .value());
+            .value();
 
     // The program is temporary and should be destroyed once we're done here.
     KeepAlive<ShaderProgram> kaProgram;
@@ -171,18 +173,18 @@ PipelineManager::initSharedBindGroup()
                                       MeshComponents::Tangent | MeshComponents::UV0 | MeshComponents::UV1 |
                                       MeshComponents::JointInfluence);
 
-        config.merge(std::move(vertexFormat.getMeshConfig()));
+        config.merge(vertexFormat.getMeshConfig());
         config.define(kShaderDefineMaterialLighting, true);
 
-        kaProgram = std::move(pMaterialMan->getShader(blueprint, config));
+        kaProgram = pMaterialMan->getShader(blueprint, config);
     }
 
-    kaSharedBindGroupLayout = std::move(pMaterialMan->getMaterialLayout(*kaProgram, kSharedBindGroupIndex));
+    kaSurfaceBindGroupLayout = pMaterialMan->getMaterialLayout(*kaProgram, kSurfaceSharedBindGroupIndex);
 
     folly::small_vector<wgpu::BindGroupEntry, 4> entries;
 
     for (auto& res : kaProgram->getReflection()) {
-        if (res.bindGroup != kSharedBindGroupIndex) {
+        if (res.bindGroup != kSurfaceSharedBindGroupIndex) {
             continue;
         }
 
@@ -202,18 +204,69 @@ PipelineManager::initSharedBindGroup()
     }
 
     wgpu::BindGroupDescriptor descriptor;
-    descriptor.layout = kaSharedBindGroupLayout->bindGroupLayout;
+    descriptor.layout = kaSurfaceBindGroupLayout->bindGroupLayout;
     descriptor.entryCount = entries.size();
     descriptor.entries = entries.data();
 
-    sharedBindGroup = pDevice->CreateBindGroup(&descriptor);
-    sharedUniformData.setLayout(kaSharedBindGroupLayout);
+    surfaceBindGroup = pDevice->CreateBindGroup(&descriptor);
+    surfaceUniformData.setLayout(kaSurfaceBindGroupLayout);
+}
+
+void
+PipelineManager::initPostProcessBindGroup()
+{
+    auto* pMaterialMan = MaterialManager::get();
+    auto* pRenderMan = RenderManager::get();
+    auto* pScheduler = Scheduler::get();
+    auto& cbuffer = pRenderMan->getConstantBuffer();
+
+    auto blueprint =
+        pScheduler
+            ->block(IOTask(MaterialResource::loadShaderBlueprint(kShaderPostProcessSharedGroupBlueprint)))
+            .value();
+
+    // The program is temporary and should be destroyed once we're done here.
+    KeepAlive<ShaderProgram> kaProgram = pMaterialMan->getShader(blueprint, postProcessConfig);
+
+    kaPostProcessBindGroupLayout =
+        pMaterialMan->getMaterialLayout(*kaProgram, kPostProcessSharedBindGroupIndex);
+
+    postProcessUniformData.setLayout(kaPostProcessBindGroupLayout);
+
+    wgpu::SamplerDescriptor samplerDesc;
+    samplerDesc.magFilter = wgpu::FilterMode::Linear;
+    postProcessColorTargetSampler = pDevice->CreateSampler(&samplerDesc);
 }
 
 void
 PipelineManager::assignPipelines(MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat)
 {
     matShared.kaPipeline = std::move(getPipeline(matShared, vertexFormat));
+}
+
+wgpu::BindGroup
+PipelineManager::createPostProcessBindGroup(const wgpu::TextureView& colorTargetView)
+{
+    auto* pRenderMan = RenderManager::get();
+    auto& cbuffer = pRenderMan->getConstantBuffer().getBuffer();
+    auto& kaLayout = kaPostProcessBindGroupLayout;
+    auto& uniforms = kaLayout->uniformLayout.uniforms;
+
+    LEMON_ASSERT(kaLayout->uniformLayout.uniformCount == 2);
+
+    std::array<wgpu::BindGroupEntry, 4> entries = {
+        createBinding(0, cbuffer, 0, uniforms[0].size),
+        createBinding(1, cbuffer, 0, uniforms[1].size),
+        createBinding(2, postProcessColorTargetSampler),
+        createBinding(3, colorTargetView),
+    };
+
+    wgpu::BindGroupDescriptor descriptor;
+    descriptor.layout = kaPostProcessBindGroupLayout->bindGroupLayout;
+    descriptor.entryCount = entries.size();
+    descriptor.entries = entries.data();
+
+    return pDevice->CreateBindGroup(&descriptor);
 }
 
 KeepAlive<MeshSurfacePipeline>

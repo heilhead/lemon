@@ -2,7 +2,9 @@ TextureResource:
   common:
     references:
       []
-  decoder: PNG
-  inputChannels: RGBA
-  inputChannelDepth: 8
+  type: Texture
   GPUFormat: RGBA8UnormSrgb
+  mipLevelCount: 1
+  sourceDecoder: PNG
+  sourceChannels: RGBA
+  sourceChannelDepth: 8
