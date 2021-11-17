@@ -4,12 +4,12 @@
 #include <lemon/render/material/MaterialUniformData.h>
 
 namespace lemon::render {
-    class MaterialSharedResources;
+    struct SurfaceMaterialSharedResources;
     class MeshVertexFormat;
     struct MaterialLayout;
     class ShaderProgram;
 
-    class MeshSurfacePipeline {
+    class SurfacePipeline {
         struct PipelineConfiguration {
             const wgpu::PipelineLayoutDescriptor* pPipelineLayoutDesc;
             const wgpu::VertexBufferLayout* pVertexLayout;
@@ -21,7 +21,8 @@ namespace lemon::render {
         wgpu::RenderPipeline depth;
 
     public:
-        MeshSurfacePipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
+        SurfacePipeline(const SurfaceMaterialSharedResources& matShared,
+                        const MeshVertexFormat& vertexFormat);
 
         const wgpu::RenderPipeline&
         getColorPipeline() const
@@ -43,7 +44,6 @@ namespace lemon::render {
         createDepthPipeline(const PipelineConfiguration& config);
     };
 
-    // TODO: Respec this to `GeometryPipelineManager` or `SurfacePipelineManager`.
     class PipelineManager : public UnsafeSingleton<PipelineManager> {
         enum class PipelineType { Color, Depth };
 
@@ -61,7 +61,7 @@ namespace lemon::render {
         MaterialConfiguration depthConfig;
         MaterialConfiguration postProcessConfig;
 
-        AtomicCache<MeshSurfacePipeline> pipelineCache{512};
+        AtomicCache<SurfacePipeline> surfacePipelineCache{512};
 
     public:
         PipelineManager();
@@ -106,7 +106,7 @@ namespace lemon::render {
         }
 
         void
-        assignPipelines(MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
+        assignPipelines(SurfaceMaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
 
         inline MaterialUniformData&
         getSurfaceUniformData()
@@ -130,7 +130,7 @@ namespace lemon::render {
         void
         initPostProcessBindGroup();
 
-        KeepAlive<MeshSurfacePipeline>
-        getPipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
+        KeepAlive<SurfacePipeline>
+        getPipeline(const SurfaceMaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat);
     };
 } // namespace lemon::render

@@ -3,7 +3,6 @@
 #include <lemon/render/BindingInitializationHelper.h>
 #include <lemon/render/common.h>
 #include <lemon/render/material/MaterialManager.h>
-#include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/ShaderProgram.h>
 #include <lemon/resource/types/MaterialResource.h>
 #include <lemon/scheduler.h>
@@ -16,8 +15,8 @@ using namespace lemon::render;
 using namespace lemon::shader;
 using namespace lemon::device;
 
-MeshSurfacePipeline::MeshSurfacePipeline(const MaterialSharedResources& matShared,
-                                         const MeshVertexFormat& vertexFormat)
+SurfacePipeline::SurfacePipeline(const SurfaceMaterialSharedResources& matShared,
+                                 const MeshVertexFormat& vertexFormat)
 {
     auto* pPipelineMan = PipelineManager::get();
     auto* pRenderMan = RenderManager::get();
@@ -49,7 +48,7 @@ MeshSurfacePipeline::MeshSurfacePipeline(const MaterialSharedResources& matShare
 }
 
 void
-MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
+SurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
 {
     auto* pGPUDevice = Device::get()->getGPU();
     auto& swapChainImpl = pGPUDevice->getSwapChainImpl();
@@ -127,7 +126,7 @@ MeshSurfacePipeline::createColorPipeline(const PipelineConfiguration& config)
 }
 
 void
-MeshSurfacePipeline::createDepthPipeline(const PipelineConfiguration& config)
+SurfacePipeline::createDepthPipeline(const PipelineConfiguration& config)
 {
     // TODO: Create proper depth pipeline.
     depth = color;
@@ -239,7 +238,8 @@ PipelineManager::initPostProcessBindGroup()
 }
 
 void
-PipelineManager::assignPipelines(MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat)
+PipelineManager::assignPipelines(SurfaceMaterialSharedResources& matShared,
+                                 const MeshVertexFormat& vertexFormat)
 {
     matShared.kaPipeline = std::move(getPipeline(matShared, vertexFormat));
 }
@@ -269,12 +269,13 @@ PipelineManager::createPostProcessBindGroup(const wgpu::TextureView& colorTarget
     return pDevice->CreateBindGroup(&descriptor);
 }
 
-KeepAlive<MeshSurfacePipeline>
-PipelineManager::getPipeline(const MaterialSharedResources& matShared, const MeshVertexFormat& vertexFormat)
+KeepAlive<SurfacePipeline>
+PipelineManager::getPipeline(const SurfaceMaterialSharedResources& matShared,
+                             const MeshVertexFormat& vertexFormat)
 {
     auto id = lemon::hash(matShared.kaColorProgram->getProgramHash(),
                           matShared.kaDepthProgram->getProgramHash(), vertexFormat.getComponents());
 
     return std::move(
-        pipelineCache.get(id, [&]() { return new MeshSurfacePipeline(matShared, vertexFormat); }));
+        surfacePipelineCache.get(id, [&]() { return new SurfacePipeline(matShared, vertexFormat); }));
 }

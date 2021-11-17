@@ -1,6 +1,5 @@
 #pragma once
 
-#include <lemon/render/material/SurfaceMaterialInstance.h>
 #include <lemon/render/material/ShaderCompiler.h>
 #include <lemon/render/material/MaterialLayout.h>
 #include <lemon/render/material/MaterialInstance.h>
@@ -24,7 +23,7 @@ namespace lemon::render {
         AtomicCache<MaterialLayout> materialLayoutCache{128};
         AtomicCache<wgpu::Sampler> samplerCache{64};
         AtomicCache<wgpu::Texture> textureCache{128};
-        AtomicCache<MaterialSharedResources> sharedResourcesCache{128};
+        AtomicCache<SurfaceMaterialSharedResources> sharedResourcesCache{128};
 
     public:
         MaterialManager();
@@ -49,7 +48,7 @@ namespace lemon::render {
         KeepAlive<MaterialLayout>
         getMaterialLayout(const ShaderProgram& program, uint8_t bindGroupIndex);
 
-        MaterialInstance
+        SurfaceMaterialInstance
         getMaterialInstance(const res::MaterialResource& material, const MeshVertexFormat& vertexFormat);
 
         KeepAlive<wgpu::Sampler>

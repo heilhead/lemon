@@ -10,19 +10,14 @@ namespace lemon::res {
 namespace lemon::render {
     class MeshVertexFormat;
     class ShaderProgram;
-    class MeshSurfacePipeline;
+    class SurfacePipeline;
 
     struct MaterialResourceDescriptor {
         const res::MaterialResource* pResource;
         MeshComponents meshComponents;
     };
 
-    template<class TRenderPipeline>
-    class MaterialSharedResources : NonMovable {
-        friend class MaterialInstance;
-        friend class PipelineManager;
-        friend class MeshSurfacePipeline;
-
+    struct MaterialSharedResources : NonMovable {
         // Bind group is the only resource directly owned by `MaterialSharedResources`.
         // The rest are stored elsewhere and reused between materials.
         wgpu::BindGroup bindGroup;
@@ -34,20 +29,21 @@ namespace lemon::render {
         folly::small_vector<KeepAlive<wgpu::Sampler>, 4> kaSamplers;
         folly::small_vector<KeepAlive<wgpu::Texture>, 8> kaTextures;
         KeepAlive<MaterialLayout> kaLayout;
-        KeepAlive<TRenderPipeline> kaPipeline;
-
-    public:
-        MaterialSharedResources(const res::MaterialResource& matRes, const MeshVertexFormat& vertexFormat);
     };
 
-    class SurfaceMaterialSharedResources : MaterialSharedResources<MeshSurfacePipeline> {
+    struct SurfaceMaterialSharedResources : MaterialSharedResources {
         KeepAlive<ShaderProgram> kaColorProgram;
         KeepAlive<ShaderProgram> kaDepthProgram;
+        KeepAlive<SurfacePipeline> kaPipeline;
+
+        SurfaceMaterialSharedResources(const res::MaterialResource& matRes,
+                                       const MeshVertexFormat& vertexFormat);
     };
 
+    template<class TSharedResources>
     class MaterialInstance {
+        KeepAlive<TSharedResources> kaSharedResources;
         MaterialUniformData uniformData;
-        KeepAlive<MaterialSharedResources> kaSharedResources;
 
     public:
         MaterialInstance() = default;
@@ -59,8 +55,7 @@ namespace lemon::render {
         MaterialInstance&
         operator=(MaterialInstance&& other) = default;
 
-        MaterialInstance(KeepAlive<MaterialSharedResources> kaSharedResources)
-            : kaSharedResources{kaSharedResources}
+        MaterialInstance(KeepAlive<TSharedResources> kaSharedResources) : kaSharedResources{kaSharedResources}
         {
             uniformData = kaSharedResources->uniformData;
         }
@@ -71,7 +66,7 @@ namespace lemon::render {
             return kaSharedResources;
         }
 
-        inline const MeshSurfacePipeline&
+        inline const SurfacePipeline&
         getRenderPipeline() const
         {
             LEMON_ASSERT(isValid());
@@ -108,6 +103,8 @@ namespace lemon::render {
             return kaSharedResources->bindGroup;
         }
     };
+
+    using SurfaceMaterialInstance = MaterialInstance<SurfaceMaterialSharedResources>;
 } // namespace lemon::render
 
 template<>

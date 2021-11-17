@@ -24,8 +24,8 @@ findByID(const std::vector<std::pair<StringID, TData>>& data, StringID id)
     return nullptr;
 }
 
-MaterialSharedResources::MaterialSharedResources(const res::MaterialResource& matRes,
-                                                 const MeshVertexFormat& vertexFormat)
+SurfaceMaterialSharedResources::SurfaceMaterialSharedResources(const res::MaterialResource& matRes,
+                                                               const MeshVertexFormat& vertexFormat)
 {
     auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();

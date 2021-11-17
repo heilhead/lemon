@@ -27,7 +27,6 @@ set(SOURCE_FILES
         "src/lemon/render/RenderManager.cpp"
         "src/lemon/render/material/MaterialManager.cpp"
         "src/lemon/render/material/MaterialInstance.cpp"
-        "src/lemon/render/material/SurfaceMaterialInstance.cpp"
         "src/lemon/resource/types/texture/PNGDecoder.cpp"
         "src/lemon/render/material/MaterialUniformData.cpp"
         "src/lemon/tasks/filesystem.cpp"

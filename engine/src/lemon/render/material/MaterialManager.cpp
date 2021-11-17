@@ -82,7 +82,7 @@ MaterialManager::getMaterialLayout(const ShaderProgram& program, uint8_t bindGro
     return materialLayoutCache.get(id, [&]() { return new MaterialLayout(program, bindGroupIndex); });
 }
 
-MaterialInstance
+SurfaceMaterialInstance
 MaterialManager::getMaterialInstance(const res::MaterialResource& material,
                                      const MeshVertexFormat& vertexFormat)
 {
@@ -92,7 +92,7 @@ MaterialManager::getMaterialInstance(const res::MaterialResource& material,
     auto id = lemon::hash(desc);
 
     auto kaSharedResources = std::move(sharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new MaterialSharedResources(material, vertexFormat);
+        auto* pMatShared = new SurfaceMaterialSharedResources(material, vertexFormat);
 
         // TODO: Sanity check `pMatShared` for validity.
 
@@ -101,7 +101,7 @@ MaterialManager::getMaterialInstance(const res::MaterialResource& material,
         return pMatShared;
     }));
 
-    return MaterialInstance(kaSharedResources);
+    return SurfaceMaterialInstance(kaSharedResources);
 }
 
 wgpu::Texture
