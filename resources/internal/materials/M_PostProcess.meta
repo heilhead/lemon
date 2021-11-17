@@ -1,0 +1,29 @@
+MaterialResource:
+  common:
+    references:
+      []
+  baseType: Shader
+  basePath: internal\shaders\BasePostProcess.wgsl
+  domain:
+    type: PostProcess
+    usage: Unknown
+  definitions:
+    []
+  samplers:
+    - first: sBloomSampler
+      second:
+        addressModeU: ClampToEdge
+        addressModeV: ClampToEdge
+        addressModeW: ClampToEdge
+        magFilter: Linear
+        minFilter: Linear
+        mipmapFilter: Nearest
+        lodMinClamp: 0
+        lodMaxClamp: 1000
+        compare: Undefined
+        maxAnisotropy: 1
+  textures:
+    - first: tBloom
+      second: internal\textures\T_PostProcess_Bloom
+  uniforms:
+    []

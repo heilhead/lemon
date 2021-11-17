@@ -3,15 +3,24 @@
 #include <lemon/render/material/MaterialManager.h>
 #include <lemon/render/ConstantBuffer.h>
 #include <lemon/render/PipelineManager.h>
+#include <lemon/render/RenderPass.h>
 #include <lemon/render/DebugUI.h>
+#include <lemon/scheduler/common.h>
 
 namespace lemon::render {
     class RenderManager : public UnsafeSingleton<RenderManager> {
+        // Adjust when more passes are introduced.
+        static constexpr size_t kNumRenderPasses = 8;
+
         wgpu::Device* pDevice;
         ConstantBuffer cbuffer;
         MaterialManager materialManager;
         PipelineManager pipelineManager;
         DebugUI debugUI;
+
+        std::vector<std::unique_ptr<RenderPass>> passes;
+        std::array<RenderPassResources, 2> resources;
+        RenderPassContext context;
 
     public:
         RenderManager();
@@ -49,5 +58,11 @@ namespace lemon::render {
         {
             return debugUI;
         }
+
+        void
+        addRenderPass(std::unique_ptr<RenderPass> pass);
+
+        scheduler::VoidTask<FrameRenderError>
+        render();
     };
 } // namespace lemon::render

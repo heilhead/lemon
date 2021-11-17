@@ -45,6 +45,14 @@ namespace lemon::math {
     template<size_t N, std::floating_point T, glm::qualifier Q>
     bool
     isNearlyZero(const glm::vec<N, T, Q>& v, float tolerance = kSmallNumber);
+
+    template<std::integral T>
+    constexpr T
+    fpack(float v);
+
+    template<typename T, size_t N, glm::qualifier Q = glm::packed_highp>
+    constexpr glm::vec<N, T, Q>
+    fpack(const glm::vec<N, float, Q>& v);
 } // namespace lemon::math
 
 #include <lemon/shared/math.inl>

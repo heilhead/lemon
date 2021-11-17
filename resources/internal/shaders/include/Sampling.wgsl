@@ -1,4 +1,4 @@
-{{require("Math.wgsl")}}
+{{require("include/Math.wgsl")}}
 
 fn BSpline3Leftmost(x: vec2<f32>) -> vec2<f32> {
   return 0.16666667 * x * x * x;

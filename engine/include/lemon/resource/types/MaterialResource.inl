@@ -23,8 +23,11 @@ namespace lemon::res {
     {
         LEMON_SERIALIZE(ar, type);
         LEMON_SERIALIZE_FLAGS(ar, usage);
-        LEMON_SERIALIZE(ar, shadingModel);
-        LEMON_SERIALIZE(ar, blendMode);
+
+        if (usage != Usage::Unknown) {
+            LEMON_SERIALIZE(ar, shadingModel);
+            LEMON_SERIALIZE(ar, blendMode);
+        }
     }
 
     template<class TArchive>

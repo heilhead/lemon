@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../common.h"
-#include "../RenderPass.h"
+#include <lemon/render/common.h>
+#include <lemon/render/RenderPass.h>
 
 namespace lemon::render {
     class DebugUIRenderPass : public RenderPass {
@@ -14,6 +14,6 @@ namespace lemon::render {
         DebugUIRenderPass();
 
         Task<wgpu::CommandBuffer, RenderPassError>
-        execute(const RendererResources& resources) override;
+        execute(const RenderPassContext& context) override;
     };
 } // namespace lemon::render

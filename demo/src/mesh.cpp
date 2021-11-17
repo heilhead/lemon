@@ -1,8 +1,11 @@
 #include "mesh.h"
 #include "common/DemoModelActor.h"
-#include "render/Renderer.h"
 #include <lemon/game.h>
 #include <lemon/render.h>
+
+#include "render/passes/MainRenderPass.h"
+#include "render/passes/DebugUIRenderPass.h"
+#include "render/passes/PostProcessRenderPass.h"
 
 using namespace lemon;
 using namespace lemon::game;
@@ -247,9 +250,9 @@ hsv2rgb(glm::f32vec3 hsv)
 
 namespace minirender {
     const ModelResource::Model*
-    loadModel()
+    loadModel(const std::string& path)
     {
-        ResourceLocation location(R"(ozz-sample\MannequinSkeleton.lem:SK_Mannequin)");
+        ResourceLocation location(path);
 
         auto result = Scheduler::get()->block(
             ResourceManager::get()->loadResource<ModelResource>(location, ResourceLifetime::Static));
@@ -260,9 +263,9 @@ namespace minirender {
     }
 
     const MaterialResource*
-    loadMaterial()
+    loadMaterial(const std::string& path)
     {
-        ResourceLocation location(R"(misc\M_Mannequin2)");
+        ResourceLocation location(path);
 
         auto result = Scheduler::get()->block(
             ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
@@ -287,8 +290,6 @@ private:
 
     std::vector<GameObjectHandle<DemoModelActor>> demoActorHandles;
 
-    std::unique_ptr<Renderer> pRenderer;
-
     std::unique_ptr<GameStateManager> pGameStateMan;
 
 public:
@@ -297,14 +298,13 @@ public:
     {
         using namespace minirender;
 
-        pRenderer = std::make_unique<Renderer>();
-
-        auto model = loadModel();
+        auto model = loadModel("ozz-sample\\MannequinSkeleton.lem:SK_Mannequin");
         auto& meshData = model->getMeshes()[0];
-        auto* pMaterial = loadMaterial();
-        auto material = MaterialManager::get()->getMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
+        auto* pMaterial = loadMaterial("misc\\M_Mannequin2");
+        auto material =
+            MaterialManager::get()->getSurfaceMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
 
-        pSharedData = &PipelineManager::get()->getSharedUniformData();
+        pSharedData = &PipelineManager::get()->getSurfaceUniformData();
         pWorld = std::make_unique<GameWorld>();
 
         hCameraActor = pWorld->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
@@ -359,7 +359,7 @@ public:
     void
     render()
     {
-        Scheduler::get()->block(CPUTask(pRenderer->render()));
+        Scheduler::get()->block(CPUTask(RenderManager::get()->render()));
     }
 };
 
@@ -372,7 +372,15 @@ testMeshRendering()
 
     engine.init(R"(C:\git\lemon\resources)");
 
-    auto& ui = RenderManager::get()->getDebugUI();
+    auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
+    auto postProcessMaterial = MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
+
+    auto* pRenderMan = RenderManager::get();
+    pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
+    pRenderMan->addRenderPass(std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
+    pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
+
+    auto& ui = pRenderMan->getDebugUI();
 
     {
         MiniRender render;

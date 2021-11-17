@@ -35,7 +35,7 @@ addDependencies(ResourceMetadataBase* data, std::initializer_list<RawResourceRef
 
 template<typename T>
 void
-saveMetadata(std::unique_ptr<typename T::Metadata>&& data, const std::filesystem::path& path)
+saveMetadata(std::unique_ptr<typename T::Metadata> data, const std::filesystem::path& path)
 {
     static std::filesystem::path basePath = R"(C:\git\lemon\resources\)";
 
@@ -72,7 +72,7 @@ createMetadata()
 
             auto mat = createMaterial();
             mat->baseType = MaterialResource::BaseType::Shader;
-            mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
+            mat->basePath = "internal\\shaders\\BaseSurface.wgsl";
             mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
             mat->domain.type = MaterialResource::Domain::Surface;
             mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
@@ -91,9 +91,9 @@ createMetadata()
                 path texPath = p2 / textures[k];
 
                 auto tex = createTexture();
-                tex->decoder = TextureResource::Decoder::PNG;
-                tex->inputChannels = texture::InputColorChannels::RGBA;
-                tex->inputChannelDepth = 8;
+                tex->sourceDecoder = TextureResource::Decoder::PNG;
+                tex->sourceChannels = texture::InputColorChannels::RGBA;
+                tex->sourceChannelDepth = 8;
                 tex->GPUFormat = wgpu::TextureFormat::RGBA8UnormSrgb;
 
                 saveMetadata<TextureResource>(std::move(tex), texPath);
@@ -158,9 +158,9 @@ createMetadata()
 
     {
         auto texAO = createTexture();
-        texAO->decoder = TextureResource::Decoder::PNG;
-        texAO->inputChannels = texture::InputColorChannels::RGBA;
-        texAO->inputChannelDepth = 8;
+        texAO->sourceDecoder = TextureResource::Decoder::PNG;
+        texAO->sourceChannels = texture::InputColorChannels::RGBA;
+        texAO->sourceChannelDepth = 8;
         texAO->GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
 
         path texAOPath = "misc\\T_Mannequin_AO.png";
@@ -168,9 +168,9 @@ createMetadata()
         saveMetadata<TextureResource>(std::move(texAO), texAOPath);
 
         auto texN = createTexture();
-        texN->decoder = TextureResource::Decoder::PNG;
-        texN->inputChannels = texture::InputColorChannels::RGBA;
-        texN->inputChannelDepth = 8;
+        texN->sourceDecoder = TextureResource::Decoder::PNG;
+        texN->sourceChannels = texture::InputColorChannels::RGBA;
+        texN->sourceChannelDepth = 8;
         texN->GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
 
         path texNPath = "misc\\T_Mannequin_N.png";
@@ -180,7 +180,7 @@ createMetadata()
         {
             auto mat = createMaterial();
             mat->baseType = MaterialResource::BaseType::Shader;
-            mat->basePath = "internal\\shaders\\BaseSurfacePBR.wgsl";
+            mat->basePath = "internal\\shaders\\BaseSurface.wgsl";
             mat->domain.usage = MaterialResource::Usage::StaticMesh | MaterialResource::Usage::SkeletalMesh;
             mat->domain.type = MaterialResource::Domain::Surface;
             mat->domain.shadingModel = MaterialResource::ShadingModel::Lit;
@@ -213,6 +213,37 @@ createMetadata()
     }
 
     {
-        saveMetadata<ModelResource>(std::move(createModel()), R"(ozz-sample\MannequinSkeleton.lem)");
+        saveMetadata<ModelResource>(createModel(), R"(ozz-sample\MannequinSkeleton.lem)");
+    }
+
+    {
+        auto tex = createTexture();
+        tex->type = TextureResource::Type::RenderTarget;
+        tex->GPUFormat = wgpu::TextureFormat::RGBA8Unorm;
+        tex->width = 640;
+        tex->height = 400;
+        tex->mipLevelCount = 6;
+        tex->sourceDecoder = TextureResource::Decoder::None;
+
+        path texPath = "internal\\textures\\T_PostProcess_Bloom";
+
+        saveMetadata<TextureResource>(std::move(tex), texPath);
+
+        auto mat = createMaterial();
+        mat->baseType = MaterialResource::BaseType::Shader;
+        mat->basePath = "internal\\shaders\\BasePostProcess.wgsl";
+        mat->domain.type = MaterialResource::Domain::PostProcess;
+        mat->domain.usage = MaterialResource::Usage::Unknown;
+
+        auto sBloomSampler = lemon::res::material::SamplerDescriptor();
+        sBloomSampler.minFilter = wgpu::FilterMode::Linear;
+        sBloomSampler.magFilter = wgpu::FilterMode::Linear;
+
+        mat->samplers.emplace_back(std::make_pair("sBloomSampler", sBloomSampler));
+        mat->textures.emplace_back(std::make_pair("tBloom", texPath.string()));
+
+        path matPath = "internal\\materials\\M_PostProcess";
+
+        saveMetadata<MaterialResource>(std::move(mat), matPath);
     }
 }

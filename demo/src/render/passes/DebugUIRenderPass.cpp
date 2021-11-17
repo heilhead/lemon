@@ -20,9 +20,9 @@ DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
 }
 
 Task<wgpu::CommandBuffer, RenderPassError>
-DebugUIRenderPass::execute(const RendererResources& resources)
+DebugUIRenderPass::execute(const RenderPassContext& context)
 {
-    colorAttachments[0].view = resources.backbufferView;
+    colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
 
     auto* pRenderMan = RenderManager::get();
 

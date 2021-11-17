@@ -16,7 +16,7 @@ namespace lemon::game {
             render::MeshComponents components;
             render::MeshVertexFormat format;
             render::MeshGPUBuffer buffer;
-            std::optional<render::MaterialInstance> material;
+            std::optional<render::SurfaceMaterialInstance> material;
             render::MeshRenderHandle renderHandle;
             bool bMaterialDirty;
             uint8_t materialIndex;

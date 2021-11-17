@@ -1,19 +1,15 @@
-{{require("BaseSurface.wgsl")}}
+{{require("base/PostProcess.wgsl")}}
 
-// This is a dummy shader intended only for extracting the common surface
-// material bind group data in its most complete form, e.g. with enabled
-// skinning and lighting.
+// This is a dummy shader intended only for extracting the common post process
+// material bind group data in its most complete form.
 
 [[stage(vertex)]]
 fn VSMain(vertexData: VertexInput) -> FragmentInput {
   // Declare that bindings are part of the shader interface without using them.
-  let tmp = sceneParams.time;
+  let tmp1 = sceneParams;
 
   return FragmentInput(
     vec4<f32>(0.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 0.0, 0.0),
-    vec2<f32>(0.0, 0.0),
     vec2<f32>(0.0, 0.0),
   );
 }
@@ -21,7 +17,9 @@ fn VSMain(vertexData: VertexInput) -> FragmentInput {
 [[stage(fragment)]]
 fn FSMain(fragData: FragmentInput) -> FragmentOutput {
   // Declare that bindings are part of the shader interface without using them.
-  let tmp = sceneParams.time;
+  let tmp1 = sceneParams;
+  let tmp2 = postProcessParams;
+  let tmp3 = textureSample(tColorTarget, sColorTargetSampler, vec2<f32>(0.0, 0.0));
 
   return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
 }

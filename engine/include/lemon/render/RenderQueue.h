@@ -12,7 +12,7 @@ namespace lemon::render {
     struct MeshRenderProxy {
         MeshRenderProxyOwner* pOwner{nullptr};
         size_t meshIndex;
-        MaterialInstance material;
+        SurfaceMaterialInstance material;
         wgpu::Buffer vertexBuffer;
         wgpu::Buffer indexBuffer;
         size_t indexCount;

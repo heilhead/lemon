@@ -32,7 +32,7 @@ MeshComponent::MeshDescriptor::MeshDescriptor(size_t index,
 void
 MeshComponent::MeshDescriptor::createMaterialInstance(const res::MaterialResource* pMaterial)
 {
-    material = MaterialManager::get()->getMaterialInstance(*pMaterial, format);
+    material = MaterialManager::get()->getSurfaceMaterialInstance(*pMaterial, format);
 }
 
 void

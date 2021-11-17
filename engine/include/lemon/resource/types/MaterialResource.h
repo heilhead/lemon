@@ -41,16 +41,19 @@ namespace lemon::res {
 
         template<typename T>
         using ResourceList = std::vector<std::pair<StringID, T>>;
+        using SamplerDescriptorList = ResourceList<material::SamplerDescriptor>;
+        using TextureLocationList = ResourceList<ResourceLocation>;
+        using UniformValueList = ResourceList<UniformValue>;
 
         enum class BaseType { Shader, Material };
-        enum class Usage { Unknown = 0, StaticMesh = 1 << 0, SkeletalMesh = 1 << 1 };
+        enum class Usage { Unknown = 1 << 0, StaticMesh = 1 << 1, SkeletalMesh = 1 << 2 };
         enum class Domain { Surface, PostProcess, UserInterface };
         enum class ShadingModel { Lit, Unlit };
         enum class BlendMode { Opaque, Masked, Translucent };
 
         struct DomainDescriptor {
-            Usage usage = Usage::Unknown;
             Domain type = Domain::Surface;
+            Usage usage = Usage::StaticMesh;
             ShadingModel shadingModel = ShadingModel::Lit;
             BlendMode blendMode = BlendMode::Opaque;
 
@@ -92,9 +95,9 @@ namespace lemon::res {
         DomainDescriptor domain;
         std::optional<material::MaterialBlueprint> blueprint;
         render::MaterialConfiguration config;
-        ResourceList<material::SamplerDescriptor> samplers;
-        ResourceList<ResourceLocation> textures;
-        ResourceList<UniformValue> uniforms;
+        SamplerDescriptorList samplers;
+        TextureLocationList textures;
+        UniformValueList uniforms;
 
     public:
         MaterialResource();
@@ -121,19 +124,19 @@ namespace lemon::res {
             return domain;
         }
 
-        inline const std::vector<std::pair<StringID, material::SamplerDescriptor>>&
+        inline const SamplerDescriptorList&
         getSamplerDescriptors() const
         {
             return samplers;
         }
 
-        inline const std::vector<std::pair<StringID, ResourceLocation>>&
+        inline const TextureLocationList&
         getTextureLocations() const
         {
             return textures;
         }
 
-        inline const std::vector<std::pair<StringID, UniformValue>>&
+        inline const UniformValueList&
         getUniformValues() const
         {
             return uniforms;

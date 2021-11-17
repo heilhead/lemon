@@ -50,4 +50,11 @@ namespace lemon::render {
         uint64_t offset = 0;
         uint64_t size = 0;
     };
+
+    template<typename... TArgs>
+    wgpu::BindGroupEntry
+    createBinding(TArgs&&... args)
+    {
+        return BindingInitializationHelper(std::forward<TArgs>(args)...).getAsBinding();
+    }
 } // namespace lemon::render

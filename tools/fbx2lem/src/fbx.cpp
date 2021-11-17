@@ -5,6 +5,7 @@
 #include <lemon/resources.h>
 #include <lemon/shared/utils.h>
 #include <lemon/shared/logger.h>
+#include <lemon/shared/math.h>
 #include <lemon/scheduler.h>
 #include <lemon/serialization.h>
 #include <lemon/serialization/glm.h>
@@ -20,28 +21,6 @@
 using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::res::model;
-
-template<std::integral T>
-T
-fpack(float v)
-{
-    return static_cast<T>(std::numeric_limits<T>::max() * v);
-}
-
-template<typename T, size_t N, glm::qualifier Q = glm::packed_highp>
-glm::vec<N, T, Q>
-fpack(const glm::vec<N, float, Q>& v)
-{
-    if constexpr (N == 1) {
-        return glm::vec<N, T, Q>(fpack<T>(v.x));
-    } else if constexpr (N == 2) {
-        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y));
-    } else if constexpr (N == 3) {
-        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y), fpack<T>(v.z));
-    } else if constexpr (N == 4) {
-        return glm::vec<N, T, Q>(fpack<T>(v.x), fpack<T>(v.y), fpack<T>(v.z), fpack<T>(v.w));
-    }
-}
 
 template<typename T, size_t N0, size_t N1, glm::qualifier Q = glm::packed_highp>
 glm::vec<N1, T, Q>
@@ -105,24 +84,24 @@ struct BuildVertexData {
         }
 
         if ((bool)(components & MeshComponents::Normal)) {
-            v.normal = padvec<float, 3, 4, glm::packed_highp>(fpack<int8_t>(normal));
+            v.normal = padvec<float, 3, 4, glm::packed_highp>(math::fpack<int8_t>(normal));
         }
 
         if ((bool)(components & MeshComponents::Tangent)) {
-            v.tangent = padvec<float, 3, 4, glm::packed_highp>(fpack<int8_t>(tangent));
+            v.tangent = padvec<float, 3, 4, glm::packed_highp>(math::fpack<int8_t>(tangent));
         }
 
         if ((bool)(components & MeshComponents::UV0)) {
-            v.uv0 = fpack<uint16_t>(texCoord[0]);
+            v.uv0 = math::fpack<uint16_t>(texCoord[0]);
         }
 
         if ((bool)(components & MeshComponents::UV1)) {
-            v.uv1 = fpack<uint16_t>(texCoord[0]);
+            v.uv1 = math::fpack<uint16_t>(texCoord[0]);
         }
 
         if ((bool)(components & MeshComponents::JointInfluence)) {
             v.jointIndex = jointIndex;
-            v.jointWeight = fpack<uint8_t>(jointWeight);
+            v.jointWeight = math::fpack<uint8_t>(jointWeight);
         }
 
         return v;

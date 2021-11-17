@@ -1,98 +1,81 @@
-struct CameraParams {
-  matView: mat4x4<f32>;
-  matProjection: mat4x4<f32>;
-  zClip: vec4<f32>;
+{{require("base/Surface.wgsl")}}
+{{require("include/ToneMapping.wgsl")}}
+
+[[block]]
+struct PacketParams {
+  matModel: mat4x4<f32>;
 };
 
 [[block]]
-struct SceneParams {
-  camera: CameraParams;
-  time: vec2<f32>;
+struct MaterialParams {
+  tint: vec4<f32>;
 };
 
-[[block]]
-struct SurfaceAttributes {
-  baseColor: vec4<f32>;
-  emissiveColor: vec4<f32>;
-  metallic: f32;
-  specular: f32;
-  roughness: f32;
-  anisotropy: f32;
-  ambientOcclusion: f32;
-  tangent: vec4<f32>;
-  normal: vec4<f32>;
-};
+[[group(1), binding(0)]]
+var<uniform> packetParams: PacketParams;
 
-struct VertexInput {
-  [[location(0)]] position: vec3<f32>;
+// TODO: Consider combining packet params with material params.
+[[group(1), binding(1)]]
+var<uniform> materialParams: MaterialParams;
 
-#if MESH_ENABLE_NORMAL
-  [[location(1)]] normal: vec4<f32>;
-#endif
+[[group(1), binding(2)]]
+var surfaceSampler: sampler;
 
-#if MESH_ENABLE_TANGENT
-  [[location(2)]] tangent: vec4<f32>;
-#endif
+[[group(1), binding(3)]]
+var tAlbedo: texture_2d<f32>;
 
-#if MESH_ENABLE_TEXTURE0
-  [[location(3)]] uv0: vec2<f32>;
-#endif
+[[group(1), binding(4)]]
+var tNormal: texture_2d<f32>;
+
+[[stage(vertex)]]
+fn VSMain(vertexData: VertexInput) -> FragmentInput {
+  let positionWorldSpace: vec4<f32> = packetParams.matModel * vec4<f32>(vertexData.position.xyz, 1.0);
+  let position: vec4<f32> = sceneParams.camera.matProjection * sceneParams.camera.matView * positionWorldSpace;
+  
+  var normal: vec4<f32> = sceneParams.camera.matProjection * vec4<f32>(vertexData.normal.xyz, 1.0);
+  normal = vec4<f32>(normal.xyz / normal.w, 1.0);
+  normal = normal  * packetParams.matModel;
+
+  let tangent: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+  let uv0: vec2<f32> = vec2<f32>(vertexData.uv0.x, 1.0 - vertexData.uv0.y);
+  let uv1: vec2<f32> = vec2<f32>(1.0, 1.0);
+
+  return FragmentInput(
+    position,
+    normal,
+    tangent,
+    uv0,
 
 #if MESH_ENABLE_TEXTURE1
-  [[location(4)]] uv1: vec2<f32>;
+    uv1,
 #endif
-
-#if MESH_ENABLE_SKINNING
-  [[location(5)]] jointInfluence: vec4<u32>;
-  [[location(6)]] jointWeight: vec4<f32>;
-#endif
-};
-
-struct FragmentInput {
-  [[builtin(position)]] position: vec4<f32>;
-
-#if MESH_ENABLE_NORMAL
-  [[location(0)]] normal: vec4<f32>;
-#endif
-
-#if MESH_ENABLE_TANGENT
-  [[location(1)]] tangent: vec4<f32>;
-#endif
-
-#if MESH_ENABLE_TEXTURE0
-  [[location(2)]] uv0: vec2<f32>;
-#endif
-
-#if MESH_ENABLE_TEXTURE1
-  [[location(3)]] uv1: vec2<f32>;
-#endif
-};
-
-struct FragmentOutput {
-  [[location(0)]] color: vec4<f32>;
-};
-
-[[group(0), binding(0)]]
-var<uniform> sceneParams: SceneParams;
-
-#if MESH_ENABLE_SKINNING
-// TODO: Shared skinning data bindings.
-#endif
-
-#if MATERIAL_ENABLE_LIGHTING
-// TODO: Shared lighting data bindings.
-#endif
-
-fn linearizeDepth(depth: f32) -> f32 {
-  let near = sceneParams.camera.zClip.x;
-  let far = sceneParams.camera.zClip.y;
-  return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+  );
 }
 
-fn getTime() -> f32 {
-  return sceneParams.time.x;
-}
+[[stage(fragment)]]
+fn FSMain(fragData: FragmentInput) -> FragmentOutput {
+#if PIPELINE_DEPTH_ONLY
+  return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
+#else
+  let color = vec4<f32>(textureSample(tAlbedo, surfaceSampler, fragData.uv0).xyz * materialParams.tint.xyz, 1.0);
+  // let depth = fragData.position.z / fragData.position.w;
+  // let depth = linearizeDepth(fragData.position.z / fragData.position.w);
+  // let color = vec4<f32>(depth, depth, depth, 1.0);
 
-fn getTimeFrac() -> f32 {
-  return sceneParams.time.y;
+  let surfaceAttributres: SurfaceAttributes = SurfaceAttributes(
+    color,
+    vec4<f32>(0.0, 0.0, 0.0, 0.0),
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    vec4<f32>(1.0, 1.0, 1.0, 1.0),
+    vec4<f32>(1.0, 1.0, 1.0, 1.0),
+  );
+
+  let toneMappedColor = TonemapACES(surfaceAttributres.baseColor.xyz);
+
+  return FragmentOutput(vec4<f32>(toneMappedColor, 1.0));
+#endif
 }

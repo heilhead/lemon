@@ -82,57 +82,81 @@ MaterialManager::getMaterialLayout(const ShaderProgram& program, uint8_t bindGro
     return materialLayoutCache.get(id, [&]() { return new MaterialLayout(program, bindGroupIndex); });
 }
 
-MaterialInstance
-MaterialManager::getMaterialInstance(const res::MaterialResource& material,
-                                     const MeshVertexFormat& vertexFormat)
+SurfaceMaterialInstance
+MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
+                                            const MeshVertexFormat& vertexFormat)
 {
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::Surface);
+
     const MaterialResourceDescriptor desc{.pResource = &material,
                                           .meshComponents = vertexFormat.getComponents()};
-
-    auto id = lemon::hash(desc);
-
-    auto kaSharedResources = std::move(sharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new MaterialSharedResources(material, vertexFormat);
-
-        // TODO: Sanity check `pMatShared` for validity.
-
-        PipelineManager::get()->assignPipelines(*pMatShared, vertexFormat);
-
+    const auto id = lemon::hash(desc);
+    const auto kaSharedResources = surfaceSharedResourcesCache.get(id, [&]() {
+        auto* pMatShared = new SurfaceMaterialSharedResources(material, vertexFormat);
+        pMatShared->kaPipeline = PipelineManager::get()->getSurfacePipeline(*pMatShared, vertexFormat);
         return pMatShared;
-    }));
+    });
 
-    return MaterialInstance(kaSharedResources);
+    return SurfaceMaterialInstance(kaSharedResources);
+}
+
+PostProcessMaterialInstance
+MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
+{
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
+
+    const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
+    const auto id = lemon::hash(desc);
+    const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
+        auto* pMatShared = new PostProcessMaterialSharedResources(material);
+        pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
+        return pMatShared;
+    });
+
+    return PostProcessMaterialInstance(kaSharedResources);
 }
 
 wgpu::Texture
 MaterialManager::createTexture(const TextureResource& textureRes)
 {
-    auto& imgData = textureRes.getImageData();
-
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;
-    descriptor.size.width = imgData.width;
-    descriptor.size.height = imgData.height;
     descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = textureRes.getGPUFormat();
-    descriptor.mipLevelCount = 1;
+    descriptor.mipLevelCount = textureRes.getMipLevelCount();
     descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
+
+    auto& imgData = textureRes.getImageData();
+
+    if (textureRes.isRenderTarget()) {
+        descriptor.usage |= wgpu::TextureUsage::RenderAttachment;
+
+        auto [width, height] = textureRes.getRenderTargetDimensions();
+
+        descriptor.size.width = width;
+        descriptor.size.height = height;
+    } else {
+        descriptor.size.width = imgData.width;
+        descriptor.size.height = imgData.height;
+    }
 
     auto texture = pDevice->CreateTexture(&descriptor);
 
-    wgpu::Buffer stagingBuffer = createBufferFromData(
-        *pDevice, imgData.data, static_cast<uint32_t>(imgData.data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::ImageCopyBuffer imageCopyBuffer =
-        createImageCopyBuffer(stagingBuffer, 0, imgData.stride * imgData.width);
-    wgpu::ImageCopyTexture imageCopyTexture = createImageCopyTexture(texture, 0, {0, 0, 0});
-    wgpu::Extent3D copySize = {imgData.width, imgData.height, 1};
+    if (textureRes.hasImageData()) {
+        wgpu::Buffer stagingBuffer = createBufferFromData(
+            *pDevice, imgData.data, static_cast<uint32_t>(imgData.data.size()), wgpu::BufferUsage::CopySrc);
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            createImageCopyBuffer(stagingBuffer, 0, imgData.stride * imgData.width);
+        wgpu::ImageCopyTexture imageCopyTexture = createImageCopyTexture(texture, 0, {0, 0, 0});
+        wgpu::Extent3D copySize = {imgData.width, imgData.height, 1};
 
-    wgpu::CommandEncoder encoder = pDevice->CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
+        wgpu::CommandEncoder encoder = pDevice->CreateCommandEncoder();
+        encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
 
-    wgpu::CommandBuffer copy = encoder.Finish();
-    pDevice->GetQueue().Submit(1, &copy);
+        wgpu::CommandBuffer copy = encoder.Finish();
+        pDevice->GetQueue().Submit(1, &copy);
+    }
 
     return texture;
 }
@@ -142,7 +166,7 @@ MaterialManager::getTexture(const TextureResource& texture)
 {
     uint64_t id = lemon::hash(texture);
 
-    return textureCache.get(id, [&]() { return new wgpu::Texture(std::move(createTexture(texture))); });
+    return textureCache.get(id, [&]() { return new wgpu::Texture(createTexture(texture)); });
 }
 
 KeepAlive<wgpu::Sampler>
@@ -168,8 +192,7 @@ MaterialManager::getSampler(const wgpu::SamplerDescriptor& desc)
 {
     uint64_t id = lemon::hash(desc);
 
-    return samplerCache.get(id,
-                            [&]() { return new wgpu::Sampler(std::move(pDevice->CreateSampler(&desc))); });
+    return samplerCache.get(id, [&]() { return new wgpu::Sampler(pDevice->CreateSampler(&desc)); });
 }
 
 void
