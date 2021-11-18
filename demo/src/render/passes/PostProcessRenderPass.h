@@ -13,6 +13,13 @@ namespace lemon::render {
     public:
         PostProcessRenderPass(PostProcessMaterialInstance material);
 
+        template<std::semiregular TData>
+        inline void
+        setMaterialParameter(StringID id, const TData& val)
+        {
+            material.setParameter(id, val);
+        }
+
         void
         prepare(const RenderPassContext& context) override;
 

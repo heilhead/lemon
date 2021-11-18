@@ -59,8 +59,13 @@ namespace lemon::render {
             return debugUI;
         }
 
-        void
-        addRenderPass(std::unique_ptr<RenderPass> pass);
+        template<Base<RenderPass> TRenderPass = RenderPass>
+        inline TRenderPass*
+        addRenderPass(std::unique_ptr<RenderPass> pass)
+        {
+            passes.emplace_back(std::move(pass));
+            return dynamic_cast<TRenderPass*>(passes.back().get());
+        }
 
         scheduler::VoidTask<FrameRenderError>
         render();

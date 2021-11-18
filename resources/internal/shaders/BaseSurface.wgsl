@@ -74,8 +74,6 @@ fn FSMain(fragData: FragmentInput) -> FragmentOutput {
     vec4<f32>(1.0, 1.0, 1.0, 1.0),
   );
 
-  let toneMappedColor = TonemapACES(surfaceAttributres.baseColor.xyz);
-
-  return FragmentOutput(vec4<f32>(toneMappedColor, 1.0));
+  return FragmentOutput(vec4<f32>(surfaceAttributres.baseColor.xyz, 1.0));
 #endif
 }

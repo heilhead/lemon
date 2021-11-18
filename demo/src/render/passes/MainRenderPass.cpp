@@ -16,7 +16,7 @@ MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilA
     // Main color attachment.
     colorAttachments[0].loadOp = wgpu::LoadOp::Clear;
     colorAttachments[0].storeOp = wgpu::StoreOp::Store;
-    colorAttachments[0].clearColor = kMainClearColor;
+    // colorAttachments[0].clearColor = kMainClearColor;
 
     // Main depth attachment.
     depthStencilAttachmentInfo.clearDepth = 1.0f;

@@ -6,6 +6,8 @@
 namespace lemon::render {
     class RenderPass {
     public:
+        virtual ~RenderPass() = default;
+
         virtual void
         prepare(const RenderPassContext& context)
         {

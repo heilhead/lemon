@@ -44,12 +44,6 @@ RenderManager::init(wgpu::Device& device)
     context.pPreviousFrame = &resources[1];
 }
 
-void
-RenderManager::addRenderPass(std::unique_ptr<RenderPass> pass)
-{
-    passes.emplace_back(std::move(pass));
-}
-
 VoidTask<FrameRenderError>
 RenderManager::render()
 {

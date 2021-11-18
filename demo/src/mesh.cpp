@@ -292,11 +292,16 @@ private:
 
     std::unique_ptr<GameStateManager> pGameStateMan;
 
+    PostProcessRenderPass* pPostProcessPass;
+    float postProcessExposure = 1.0;
+
 public:
     void
-    init(Window* window)
+    init(Window* window, PostProcessRenderPass* pInPostProcessPass)
     {
         using namespace minirender;
+
+        pPostProcessPass = pInPostProcessPass;
 
         auto model = loadModel("ozz-sample\\MannequinSkeleton.lem:SK_Mannequin");
         auto& meshData = model->getMeshes()[0];
@@ -324,8 +329,9 @@ public:
 
                 glm::f32vec3 pos{std::sin(angleRad), 0.f, std::cos(angleRad)};
 
-                auto hsv = glm::f32vec3(angleDeg, static_cast<float>(i) / static_cast<float>(maxRings), 1.f);
-                auto rgb = hsv2rgb(hsv);
+                auto intensity = 1.0f - static_cast<float>(i) / static_cast<float>(maxRings);
+                auto hsv = glm::f32vec3(angleDeg, 1.f, 1.f);
+                auto rgb = (hsv2rgb(hsv) + glm::f32vec3(0.1f)) * intensity * 10.f;
 
                 auto hDemoActor = pWorld->createActor<demo::DemoModelActor>(
                     pos * i * spreadFactor, glm::quatLookAt(-pos, kVectorUp) * kQuatUEOrientation);
@@ -357,8 +363,22 @@ public:
     }
 
     void
+    renderUI()
+    {
+        ImGui::Begin("Post Processing");
+        ImGui::SliderFloat("exposure", &postProcessExposure, 0.0f, 10.0f);
+        ImGui::End();
+
+        constexpr auto exposureParam = lemon::sid("materialParams.toneMappingExposure");
+
+        pPostProcessPass->setMaterialParameter(exposureParam, 1.f / postProcessExposure);
+    }
+
+    void
     render()
     {
+        renderUI();
+
         Scheduler::get()->block(CPUTask(RenderManager::get()->render()));
     }
 };
@@ -372,19 +392,21 @@ testMeshRendering()
 
     engine.init(R"(C:\git\lemon\resources)");
 
-    auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
-    auto postProcessMaterial = MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
-
-    auto* pRenderMan = RenderManager::get();
-    pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
-    pRenderMan->addRenderPass(std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
-    pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
-
-    auto& ui = pRenderMan->getDebugUI();
-
     {
+        auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
+        auto postProcessMaterial =
+            MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
+
+        auto* pRenderMan = RenderManager::get();
+        pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
+        auto* pPostProcessPass = pRenderMan->addRenderPass<PostProcessRenderPass>(
+            std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
+        pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
+
+        auto& ui = pRenderMan->getDebugUI();
+
         MiniRender render;
-        render.init(Device::get()->getWindow());
+        render.init(Device::get()->getWindow(), pPostProcessPass);
 
         auto pGameStateMan = std::make_unique<GameStateManager>();
         pGameStateMan->init(std::make_unique<DemoRootState>());
