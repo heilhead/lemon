@@ -53,7 +53,7 @@ namespace lemon::game {
         void
         updateRenderProxy(render::MeshRenderProxy& proxy) override;
 
-        template<std::semiregular TData>
+        template<render::MaterialUniformDataType TData>
         inline void
         setMaterialParameter(uint8_t materialIndex, StringID paramID, const TData& value)
         {

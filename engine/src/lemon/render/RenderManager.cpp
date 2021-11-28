@@ -44,6 +44,13 @@ RenderManager::init(wgpu::Device& device)
     context.pPreviousFrame = &resources[1];
 }
 
+RenderPassResources&
+RenderManager::getFrameResources(uint8_t inFrameIndex)
+{
+    LEMON_ASSERT(inFrameIndex < kMaxRenderFramesInFlight);
+    return resources[inFrameIndex];
+}
+
 VoidTask<FrameRenderError>
 RenderManager::render()
 {
@@ -51,8 +58,9 @@ RenderManager::render()
     auto& swapChain = pGPU->getSwapChain();
     auto& queue = pGPU->getQueue();
 
+    frameIndex = ++frameIndex % kMaxRenderFramesInFlight;
     cbuffer.reset();
-    context.swap(swapChain.GetCurrentTextureView());
+    context.swap(frameIndex, &getFrameResources(frameIndex), swapChain.GetCurrentTextureView());
 
     pipelineManager.getSurfaceUniformData().merge(cbuffer);
     pipelineManager.getPostProcessUniformData().merge(cbuffer);

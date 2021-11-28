@@ -60,7 +60,7 @@ set(SOURCE_FILES
         "src/lemon/game/state/InputEvent.cpp"
         "src/lemon/platform/windows.cpp"
         "src/lemon/resource/types/material/MaterialComposerEnvironment.cpp"
-        "src/lemon/resource/types/material/MaterialBlueprint.cpp")
+        "src/lemon/resource/types/material/MaterialBlueprint.cpp" "src/lemon/render/pipeline/DynamicPipeline.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})

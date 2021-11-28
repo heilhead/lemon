@@ -19,13 +19,13 @@ namespace lemon::render {
         SurfacePipeline(const SurfaceMaterialSharedResources& matShared,
                         const MeshVertexFormat& vertexFormat);
 
-        const wgpu::RenderPipeline&
+        inline const wgpu::RenderPipeline&
         getColorPipeline() const
         {
             return color;
         }
 
-        const wgpu::RenderPipeline&
+        inline const wgpu::RenderPipeline&
         getDepthPipeline() const
         {
             return depth;

@@ -39,12 +39,11 @@ fn FSMain(fragData: FragmentInput) -> FragmentOutput {
   let exposure = materialParams.toneMappingExposure;
 
   var colColorTarget = textureSample(tColorTarget, sColorTargetSampler, fragData.uv0).xyz;
+  let colBloom = textureSample(tBloom, sBloomSampler, fragData.uv0).xyz;
 
-  let colBloom = vec4<f32>(textureSample(tBloom, sBloomSampler, fragData.uv0).xyz, 1.0);
-
-  var rgb = colColorTarget;
+  var rgb = colColorTarget + colBloom;
   rgb = TonemapReinhardSimple(rgb, exposure);
   // rgb = TonemapACES2(rgb * exposure);
-  
+
   return FragmentOutput(vec4<f32>(rgb, 1.0));
 }

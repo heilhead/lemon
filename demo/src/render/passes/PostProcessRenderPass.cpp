@@ -78,6 +78,7 @@ PostProcessRenderPass::execute(const RenderPassContext& context)
 
         pass.SetPipeline(material.getRenderPipeline().getMainPipeline());
 
+        // TODO: Use `RenderFrameResources<T>` and remove `postProcessBindGroup` from render frame resources.
         pass.SetBindGroup(kPostProcessSharedBindGroupIndex, context.pCurrentFrame->postProcessBindGroup,
                           sharedData.getOffsetCount(), sharedData.getOffsets());
 

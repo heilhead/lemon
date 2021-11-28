@@ -92,7 +92,7 @@ MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
                                           .meshComponents = vertexFormat.getComponents()};
     const auto id = lemon::hash(desc);
     const auto kaSharedResources = surfaceSharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new SurfaceMaterialSharedResources(material, vertexFormat);
+        auto* pMatShared = new SurfaceMaterialSharedResources(id, material, vertexFormat);
         pMatShared->kaPipeline = PipelineManager::get()->getSurfacePipeline(*pMatShared, vertexFormat);
         return pMatShared;
     });
@@ -108,7 +108,7 @@ MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& mat
     const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
     const auto id = lemon::hash(desc);
     const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new PostProcessMaterialSharedResources(material);
+        auto* pMatShared = new PostProcessMaterialSharedResources(id, material);
         pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
         return pMatShared;
     });
@@ -190,8 +190,7 @@ MaterialManager::getSampler(const SamplerDescriptor& inDesc)
 KeepAlive<wgpu::Sampler>
 MaterialManager::getSampler(const wgpu::SamplerDescriptor& desc)
 {
-    uint64_t id = lemon::hash(desc);
-
+    const auto id = lemon::hash(desc);
     return samplerCache.get(id, [&]() { return new wgpu::Sampler(pDevice->CreateSampler(&desc)); });
 }
 
@@ -199,4 +198,20 @@ void
 MaterialManager::init(wgpu::Device& device)
 {
     pDevice = &device;
+}
+
+uint64_t
+MaterialManager::calculateDynamicMaterialHash(const res::MaterialResource& material,
+                                              const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                              const MaterialConfiguration* pConfig)
+{
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::Dynamic);
+
+    Hash h(material.getHandle(), dynamicBindings);
+
+    if (pConfig) {
+        h.append(*pConfig);
+    }
+
+    return h.value();
 }

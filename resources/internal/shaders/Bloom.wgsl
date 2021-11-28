@@ -1,3 +1,4 @@
+{{require("base/Dynamic.wgsl")}}
 {{require("include/Sampling.wgsl")}}
 {{require("include/ToneMapping.wgsl")}}
 
@@ -10,7 +11,7 @@ struct BloomVertexInput {
 
 struct BloomFragmentInput {
   [[builtin(position)]] position: vec4<f32>;
-  [[location(0)]] uv0: vec2<f32>;
+  [[location(3)]] uv0: vec2<f32>;
 };
 
 struct BloomFragmentOutput {
@@ -18,7 +19,7 @@ struct BloomFragmentOutput {
 };
 
 [[stage(vertex)]]
-fn VSBloomMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
+fn VSMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
   return BloomFragmentInput(
     vec4<f32>(vertexData.position, 1.0),
     vertexData.uv0,
@@ -30,7 +31,7 @@ struct BloomParams {
     threshold: f32;
     strength: f32;
     texelSize: vec2<f32>;
-    lowTexSize: vec4<f32>; //xy texel size, zw width height
+    lowTexSize: vec4<f32>; // xy texel size, zw width height
     scatter: f32;
     clampMax: f32;
     thresholdKnee: f32;
@@ -49,7 +50,7 @@ var tSrc: texture_2d<f32>;
 var tSrcLow: texture_2d<f32>;
 
 [[stage(fragment)]]
-fn PSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
   let texelSize = bloomParams.texelSize;
 
@@ -97,7 +98,7 @@ fn PSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
   let texelSize = bloomParams.texelSize.x * 2.0;
 
@@ -120,7 +121,7 @@ fn PSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
   let texelSize = bloomParams.texelSize.y;
 
@@ -139,7 +140,7 @@ fn PSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSUpsampleMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSUpsampleMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
   let texelSize = bloomParams.texelSize.y;
 

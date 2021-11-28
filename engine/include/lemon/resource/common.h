@@ -77,7 +77,7 @@ namespace lemon::res {
     inline static ResourceClassID
     getClassID()
     {
-        return typeid(TResource).hash_code();
+        return utils::getTypeID<TResource>();
     }
 } // namespace lemon::res
 

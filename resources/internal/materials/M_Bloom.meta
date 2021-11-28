@@ -1,0 +1,29 @@
+MaterialResource:
+  common:
+    references:
+      - location: internal\textures\T_PostProcess_Bloom
+        type: 339467474955139043
+  baseType: Shader
+  basePath: internal\shaders\Bloom.wgsl
+  domain:
+    type: Dynamic
+    usage: Unknown
+  definitions:
+    []
+  samplers:
+    - first: sLinearClamp
+      second:
+        addressModeU: ClampToEdge
+        addressModeV: ClampToEdge
+        addressModeW: ClampToEdge
+        magFilter: Linear
+        minFilter: Linear
+        mipmapFilter: Nearest
+        lodMinClamp: 0
+        lodMaxClamp: 1000
+        compare: Undefined
+        maxAnisotropy: 1
+  textures:
+    []
+  uniforms:
+    []

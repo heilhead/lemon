@@ -1,15 +1,20 @@
 #pragma once
 
 #include <lemon/render/material/MaterialConfiguration.h>
+#include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/MaterialUniformData.h>
 #include <lemon/render/pipeline/SurfacePipeline.h>
 #include <lemon/render/pipeline/PostProcessPipeline.h>
+#include <lemon/render/pipeline/DynamicPipeline.h>
 
 namespace lemon::render {
     struct SurfaceMaterialSharedResources;
     class MeshVertexFormat;
     struct MaterialLayout;
     class ShaderProgram;
+
+    template<class T>
+    concept DynamicPipelineBase = Base<T, DynamicPipeline>;
 
     class PipelineManager : public UnsafeSingleton<PipelineManager> {
         enum class PipelineType { Color, Depth };
@@ -30,6 +35,7 @@ namespace lemon::render {
 
         AtomicCache<SurfacePipeline> surfacePipelineCache{512};
         AtomicCache<PostProcessPipeline> postProcessPipelineCache{512};
+        AtomicCache<DynamicPipeline> dynamicPipelineCache{512};
 
     public:
         PipelineManager();
@@ -94,6 +100,14 @@ namespace lemon::render {
 
         KeepAlive<PostProcessPipeline>
         getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
+
+        template<DynamicPipelineBase TDynamicPipeline>
+        KeepAlive<DynamicPipeline>
+        getDynamicPipeline(const DynamicMaterialSharedResources& matShared)
+        {
+            const auto id = lemon::hash(matShared.id, utils::getTypeID<TDynamicPipeline>());
+            return dynamicPipelineCache.get(id, [&]() { return new TDynamicPipeline(matShared); });
+        }
 
     private:
         void

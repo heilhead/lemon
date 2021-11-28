@@ -1,14 +1,4 @@
-struct CameraParams {
-  matView: mat4x4<f32>;
-  matProjection: mat4x4<f32>;
-  zClip: vec4<f32>;
-};
-
-[[block]]
-struct SceneParams {
-  camera: CameraParams;
-  time: vec2<f32>;
-};
+{{require("base/SharedBindings.wgsl")}}
 
 [[block]]
 struct SurfaceAttributes {
@@ -71,9 +61,6 @@ struct FragmentInput {
 struct FragmentOutput {
   [[location(0)]] color: vec4<f32>;
 };
-
-[[group(0), binding(0)]]
-var<uniform> sceneParams: SceneParams;
 
 #if MESH_ENABLE_SKINNING
 // TODO: Shared skinning data bindings.

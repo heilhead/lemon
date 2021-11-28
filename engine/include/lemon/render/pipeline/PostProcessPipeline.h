@@ -9,7 +9,7 @@ namespace lemon::render {
     public:
         PostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
 
-        const wgpu::RenderPipeline&
+        inline const wgpu::RenderPipeline&
         getMainPipeline() const
         {
             return main;

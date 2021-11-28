@@ -16,6 +16,22 @@ using namespace lemon::scheduler;
 using namespace lemon::render;
 using namespace demo;
 
+class BloomPipeline : public DynamicPipeline {
+    wgpu::RenderPipeline main;
+
+public:
+    BloomPipeline(const DynamicMaterialSharedResources& matShared)
+    {
+        LEMON_TRACE_FN();
+    }
+
+    const wgpu::RenderPipeline&
+    getMainPipeline() const
+    {
+        return main;
+    }
+};
+
 class DemoGameState : public GameState {
 public:
     void
@@ -393,16 +409,27 @@ testMeshRendering()
     engine.init(R"(C:\git\lemon\resources)");
 
     {
+        auto* pRenderMan = RenderManager::get();
+        auto* pMaterialMan = MaterialManager::get();
+
         auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
         auto postProcessMaterial =
             MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
 
-        auto* pRenderMan = RenderManager::get();
-        pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
-        auto* pPostProcessPass = pRenderMan->addRenderPass<PostProcessRenderPass>(
-            std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
-        pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
+        {
+            auto* pBloomMaterial = minirender::loadMaterial("internal\\materials\\M_Bloom");
 
+            auto bloomResources = pRenderMan->createFrameResources<DynamicMaterialInstance>([&](auto& res) {
+                DynamicMaterialResourceDescriptor desc;
+                desc.textures.emplace_back(std::make_pair(lemon::sid("tSrc"), wgpu::TextureView{}));
+                desc.textures.emplace_back(std::make_pair(lemon::sid("tSrcLow"), wgpu::TextureView{}));
+                return pMaterialMan->getDynamicMaterialInstance<BloomPipeline>(*pBloomMaterial, desc);
+            });
+        }
+
+        pRenderMan->addRenderPass<MainRenderPass>();
+        auto* pPostProcessPass = pRenderMan->addRenderPass<PostProcessRenderPass>(postProcessMaterial);
+        pRenderMan->addRenderPass<DebugUIRenderPass>();
         auto& ui = pRenderMan->getDebugUI();
 
         MiniRender render;

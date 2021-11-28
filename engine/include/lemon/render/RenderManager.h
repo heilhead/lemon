@@ -8,6 +8,39 @@
 #include <lemon/scheduler/common.h>
 
 namespace lemon::render {
+    template<std::default_initializable TResource>
+    class RenderFrameResources {
+        friend class RenderManager;
+
+        std::array<TResource, kMaxRenderFramesInFlight> resources;
+
+    public:
+        RenderFrameResources() = default;
+
+        RenderFrameResources(RenderFrameResources&&) = default;
+
+        RenderFrameResources(const RenderFrameResources&) = default;
+
+        RenderFrameResources&
+        operator=(RenderFrameResources&&) = default;
+
+        RenderFrameResources&
+        operator=(const RenderFrameResources&) = default;
+
+        const TResource&
+        getResources(const RenderPassContext& ctx)
+        {
+            return resources[ctx.frameIndex];
+        }
+
+        const TResource&
+        getResources(uint8_t index)
+        {
+            LEMON_ASSERT(index < kMaxRenderFramesInFlight);
+            return resources[index];
+        }
+    };
+
     class RenderManager : public UnsafeSingleton<RenderManager> {
         // Adjust when more passes are introduced.
         static constexpr size_t kNumRenderPasses = 8;
@@ -19,8 +52,9 @@ namespace lemon::render {
         DebugUI debugUI;
 
         std::vector<std::unique_ptr<RenderPass>> passes;
-        std::array<RenderPassResources, 2> resources;
+        std::array<RenderPassResources, kMaxRenderFramesInFlight> resources;
         RenderPassContext context;
+        uint8_t frameIndex{0};
 
     public:
         RenderManager();
@@ -59,15 +93,37 @@ namespace lemon::render {
             return debugUI;
         }
 
-        template<Base<RenderPass> TRenderPass = RenderPass>
+        template<Base<RenderPass> TRenderPass, typename... TArgs>
         inline TRenderPass*
-        addRenderPass(std::unique_ptr<RenderPass> pass)
+        addRenderPass(TArgs&&... args)
         {
-            passes.emplace_back(std::move(pass));
-            return dynamic_cast<TRenderPass*>(passes.back().get());
+            passes.emplace_back(std::make_unique<TRenderPass>(std::forward<TArgs>(args)...));
+            return static_cast<TRenderPass*>(passes.back().get());
         }
+
+        inline uint8_t
+        getFrameIndex()
+        {
+            return frameIndex;
+        }
+
+        RenderPassResources&
+        getFrameResources(uint8_t inFrameIndex);
 
         scheduler::VoidTask<FrameRenderError>
         render();
+
+        template<std::default_initializable TResource>
+        RenderFrameResources<TResource>
+        createFrameResources(const std::function<TResource(const RenderPassResources&)>& initFn)
+        {
+            RenderFrameResources<TResource> result;
+
+            for (size_t i = 0; i < kMaxRenderFramesInFlight; i++) {
+                result.resources[i] = initFn(resources[i]);
+            }
+
+            return result;
+        }
     };
 } // namespace lemon::render

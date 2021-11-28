@@ -119,26 +119,77 @@ createBindGroupLayout(const MaterialResource* pMaterial, const ShaderProgram& pr
         entry.binding = resDesc.binding;
         entry.visibility = convertShaderStage(resDesc.stage);
 
+        // TODO: Validate reflection data against material descriptor data (e.g. texture dimensions, sampling
+        // type etc).
+
         switch (resDesc.resourceType) {
         case ResourceType::kUniformBuffer:
             entry.buffer.type = wgpu::BufferBindingType::Uniform;
             entry.buffer.hasDynamicOffset = true;
             entry.buffer.minBindingSize = resDesc.size;
             break;
-        case ResourceType::kSampledTexture:
-            // LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
 
+        case ResourceType::kStorageBuffer:
+            entry.buffer.type = wgpu::BufferBindingType::Storage;
+            entry.buffer.hasDynamicOffset = false;
+            entry.buffer.minBindingSize = resDesc.size;
+            break;
+
+        case ResourceType::kReadOnlyStorageBuffer:
+            entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+            entry.buffer.hasDynamicOffset = false;
+            entry.buffer.minBindingSize = resDesc.size;
+            break;
+
+        case ResourceType::kDepthTexture:
+            entry.texture.sampleType = wgpu::TextureSampleType::Depth;
+            entry.texture.viewDimension = convertViewDimension(resDesc.dim);
+            entry.texture.multisampled = false;
+            break;
+
+        case ResourceType::kDepthMultisampledTexture:
+            entry.texture.sampleType = wgpu::TextureSampleType::Depth;
+            entry.texture.viewDimension = convertViewDimension(resDesc.dim);
+            entry.texture.multisampled = true;
+            break;
+
+        case ResourceType::kSampledTexture:
             entry.texture.sampleType = convertSampleType(resDesc.sampledKind);
             entry.texture.viewDimension = convertViewDimension(resDesc.dim);
             entry.texture.multisampled = false;
             break;
-        case ResourceType::kSampler:
-            // LEMON_ASSERT(pMaterial != nullptr, "bind group layout requires material");
 
-            // TODO: Use `SamplerDescriptor` to figure out sampling parameters.
+        case ResourceType::kMultisampledTexture:
+            entry.texture.sampleType = convertSampleType(resDesc.sampledKind);
+            entry.texture.viewDimension = convertViewDimension(resDesc.dim);
+            entry.texture.multisampled = true;
+            break;
+
+        case ResourceType::kSampler:
             entry.sampler.type = wgpu::SamplerBindingType::Filtering;
             break;
+
+        case ResourceType::kComparisonSampler:
+            entry.sampler.type = wgpu::SamplerBindingType::Comparison;
+            break;
+
+        case ResourceType::kReadOnlyStorageTexture:
+            entry.storageTexture.access = wgpu::StorageTextureAccess::Undefined;
+            entry.storageTexture.viewDimension = convertViewDimension(resDesc.dim);
+
+            // TODO: Undefined texture format likely doesn't work and will throw error.
+            entry.storageTexture.format = wgpu::TextureFormat::Undefined;
+            break;
+
+        case ResourceType::kWriteOnlyStorageTexture:
+            entry.storageTexture.access = wgpu::StorageTextureAccess::WriteOnly;
+            entry.storageTexture.viewDimension = convertViewDimension(resDesc.dim);
+
+            entry.storageTexture.format = wgpu::TextureFormat::Undefined;
+            break;
+
         default:
+            // kExternalTexture
             LEMON_TODO();
         }
 

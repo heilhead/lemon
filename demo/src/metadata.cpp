@@ -246,4 +246,28 @@ createMetadata()
 
         saveMetadata<MaterialResource>(std::move(mat), matPath);
     }
+
+    {
+        auto mat = createMaterial();
+
+        mat->common.references.push_back(RawResourceReference{
+            .location = "internal\\textures\\T_PostProcess_Bloom",
+            .type = ResourceManager::getClassID<TextureResource>(),
+        });
+
+        mat->baseType = MaterialResource::BaseType::Shader;
+        mat->basePath = "internal\\shaders\\Bloom.wgsl";
+        mat->domain.type = MaterialResource::Domain::Dynamic;
+        mat->domain.usage = MaterialResource::Usage::Unknown;
+
+        auto sLinearSampler = lemon::res::material::SamplerDescriptor();
+        sLinearSampler.minFilter = wgpu::FilterMode::Linear;
+        sLinearSampler.magFilter = wgpu::FilterMode::Linear;
+
+        mat->samplers.emplace_back(std::make_pair("sLinearClamp", sLinearSampler));
+
+        path matPath = "internal\\materials\\M_Bloom";
+
+        saveMetadata<MaterialResource>(std::move(mat), matPath);
+    }
 }

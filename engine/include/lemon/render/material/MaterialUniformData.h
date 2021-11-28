@@ -5,6 +5,10 @@
 #include <lemon/render/material/MaterialLayout.h>
 
 namespace lemon::render {
+    // TODO: Figure out proper constraints for uniform data types. `std::semiregular` is not enough here.
+    template<typename T>
+    concept MaterialUniformDataType = std::semiregular<T>;
+
     class MaterialUniformData {
         static constexpr size_t kUniformBufferDataAlignment = 4;
 
@@ -28,8 +32,7 @@ namespace lemon::render {
             }
         }
 
-        // TODO: Figure out proper constraints for uniform data types. `std::semiregular` is not enough here.
-        template<std::semiregular TData>
+        template<MaterialUniformDataType TData>
         void
         setData(StringID id, const TData& val)
         {
