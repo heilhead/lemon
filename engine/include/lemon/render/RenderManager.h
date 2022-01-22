@@ -8,7 +8,10 @@
 #include <lemon/scheduler/common.h>
 
 namespace lemon::render {
-    template<std::default_initializable TResource>
+    template<typename T>
+    concept RenderFrameResource = std::default_initializable<T>;
+
+    template<RenderFrameResource TResource>
     class RenderFrameResources {
         friend class RenderManager;
 
@@ -28,12 +31,25 @@ namespace lemon::render {
         operator=(const RenderFrameResources&) = default;
 
         const TResource&
+        getResources(const RenderPassContext& ctx) const
+        {
+            return resources[ctx.frameIndex];
+        }
+
+        TResource&
         getResources(const RenderPassContext& ctx)
         {
             return resources[ctx.frameIndex];
         }
 
         const TResource&
+        getResources(uint8_t index) const
+        {
+            LEMON_ASSERT(index < kMaxRenderFramesInFlight);
+            return resources[index];
+        }
+
+        TResource&
         getResources(uint8_t index)
         {
             LEMON_ASSERT(index < kMaxRenderFramesInFlight);
@@ -56,7 +72,15 @@ namespace lemon::render {
         RenderPassContext context;
         uint8_t frameIndex{0};
 
+        uint32_t renderTargetWidth;
+        uint32_t renderTargetHeight;
+
+        std::vector<wgpu::CommandBuffer> frameCommandBuffers;
+
     public:
+        template<typename TResource>
+        using CustomResourceInitFn = std::function<TResource(const RenderPassResources&, uint8_t)>;
+
         RenderManager();
 
         void
@@ -107,23 +131,39 @@ namespace lemon::render {
             return frameIndex;
         }
 
+        inline std::pair<uint32_t, uint32_t>
+        getRenderTargetSize()
+        {
+            return {renderTargetWidth, renderTargetHeight};
+        }
+
         RenderPassResources&
         getFrameResources(uint8_t inFrameIndex);
 
         scheduler::VoidTask<FrameRenderError>
         render();
 
-        template<std::default_initializable TResource>
+        template<RenderFrameResource TResource>
         RenderFrameResources<TResource>
-        createFrameResources(const std::function<TResource(const RenderPassResources&)>& initFn)
+        createFrameResources(const CustomResourceInitFn<TResource>& initFn)
         {
             RenderFrameResources<TResource> result;
 
-            for (size_t i = 0; i < kMaxRenderFramesInFlight; i++) {
-                result.resources[i] = initFn(resources[i]);
+            for (uint8_t i = 0; i < kMaxRenderFramesInFlight; i++) {
+                result.resources[i] = initFn(resources[i], i);
             }
 
             return result;
+        }
+
+        template<RenderFrameResource TResource>
+        void
+        createFrameResources(RenderFrameResources<TResource>& inResources,
+                             const CustomResourceInitFn<TResource>& initFn)
+        {
+            for (uint8_t i = 0; i < kMaxRenderFramesInFlight; i++) {
+                inResources.resources[i] = initFn(resources[i], i);
+            }
         }
     };
 } // namespace lemon::render

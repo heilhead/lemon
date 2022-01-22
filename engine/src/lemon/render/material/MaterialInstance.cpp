@@ -189,21 +189,21 @@ SurfaceMaterialSharedResources::SurfaceMaterialSharedResources(uint64_t id, cons
     initBindGroup(matRes, *kaColorProgram);
 }
 
-PostProcessMaterialSharedResources::PostProcessMaterialSharedResources(uint64_t id,
-                                                                       const MaterialResource& matRes)
-    : MaterialSharedResources(id)
-{
-    auto* pMaterialMan = MaterialManager::get();
-    auto* pPipelineMan = PipelineManager::get();
-
-    kaMainProgram = pMaterialMan->getShader(matRes, pPipelineMan->getPostProcessConfig());
-    LEMON_ASSERT(*kaMainProgram, "failed to compile shader program");
-
-    kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaMainProgram, kMaterialBindGroupIndex);
-    uniformData.setLayout(kaLayout);
-
-    initBindGroup(matRes, *kaMainProgram);
-}
+// PostProcessMaterialSharedResources::PostProcessMaterialSharedResources(
+//     uint64_t id, const MaterialResource& matRes, const DynamicMaterialResourceDescriptor& dynamicBindings)
+//     : MaterialSharedResources(id)
+//{
+//     auto* pMaterialMan = MaterialManager::get();
+//     auto* pPipelineMan = PipelineManager::get();
+//
+//     kaMainProgram = pMaterialMan->getShader(matRes, pPipelineMan->getPostProcessConfig());
+//     LEMON_ASSERT(*kaMainProgram, "failed to compile shader program");
+//
+//     kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaMainProgram, kMaterialBindGroupIndex);
+//     uniformData.setLayout(kaLayout);
+//
+//     initBindGroup(matRes, *kaMainProgram);
+// }
 
 DynamicMaterialSharedResources::DynamicMaterialSharedResources(
     uint64_t id, const MaterialResource& matRes, const DynamicMaterialResourceDescriptor& dynamicBindings,

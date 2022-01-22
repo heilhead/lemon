@@ -5,7 +5,7 @@ MaterialResource:
   baseType: Shader
   basePath: internal\shaders\BasePostProcess.wgsl
   domain:
-    type: PostProcess
+    type: Dynamic
     usage: Unknown
   definitions:
     []
@@ -23,7 +23,6 @@ MaterialResource:
         compare: Undefined
         maxAnisotropy: 1
   textures:
-    - first: tBloom
-      second: internal\textures\T_PostProcess_Bloom
+    []
   uniforms:
     []

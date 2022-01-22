@@ -13,7 +13,7 @@ namespace lemon::render {
         {
         }
 
-        virtual scheduler::Task<wgpu::CommandBuffer, RenderPassError>
-        execute(const RenderPassContext& context) = 0;
+        virtual scheduler::VoidTask<RenderPassError>
+        execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) = 0;
     };
 } // namespace lemon::render

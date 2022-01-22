@@ -16,22 +16,6 @@ using namespace lemon::scheduler;
 using namespace lemon::render;
 using namespace demo;
 
-class BloomPipeline : public DynamicPipeline {
-    wgpu::RenderPipeline main;
-
-public:
-    BloomPipeline(const DynamicMaterialSharedResources& matShared)
-    {
-        LEMON_TRACE_FN();
-    }
-
-    const wgpu::RenderPipeline&
-    getMainPipeline() const
-    {
-        return main;
-    }
-};
-
 class DemoGameState : public GameState {
 public:
     void
@@ -387,7 +371,7 @@ public:
 
         constexpr auto exposureParam = lemon::sid("materialParams.toneMappingExposure");
 
-        pPostProcessPass->setMaterialParameter(exposureParam, 1.f / postProcessExposure);
+        pPostProcessPass->setMaterialParameter(exposureParam, postProcessExposure);
     }
 
     void
@@ -413,22 +397,11 @@ testMeshRendering()
         auto* pMaterialMan = MaterialManager::get();
 
         auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
-        auto postProcessMaterial =
-            MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
-
-        {
-            auto* pBloomMaterial = minirender::loadMaterial("internal\\materials\\M_Bloom");
-
-            auto bloomResources = pRenderMan->createFrameResources<DynamicMaterialInstance>([&](auto& res) {
-                DynamicMaterialResourceDescriptor desc;
-                desc.textures.emplace_back(std::make_pair(lemon::sid("tSrc"), wgpu::TextureView{}));
-                desc.textures.emplace_back(std::make_pair(lemon::sid("tSrcLow"), wgpu::TextureView{}));
-                return pMaterialMan->getDynamicMaterialInstance<BloomPipeline>(*pBloomMaterial, desc);
-            });
-        }
+        auto* pBloomMaterial = minirender::loadMaterial("internal\\materials\\M_Bloom");
 
         pRenderMan->addRenderPass<MainRenderPass>();
-        auto* pPostProcessPass = pRenderMan->addRenderPass<PostProcessRenderPass>(postProcessMaterial);
+        auto* pPostProcessPass =
+            pRenderMan->addRenderPass<PostProcessRenderPass>(pPostProcessMaterial, pBloomMaterial);
         pRenderMan->addRenderPass<DebugUIRenderPass>();
         auto& ui = pRenderMan->getDebugUI();
 

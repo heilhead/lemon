@@ -96,10 +96,10 @@ namespace lemon::render {
         }
 
         wgpu::BindGroup
-        createPostProcessBindGroup(const wgpu::TextureView& colorTargetView);
+        createPostProcessBindGroup(const wgpu::TextureView& colorTargetView) const;
 
-        KeepAlive<PostProcessPipeline>
-        getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
+        // KeepAlive<PostProcessPipeline>
+        // getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
 
         template<DynamicPipelineBase TDynamicPipeline>
         KeepAlive<DynamicPipeline>

@@ -14,7 +14,7 @@ namespace cereal {
         } else if constexpr (NComponents == 4) {
             ar(v.x, v.y, v.z, v.w);
         } else {
-            static_assert(false);
+            // static_assert(false);
         }
     }
 
@@ -29,7 +29,7 @@ namespace cereal {
         } else if constexpr (NColumns == 4) {
             ar(m[0], m[1], m[2], m[3]);
         } else {
-            static_assert(false);
+            //static_assert(false);
         }
     }
 } // namespace cereal

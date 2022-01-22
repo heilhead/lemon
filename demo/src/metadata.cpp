@@ -232,7 +232,7 @@ createMetadata()
         auto mat = createMaterial();
         mat->baseType = MaterialResource::BaseType::Shader;
         mat->basePath = "internal\\shaders\\BasePostProcess.wgsl";
-        mat->domain.type = MaterialResource::Domain::PostProcess;
+        mat->domain.type = MaterialResource::Domain::Dynamic;
         mat->domain.usage = MaterialResource::Usage::Unknown;
 
         auto sBloomSampler = lemon::res::material::SamplerDescriptor();
@@ -240,7 +240,7 @@ createMetadata()
         sBloomSampler.magFilter = wgpu::FilterMode::Linear;
 
         mat->samplers.emplace_back(std::make_pair("sBloomSampler", sBloomSampler));
-        mat->textures.emplace_back(std::make_pair("tBloom", texPath.string()));
+        // mat->textures.emplace_back(std::make_pair("tBloom", texPath.string()));
 
         path matPath = "internal\\materials\\M_PostProcess";
 

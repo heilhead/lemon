@@ -6,7 +6,7 @@
 
 struct BloomVertexInput {
   [[location(0)]] position: vec3<f32>;
-  [[location(1)]] uv0: vec2<f32>;
+  [[location(3)]] uv0: vec2<f32>;
 };
 
 struct BloomFragmentInput {

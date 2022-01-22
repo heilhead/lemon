@@ -56,7 +56,7 @@ namespace lemon::render {
         wgpu::TextureView colorTargetView;
         wgpu::TextureView depthStencilView;
         wgpu::TextureView swapChainBackbufferView;
-        wgpu::BindGroup postProcessBindGroup;
+        // wgpu::BindGroup postProcessBindGroup;
     };
 
     struct RenderPassContext {

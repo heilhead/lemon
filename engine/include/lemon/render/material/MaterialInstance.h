@@ -69,18 +69,19 @@ namespace lemon::render {
         }
     };
 
-    struct PostProcessMaterialSharedResources : MaterialSharedResources {
-        KeepAlive<ShaderProgram> kaMainProgram;
-        KeepAlive<PostProcessPipeline> kaPipeline;
+    // struct PostProcessMaterialSharedResources : MaterialSharedResources {
+    //     KeepAlive<ShaderProgram> kaMainProgram;
+    //     KeepAlive<PostProcessPipeline> kaPipeline;
 
-        PostProcessMaterialSharedResources(uint64_t id, const res::MaterialResource& matRes);
+    //    PostProcessMaterialSharedResources(uint64_t id, const res::MaterialResource& matRes,
+    //                                       const DynamicMaterialResourceDescriptor& dynamicBindings);
 
-        inline const KeepAlive<PostProcessPipeline>&
-        getRenderPipeline() const
-        {
-            return kaPipeline;
-        }
-    };
+    //    inline const KeepAlive<PostProcessPipeline>&
+    //    getRenderPipeline() const
+    //    {
+    //        return kaPipeline;
+    //    }
+    //};
 
     struct DynamicMaterialSharedResources : MaterialSharedResources {
         KeepAlive<ShaderProgram> kaMainProgram;
@@ -158,10 +159,16 @@ namespace lemon::render {
             LEMON_ASSERT(isValid());
             return kaSharedResources->bindGroup;
         }
+
+        inline const KeepAlive<TSharedResources>&
+        getSharedResource() const
+        {
+            return kaSharedResources;
+        }
     };
 
     using SurfaceMaterialInstance = MaterialInstance<SurfaceMaterialSharedResources>;
-    using PostProcessMaterialInstance = MaterialInstance<PostProcessMaterialSharedResources>;
+    // using PostProcessMaterialInstance = MaterialInstance<PostProcessMaterialSharedResources>;
     using DynamicMaterialInstance = MaterialInstance<DynamicMaterialSharedResources>;
 } // namespace lemon::render
 

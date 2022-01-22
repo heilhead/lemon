@@ -27,8 +27,8 @@ MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilA
     depthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Store;
 }
 
-Task<wgpu::CommandBuffer, RenderPassError>
-MainRenderPass::execute(const RenderPassContext& context)
+VoidTask<RenderPassError>
+MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers)
 {
     // colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
     colorAttachments[0].view = context.pCurrentFrame->colorTargetView;
@@ -74,5 +74,7 @@ MainRenderPass::execute(const RenderPassContext& context)
 
     cbuffer.upload(device);
 
-    co_return encoder.Finish();
+    commandBuffers.emplace_back(encoder.Finish());
+
+    co_return {};
 }

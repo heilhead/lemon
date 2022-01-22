@@ -100,21 +100,21 @@ MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
     return SurfaceMaterialInstance(kaSharedResources);
 }
 
-PostProcessMaterialInstance
-MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
-{
-    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
-
-    const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
-    const auto id = lemon::hash(desc);
-    const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new PostProcessMaterialSharedResources(id, material);
-        pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
-        return pMatShared;
-    });
-
-    return PostProcessMaterialInstance(kaSharedResources);
-}
+// PostProcessMaterialInstance
+// MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
+//{
+//     LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
+//
+//     const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
+//     const auto id = lemon::hash(desc);
+//     const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
+//         auto* pMatShared = new PostProcessMaterialSharedResources(id, material);
+//         pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
+//         return pMatShared;
+//     });
+//
+//     return PostProcessMaterialInstance(kaSharedResources);
+// }
 
 wgpu::Texture
 MaterialManager::createTexture(const TextureResource& textureRes)

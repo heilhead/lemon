@@ -1,20 +1,20 @@
 {{require("base/PostProcess.wgsl")}}
 {{require("include/Math.wgsl")}}
 {{require("include/ToneMapping.wgsl")}}
+{{require("include/Sampling.wgsl")}}
 
 [[block]]
 struct MaterialParams {
   toneMappingExposure: f32;
   toneMappingWhitePoint: f32;
+  bloomStrength: f32;
+  bloomTexSize: vec4<f32>;
 };
 
 [[group(1), binding(0)]]
 var<uniform> materialParams: MaterialParams;
 
 [[group(1), binding(1)]]
-var sBloomSampler: sampler;
-
-[[group(1), binding(2)]]
 var tBloom: texture_2d<f32>;
 
 [[stage(vertex)]]
@@ -38,10 +38,11 @@ fn FSMain(fragData: FragmentInput) -> FragmentOutput {
 
   let exposure = materialParams.toneMappingExposure;
 
-  var colColorTarget = textureSample(tColorTarget, sColorTargetSampler, fragData.uv0).xyz;
-  let colBloom = textureSample(tBloom, sBloomSampler, fragData.uv0).xyz;
+  var colColorTarget = textureSample(tColorTarget, sColorTargetSampler, fragData.uv0).rgb;
+  // let colBloom = textureSample(tBloom, sColorTargetSampler, fragData.uv0).rgb;
+  let colBloom = SampleTexture2DBicubic(tBloom, sColorTargetSampler, fragData.uv0, materialParams.bloomTexSize, vec2<f32>(1.0)).rgb;
 
-  var rgb = colColorTarget + colBloom;
+  var rgb = colColorTarget + colBloom * materialParams.bloomStrength;
   rgb = TonemapReinhardSimple(rgb, exposure);
   // rgb = TonemapACES2(rgb * exposure);
 
