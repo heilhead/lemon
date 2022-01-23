@@ -43,6 +43,8 @@ TextureResource::~TextureResource() {}
 VoidTask<ResourceLoadingError>
 TextureResource::load(ResourceMetadata&& meta)
 {
+    OPTICK_EVENT();
+
     auto* pMeta = meta.get<Metadata>();
     auto filePath = ResourceManager::get()->resolvePath(meta.name);
 

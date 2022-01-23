@@ -88,9 +88,6 @@ namespace lemon::game {
 
     private:
         void
-        tick(TickProxy& proxy, double time, float dt);
-
-        void
         updateCamera();
     };
 

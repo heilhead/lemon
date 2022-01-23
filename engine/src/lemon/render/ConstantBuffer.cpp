@@ -44,5 +44,8 @@ ConstantBuffer::reset()
 void
 ConstantBuffer::upload(wgpu::Device& device) const
 {
+    OPTICK_EVENT();
+    OPTICK_TAG("BufferSize", offset);
+
     device.GetQueue().WriteBuffer(buffer, 0, data, offset);
 }

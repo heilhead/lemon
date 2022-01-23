@@ -32,12 +32,16 @@ MeshComponent::MeshDescriptor::MeshDescriptor(size_t index,
 void
 MeshComponent::MeshDescriptor::createMaterialInstance(const res::MaterialResource* pMaterial)
 {
+    OPTICK_EVENT();
+
     material = MaterialManager::get()->getSurfaceMaterialInstance(*pMaterial, format);
 }
 
 void
 MeshComponent::setModel(const ResourceLocation& loc)
 {
+    OPTICK_EVENT();
+
     auto* pResourceMan = ResourceManager::get();
 
     switch (pResourceMan->getResourceState(loc.handle, loc.object)) {
@@ -64,6 +68,8 @@ MeshComponent::setModel(const ResourceLocation& loc)
 void
 MeshComponent::setMaterial(uint8_t index, const ResourceLocation& loc)
 {
+    OPTICK_EVENT();
+
     auto* pResourceMan = ResourceManager::get();
 
     switch (pResourceMan->getResourceState(loc.handle, loc.object)) {
@@ -86,6 +92,8 @@ MeshComponent::setMaterial(uint8_t index, const ResourceLocation& loc)
 void
 MeshComponent::updateRenderProxy(MeshRenderProxy& proxy)
 {
+    OPTICK_EVENT();
+
     using namespace magic_enum::flags;
 
     if (proxy.matrixGeneration != updateGlobalTransform()) {
@@ -103,6 +111,8 @@ MeshComponent::updateRenderProxy(MeshRenderProxy& proxy)
 void
 MeshComponent::updateModel(const res::ModelResource::Model* pModel)
 {
+    OPTICK_EVENT();
+
     meshes.clear();
 
     size_t index = 0;
@@ -120,6 +130,8 @@ MeshComponent::updateModel(const res::ModelResource::Model* pModel)
 void
 MeshComponent::updateMaterial(uint8_t index, const MaterialResource* pMaterial)
 {
+    OPTICK_EVENT();
+
     LEMON_ASSERT(pMaterial != nullptr);
 
     if (index >= materials.size()) {
@@ -148,6 +160,8 @@ MeshComponent::updateMaterial(uint8_t index, const MaterialResource* pMaterial)
 void
 MeshComponent::addRenderProxy(MeshDescriptor& mesh)
 {
+    OPTICK_EVENT();
+
     LEMON_ASSERT(!mesh.hasRenderHandle());
     LEMON_ASSERT(mesh.isValid());
 
@@ -166,6 +180,8 @@ MeshComponent::addRenderProxy(MeshDescriptor& mesh)
 void
 MeshComponent::removeRenderProxy(MeshDescriptor& mesh)
 {
+    OPTICK_EVENT();
+
     LEMON_ASSERT(mesh.hasRenderHandle());
 
     GameWorld::get()->getRenderQueue().removeMeshProxy(mesh.renderHandle);

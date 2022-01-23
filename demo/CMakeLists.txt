@@ -10,7 +10,10 @@ add_executable(${PROJECT_NAME}
     "src/render/passes/DebugUIRenderPass.cpp"
     "src/render/passes/PostProcessRenderPass.cpp")
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC LEMON_ENABLE_SLOW_ASSERT)
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+    LEMON_ENABLE_SLOW_ASSERT
+)
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/pch/folly.h>
@@ -25,6 +28,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
     <lemon/resources.h>
     <lemon/scheduler.h>
     <lemon/serialization.h>
+    <lemon/profiling.h>
 )
 
 target_link_libraries(${PROJECT_NAME} lemon::core)

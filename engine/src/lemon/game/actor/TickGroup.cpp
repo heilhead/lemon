@@ -25,10 +25,14 @@ TickGroup::remove(TickProxyHandle handle)
 void
 TickGroup::tick(double time)
 {
+    OPTICK_EVENT();
+
     auto dt = static_cast<float>(time - lastTickTime);
     lastTickTime = time;
 
     for (auto& proxy : proxies) {
+        OPTICK_EVENT("TickProxy");
+
         tickImpl(proxy, dt);
     }
 }

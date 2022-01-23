@@ -45,6 +45,8 @@ MaterialResource::~MaterialResource() {}
 VoidTask<ResourceLoadingError>
 MaterialResource::load(ResourceMetadata&& md)
 {
+    OPTICK_EVENT();
+
     auto* pMeta = md.get<Metadata>();
     domain = pMeta->domain;
 
@@ -93,6 +95,8 @@ MaterialResource::load(ResourceMetadata&& md)
 Task<MaterialBlueprint, ResourceLoadingError>
 MaterialResource::loadShaderBlueprint(const std::string& bplPath)
 {
+    OPTICK_EVENT();
+
     auto* pResMan = ResourceManager::get();
     auto fullPath = pResMan->resolvePath(bplPath);
     auto& composer = pResMan->getMaterialComposer();

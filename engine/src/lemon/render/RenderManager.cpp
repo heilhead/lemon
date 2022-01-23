@@ -55,7 +55,13 @@ void
 RenderManager::releaseResources()
 {
     debugUI.disable();
+
+    for (auto& pass : passes) {
+        pass->releaseResources();
+    }
+
     passes.clear();
+
     frameCommandBuffers.clear();
     materialManager.releaseResources();
     pipelineManager.releaseResources();
@@ -71,6 +77,9 @@ RenderManager::getFrameResources(uint8_t inFrameIndex)
 VoidTask<FrameRenderError>
 RenderManager::render()
 {
+    OPTICK_EVENT();
+    OPTICK_TAG("NumPasses", passes.size());
+
     auto* pGPU = Device::get()->getGPU();
     auto& swapChain = pGPU->getSwapChain();
     auto& queue = pGPU->getQueue();
@@ -83,12 +92,18 @@ RenderManager::render()
     pipelineManager.getPostProcessUniformData().merge(cbuffer);
 
     for (auto& pass : passes) {
+        OPTICK_EVENT("PreparePass");
+        OPTICK_TAG("PassName", pass->getPassName());
+
         pass->prepare(context);
     }
 
     frameCommandBuffers.clear();
 
     for (auto& pass : passes) {
+        OPTICK_EVENT("ExecutePass");
+        OPTICK_TAG("PassName", pass->getPassName());
+
         auto passError = co_await pass->execute(context, frameCommandBuffers);
         if (passError) {
             co_return FrameRenderError::Unknown;

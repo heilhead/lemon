@@ -13,7 +13,13 @@ namespace lemon::render {
     public:
         DebugUIRenderPass();
 
-        VoidTask<RenderPassError>
+        virtual VoidTask<RenderPassError>
         execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
+
+        virtual gsl::czstring<>
+        getPassName() const override
+        {
+            return "DebugUI";
+        }
     };
 } // namespace lemon::render

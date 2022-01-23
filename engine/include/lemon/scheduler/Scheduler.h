@@ -12,6 +12,10 @@ namespace lemon::scheduler {
         folly::IOThreadPoolExecutor poolIO;
         folly::CPUThreadPoolExecutor poolCPU;
 
+#if LEMON_FORCE_SINGLE_THREADED
+        folly::ManualExecutor debugExecutor;
+#endif
+
     public:
         inline folly::CPUThreadPoolExecutor*
         getCPUExecutor()
@@ -24,6 +28,14 @@ namespace lemon::scheduler {
         {
             return &poolIO;
         }
+
+#if LEMON_FORCE_SINGLE_THREADED
+        folly::ManualExecutor*
+        getDebugExecutor()
+        {
+            return &debugExecutor;
+        }
+#endif
 
         static std::optional<std::string>
         getCurrentThreadName();
@@ -42,11 +54,18 @@ namespace lemon::scheduler {
         ScheduleTaskImpl(TTask&& task, folly::Executor::KeepAlive<> executor,
                          Priority priority = Priority::Medium)
         {
+#if LEMON_FORCE_SINGLE_THREADED
+            auto* debugExecutor = Scheduler::get()->getDebugExecutor();
+            auto result = std::move(task).semi().via(folly::Executor::getKeepAliveToken(debugExecutor));
+            debugExecutor->drain();
+            return result;
+#else
             if constexpr (bWithPriority) {
                 return std::move(task).semi().via(executor, static_cast<int8_t>(priority));
             } else {
                 return std::move(task).semi().via(executor);
             }
+#endif
         }
     } // namespace detail
 

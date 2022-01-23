@@ -7,6 +7,8 @@
 #include "render/passes/DebugUIRenderPass.h"
 #include "render/passes/PostProcessRenderPass.h"
 
+#include <optick.h>
+
 using namespace lemon;
 using namespace lemon::game;
 using namespace lemon::device;
@@ -294,8 +296,8 @@ private:
 
     PostProcessRenderPass* pPostProcessPass;
 
-    float postProcessExposure = 1.0;
-    float postProcessBloomStrength = 1.0;
+    float postProcessExposure = 1.5;
+    float postProcessBloomStrength = 1.3;
 
 public:
     void
@@ -319,6 +321,9 @@ public:
         auto* pCameraActor = hCameraActor.get();
         pCameraActor->activateCamera();
         pCameraActor->setSensitivity(3.f);
+
+        auto* pCameraRoot = pCameraActor->getRoot();
+        pCameraRoot->setLocalPosition(kVectorForward * -1500.f + kVectorUp * 500.f);
 
         static constexpr float spreadFactor = 100.f;
 
@@ -367,6 +372,8 @@ public:
     void
     renderUI()
     {
+        OPTICK_EVENT();
+
         auto& bloomParams = pPostProcessPass->getBloomParams();
 
         ImGui::Begin("Post Processing");
@@ -390,6 +397,8 @@ public:
     void
     render()
     {
+        OPTICK_EVENT();
+
         renderUI();
 
         Scheduler::get()->block(CPUTask(RenderManager::get()->render()));
@@ -425,6 +434,8 @@ testMeshRendering()
         pGameStateMan->init(std::make_unique<DemoRootState>());
 
         engine.loop([&](float dt) {
+            OPTICK_FRAME("MainThread");
+
             if (LoopControl::Abort == pGameStateMan->onInput()) {
                 return LoopControl::Abort;
             }

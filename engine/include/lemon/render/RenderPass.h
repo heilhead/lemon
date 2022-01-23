@@ -9,6 +9,17 @@ namespace lemon::render {
         virtual ~RenderPass() = default;
 
         virtual void
+        releaseResources()
+        {
+        }
+
+        virtual gsl::czstring<>
+        getPassName() const
+        {
+            return "Unknown";
+        }
+
+        virtual void
         prepare(const RenderPassContext& context)
         {
         }

@@ -58,20 +58,29 @@ namespace lemon::render {
             MaterialUniformData uniformData;
         };
 
+        struct MainResources {
+            MeshGPUBuffer quadBuffer;
+            wgpu::RenderPassDescriptor passDesc;
+            std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
+            DynamicMaterialInstance material;
+            RenderFrameResources<wgpu::BindGroup> defaultBindGroup;
+
+            MainResources(MeshGPUBuffer&& inQuadBuffer) : quadBuffer{inQuadBuffer} {}
+        };
+
+        struct BloomResources {
+            MaterialUniformData bloomUniformData;
+            BloomPassData bloomMips[kBloomMipLevels];
+            wgpu::TextureView bloomPrefilterTarget;
+            RenderFrameResources<BloomStepData> bloomPrefilterStep;
+            RenderFrameResources<DynamicMaterialInstance> bloomMaterialResources;
+            std::vector<BloomStepData> bloomSteps;
+        };
+
         BloomParams bloomParams;
 
-        MeshGPUBuffer quadBuffer;
-        wgpu::RenderPassDescriptor passDesc;
-        std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
-        DynamicMaterialInstance material;
-        RenderFrameResources<wgpu::BindGroup> defaultBindGroup;
-
-        MaterialUniformData bloomUniformData;
-        BloomPassData bloomMips[kBloomMipLevels];
-        wgpu::TextureView bloomPrefilterTarget;
-        RenderFrameResources<BloomStepData> bloomPrefilterStep;
-        RenderFrameResources<DynamicMaterialInstance> bloomMaterialResources;
-        std::vector<BloomStepData> bloomSteps;
+        std::unique_ptr<MainResources> mainResources;
+        std::unique_ptr<BloomResources> bloomResources;
 
     public:
         PostProcessRenderPass(const res::MaterialResource* pPostProcessMaterial,
@@ -83,13 +92,22 @@ namespace lemon::render {
         inline void
         setMaterialParameter(StringID id, const TData& val)
         {
-            material.setParameter(id, val);
+            mainResources->material.setParameter(id, val);
         }
 
-        void
+        virtual void
+        releaseResources() override;
+
+        virtual gsl::czstring<>
+        getPassName() const override
+        {
+            return "PostProcess";
+        }
+
+        virtual void
         prepare(const RenderPassContext& context) override;
 
-        VoidTask<RenderPassError>
+        virtual VoidTask<RenderPassError>
         execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
 
         BloomParams&

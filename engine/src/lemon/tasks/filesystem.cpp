@@ -7,11 +7,15 @@ using namespace lemon::scheduler;
 Task<UnalignedMemory, Error>
 lemon::io::coReadBinaryFile(const std::filesystem::path& filePath)
 {
+    OPTICK_EVENT();
+
     co_return readBinaryFile(filePath);
 }
 
 Task<std::string, Error>
 lemon::io::coReadTextFile(const std::filesystem::path& filePath)
 {
+    OPTICK_EVENT();
+
     co_return readTextFile(filePath);
 }

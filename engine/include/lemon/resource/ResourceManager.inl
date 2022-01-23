@@ -4,6 +4,7 @@
 #include <lemon/resource/ResourceLocation.h>
 #include <lemon/scheduler.h>
 #include <lemon/tasks/filesystem.h>
+#include <lemon/profiling.h>
 
 using namespace lemon::scheduler;
 using namespace lemon::utils;
@@ -44,6 +45,8 @@ namespace lemon::res {
         Task<TResource*, ResourceLoadingError>
         coLoadResourceImpl(const ResourceLocation& location, ResourceLifetime lifetime)
         {
+            OPTICK_EVENT();
+
             auto* manager = ResourceManager::get();
 
             auto& fileName = location.getFileName();

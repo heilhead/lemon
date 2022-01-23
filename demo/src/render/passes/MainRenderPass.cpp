@@ -30,6 +30,8 @@ MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilA
 VoidTask<RenderPassError>
 MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers)
 {
+    OPTICK_EVENT();
+
     // colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
     colorAttachments[0].view = context.pCurrentFrame->colorTargetView;
     depthStencilAttachmentInfo.view = context.pCurrentFrame->depthStencilView;
@@ -49,24 +51,40 @@ MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::Comm
         static constexpr auto matModel = lemon::sid("packetParams.matModel");
 
         for (auto& renderProxy : GameWorld::get()->getRenderQueue().getMeshes()) {
+            OPTICK_EVENT("ProcessRenderProxy");
+
             renderProxy.pOwner->updateRenderProxy(renderProxy);
 
             auto& mat = renderProxy.material;
             auto& matData = mat.getUniformData();
-            matData.setData(matModel, renderProxy.matrix);
-            matData.merge(cbuffer);
 
-            pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
+            {
+                OPTICK_EVENT("UpdateMaterialParameters");
 
-            pass.SetBindGroup(kSurfaceSharedBindGroupIndex, pPipelineMan->getSurfaceBindGroup(),
-                              surfaceSharedData.getOffsetCount(), surfaceSharedData.getOffsets());
+                matData.setData(matModel, renderProxy.matrix);
+                matData.merge(cbuffer);
+            }
 
-            pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
-                              matData.getOffsets());
+            {
+                OPTICK_EVENT("SetUpRenderingPipeline");
 
-            pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
-            pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
-            pass.DrawIndexed(renderProxy.indexCount);
+                pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
+
+                pass.SetBindGroup(kSurfaceSharedBindGroupIndex, pPipelineMan->getSurfaceBindGroup(),
+                                  surfaceSharedData.getOffsetCount(), surfaceSharedData.getOffsets());
+
+                pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
+                                  matData.getOffsets());
+
+                pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
+                pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
+            }
+
+            {
+                OPTICK_EVENT("ExecuteDrawCall");
+
+                pass.DrawIndexed(renderProxy.indexCount);
+            }
         }
 
         pass.EndPass();

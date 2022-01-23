@@ -13,6 +13,8 @@ MaterialBlueprint::MaterialBlueprint(TemplateRef inTplRef, MaterialComposerEnvir
 std::string
 MaterialBlueprint::renderShaderSource(const render::MaterialConfiguration& config) const
 {
+    OPTICK_EVENT();
+
     LEMON_ASSERT(tplRef);
     LEMON_ASSERT(tplRef->has_value());
     LEMON_ASSERT(env != nullptr);
