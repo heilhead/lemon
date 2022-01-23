@@ -1,3 +1,4 @@
+{{require("base/Dynamic.wgsl")}}
 {{require("include/Sampling.wgsl")}}
 {{require("include/ToneMapping.wgsl")}}
 
@@ -5,12 +6,12 @@
 
 struct BloomVertexInput {
   [[location(0)]] position: vec3<f32>;
-  [[location(1)]] uv0: vec2<f32>;
+  [[location(3)]] uv0: vec2<f32>;
 };
 
 struct BloomFragmentInput {
   [[builtin(position)]] position: vec4<f32>;
-  [[location(0)]] uv0: vec2<f32>;
+  [[location(3)]] uv0: vec2<f32>;
 };
 
 struct BloomFragmentOutput {
@@ -18,7 +19,7 @@ struct BloomFragmentOutput {
 };
 
 [[stage(vertex)]]
-fn VSBloomMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
+fn VSMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
   return BloomFragmentInput(
     vec4<f32>(vertexData.position, 1.0),
     vertexData.uv0,
@@ -28,12 +29,11 @@ fn VSBloomMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
 [[block]]
 struct BloomParams {
     threshold: f32;
-    strength: f32;
-    texelSize: vec2<f32>;
-    lowTexSize: vec4<f32>; //xy texel size, zw width height
     scatter: f32;
-    clampMax: f32;
     thresholdKnee: f32;
+    clampMax: f32;
+    srcTexSize: vec4<f32>;
+    lowTexSize: vec4<f32>;
 };
 
 [[group(1), binding(0)]]
@@ -49,9 +49,9 @@ var tSrc: texture_2d<f32>;
 var tSrcLow: texture_2d<f32>;
 
 [[stage(fragment)]]
-fn PSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize;
+  let texelSize = bloomParams.srcTexSize.xy;
 
   let A = textureSample(tSrc, sLinearClamp, uv + texelSize * vec2<f32>(-1.0, -1.0));
   let B = textureSample(tSrc, sLinearClamp, uv + texelSize * vec2<f32>(0.0, -1.0));
@@ -97,9 +97,9 @@ fn PSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.x * 2.0;
+  let texelSize = bloomParams.srcTexSize.x * 2.0;
 
   // 9-tap gaussian blur on the downsampled source
   let c0 = textureSample(tSrc, sLinearClamp, uv - vec2<f32>(texelSize * 4.0, 0.0)).rgb;
@@ -120,9 +120,9 @@ fn PSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.y;
+  let texelSize = bloomParams.srcTexSize.y;
 
   // Optimized bilinear 5-tap gaussian on the same-sized source (9-tap equivalent)
   let c0 = textureSample(tSrc, sLinearClamp, uv - vec2<f32>(0.0, texelSize * 3.23076923)).rgb;
@@ -139,9 +139,9 @@ fn PSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 }
 
 [[stage(fragment)]]
-fn PSUpsampleMain(input: BloomFragmentInput) -> BloomFragmentOutput {
+fn FSUpsampleMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.y;
+  let texelSize = bloomParams.srcTexSize.y;
 
   let highMip = textureSample(tSrc, sLinearClamp, uv).rgb;
   let lowMip = SampleTexture2DBicubic(tSrcLow, sLinearClamp, uv, bloomParams.lowTexSize, vec2<f32>(1.0)).rgb;

@@ -14,7 +14,13 @@ namespace lemon::render {
     public:
         MainRenderPass();
 
-        Task<wgpu::CommandBuffer, RenderPassError>
-        execute(const RenderPassContext& context) override;
+        virtual VoidTask<RenderPassError>
+        execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
+
+        virtual gsl::czstring<>
+        getPassName() const override
+        {
+            return "MainColor";
+        }
     };
 } // namespace lemon::render

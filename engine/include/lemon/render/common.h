@@ -22,10 +22,12 @@ namespace lemon::render {
         };
     }
 
+    static constexpr uint8_t kMaxRenderFramesInFlight = 2;
     static constexpr uint8_t kSurfaceSharedBindGroupIndex = 0;
     static constexpr uint8_t kPostProcessSharedBindGroupIndex = 0;
     static constexpr uint8_t kMaterialBindGroupIndex = 1;
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
+    static constexpr uint32_t kUniformBufferDataAlignment = 16;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
     static constexpr gsl::czstring<> kShaderSurfaceSharedGroupBlueprint =
@@ -55,18 +57,21 @@ namespace lemon::render {
         wgpu::TextureView colorTargetView;
         wgpu::TextureView depthStencilView;
         wgpu::TextureView swapChainBackbufferView;
-        wgpu::BindGroup postProcessBindGroup;
     };
 
     struct RenderPassContext {
         RenderPassResources* pCurrentFrame{nullptr};
         RenderPassResources* pPreviousFrame{nullptr};
+        uint8_t frameIndex{0};
 
         inline void
-        swap(const wgpu::TextureView& swapChainBackbufferView)
+        swap(uint8_t inFrameIndex, RenderPassResources* pNextFrame,
+             const wgpu::TextureView& nextFrameBackbufferView)
         {
-            std::swap(pCurrentFrame, pPreviousFrame);
-            pCurrentFrame->swapChainBackbufferView = swapChainBackbufferView;
+            pPreviousFrame = pCurrentFrame;
+            pCurrentFrame = pNextFrame;
+            pCurrentFrame->swapChainBackbufferView = nextFrameBackbufferView;
+            frameIndex = inFrameIndex;
         }
     };
 } // namespace lemon::render

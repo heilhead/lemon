@@ -13,9 +13,9 @@ using namespace lemon::res;
 using namespace lemon::res::material;
 using namespace lemon::render;
 
-template<typename TValue>
+template<typename TValue, size_t Size>
 inline bool
-findKey(const MaterialResource::ResourceList<TValue>& vec, StringID key)
+findKey(const MaterialResource::ResourceList<TValue, Size>& vec, StringID key)
 {
     for (auto& [k, v] : vec) {
         if (k == key) {
@@ -26,9 +26,10 @@ findKey(const MaterialResource::ResourceList<TValue>& vec, StringID key)
     return false;
 }
 
-template<typename TValue>
+template<typename TValue, size_t Size>
 void
-mergeResources(const MaterialResource::ResourceList<TValue>& src, MaterialResource::ResourceList<TValue>& dst)
+mergeResources(const MaterialResource::ResourceList<TValue, Size>& src,
+               MaterialResource::ResourceList<TValue, Size>& dst)
 {
     for (auto& [srcKey, srcVal] : src) {
         if (!findKey(dst, srcKey)) {
@@ -44,6 +45,8 @@ MaterialResource::~MaterialResource() {}
 VoidTask<ResourceLoadingError>
 MaterialResource::load(ResourceMetadata&& md)
 {
+    OPTICK_EVENT();
+
     auto* pMeta = md.get<Metadata>();
     domain = pMeta->domain;
 
@@ -92,6 +95,8 @@ MaterialResource::load(ResourceMetadata&& md)
 Task<MaterialBlueprint, ResourceLoadingError>
 MaterialResource::loadShaderBlueprint(const std::string& bplPath)
 {
+    OPTICK_EVENT();
+
     auto* pResMan = ResourceManager::get();
     auto fullPath = pResMan->resolvePath(bplPath);
     auto& composer = pResMan->getMaterialComposer();

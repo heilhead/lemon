@@ -60,6 +60,7 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
     dawn_native::DeviceDescriptor desc;
     desc.forceEnabledToggles.push_back("disable_symbol_renaming");
     desc.forceEnabledToggles.push_back("emit_hlsl_debug_symbols");
+    desc.forceEnabledToggles.push_back("turn_off_vsync");
     // desc.forceEnabledToggles.push_back("dump_shaders");
 
     auto backendDevice = backendAdapter.CreateDevice(&desc);

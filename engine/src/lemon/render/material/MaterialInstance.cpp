@@ -11,9 +11,9 @@ using namespace lemon::render;
 using namespace lemon::res;
 using namespace lemon::shader;
 
-template<typename TData>
+template<typename TData, size_t Size>
 inline const TData*
-findByID(const MaterialResource::ResourceList<TData>& data, StringID id)
+findByID(const MaterialResource::ResourceList<TData, Size>& data, StringID id)
 {
     for (auto& [k, v] : data) {
         if (k == id) {
@@ -25,7 +25,8 @@ findByID(const MaterialResource::ResourceList<TData>& data, StringID id)
 }
 
 void
-MaterialSharedResources::init(const res::MaterialResource& matRes, const ShaderProgram& program)
+MaterialSharedResources::initBindGroup(const MaterialResource& matRes, const ShaderProgram& program,
+                                       const DynamicMaterialResourceDescriptor* pDynamicBindings)
 {
     auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();
@@ -49,23 +50,47 @@ MaterialSharedResources::init(const res::MaterialResource& matRes, const ShaderP
         switch (res.resourceType) {
         case ResourceType::kUniformBuffer: {
             entries.emplace_back(createBinding(binding, cbuffer, 0, res.size));
+            break;
+        }
 
+        case ResourceType::kStorageBuffer:
+        case ResourceType::kReadOnlyStorageBuffer: {
+            LEMON_ASSERT(pDynamicBindings != nullptr,
+                         "storage buffers can only be bound using dynamic bindings");
+
+            auto* pSearch = findByID(pDynamicBindings->buffers, id);
+
+            LEMON_ASSERT(pSearch != nullptr, "storage buffer binding not found");
+
+            entries.emplace_back(createBinding(binding, *pSearch));
             break;
         }
 
         case ResourceType::kSampler:
         case ResourceType::kComparisonSampler: {
-            auto* search = findByID(matRes.getSamplerDescriptors(), id);
+            wgpu::Sampler sampler;
 
-            LEMON_ASSERT(search != nullptr,
-                         "failed to create bind group: binding not found for sampler. id: ", id);
+            if (pDynamicBindings != nullptr) {
+                if (const auto* pSearch = findByID(pDynamicBindings->samplers, id)) {
+                    sampler = *pSearch;
+                }
+            }
 
-            auto kaSampler = pMaterialMan->getSampler(*search);
-            entries.emplace_back(createBinding(binding, *kaSampler));
+            if (!sampler) {
+                const auto* search = findByID(matRes.getSamplerDescriptors(), id);
 
-            // Store the keep-alive for the lifetime of this instance.
-            kaSamplers.emplace_back(std::move(kaSampler));
+                LEMON_ASSERT(search != nullptr,
+                             "failed to create bind group: binding not found for sampler. id: ", id);
 
+                auto kaSampler = pMaterialMan->getSampler(*search);
+
+                sampler = *kaSampler;
+
+                // Store the keep-alive for the lifetime of this instance.
+                kaSamplers.emplace_back(std::move(kaSampler));
+            }
+
+            entries.emplace_back(createBinding(binding, sampler));
             break;
         }
 
@@ -73,32 +98,51 @@ MaterialSharedResources::init(const res::MaterialResource& matRes, const ShaderP
         case ResourceType::kMultisampledTexture:
         case ResourceType::kDepthTexture:
         case ResourceType::kDepthMultisampledTexture: {
-            auto* search = findByID(matRes.getTextureLocations(), id);
+            wgpu::TextureView view;
 
-            LEMON_ASSERT(search != nullptr,
-                         "failed to create bind group: binding not found for texture. id: ", id);
+            if (pDynamicBindings != nullptr) {
+                if (const auto* pSearch = findByID(pDynamicBindings->textures, id)) {
+                    view = *pSearch;
+                }
+            }
 
-            auto* pTextureRes = pResourceMan->getResource<TextureResource>(search->handle);
+            if (!view) {
+                const auto* pSearch = findByID(matRes.getTextureLocations(), id);
 
-            LEMON_ASSERT(pTextureRes != nullptr,
-                         "failed to create bind group: texture resource not available. id: ", id);
+                LEMON_ASSERT(pSearch != nullptr,
+                             "failed to create bind group: binding not found for texture. id: ", id);
 
-            auto kaTexture = pMaterialMan->getTexture(*pTextureRes);
-            auto view = kaTexture->CreateView();
+                auto* pTextureRes = pResourceMan->getResource<TextureResource>(pSearch->handle);
+
+                LEMON_ASSERT(pTextureRes != nullptr,
+                             "failed to create bind group: texture resource not available. id: ", id);
+
+                auto kaTexture = pMaterialMan->getTexture(*pTextureRes);
+
+                view = kaTexture->CreateView();
+
+                // Store the keep-alive for the lifetime of this instance.
+                kaTextures.emplace_back(std::move(kaTexture));
+            }
 
             entries.emplace_back(createBinding(binding, view));
+            break;
+        }
 
-            // Store the keep-alive for the lifetime of this instance.
-            kaTextures.emplace_back(std::move(kaTexture));
+        case ResourceType::kReadOnlyStorageTexture:
+        case ResourceType::kWriteOnlyStorageTexture: {
+            LEMON_ASSERT(pDynamicBindings != nullptr,
+                         "storage textures can only be bound using dynamic bindings");
 
+            auto* pSearch = findByID(pDynamicBindings->textures, id);
+
+            LEMON_ASSERT(pSearch != nullptr, "storage texture binding not found");
+
+            entries.emplace_back(createBinding(binding, *pSearch));
             break;
         }
 
         default:
-            // kStorageBuffer,
-            // kReadOnlyStorageBuffer,
-            // kReadOnlyStorageTexture,
-            // kWriteOnlyStorageTexture,
             // kExternalTexture
             LEMON_TODO();
         }
@@ -112,8 +156,9 @@ MaterialSharedResources::init(const res::MaterialResource& matRes, const ShaderP
     bindGroup = pRenderMan->getDevice().CreateBindGroup(&descriptor);
 }
 
-SurfaceMaterialSharedResources::SurfaceMaterialSharedResources(const res::MaterialResource& matRes,
+SurfaceMaterialSharedResources::SurfaceMaterialSharedResources(uint64_t id, const MaterialResource& matRes,
                                                                const MeshVertexFormat& vertexFormat)
+    : MaterialSharedResources(id)
 {
     auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();
@@ -141,31 +186,76 @@ SurfaceMaterialSharedResources::SurfaceMaterialSharedResources(const res::Materi
     kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaColorProgram, kMaterialBindGroupIndex);
     uniformData.setLayout(kaLayout);
 
-    init(matRes, *kaColorProgram);
+    initBindGroup(matRes, *kaColorProgram);
 }
 
-PostProcessMaterialSharedResources::PostProcessMaterialSharedResources(const res::MaterialResource& matRes)
+// PostProcessMaterialSharedResources::PostProcessMaterialSharedResources(
+//     uint64_t id, const MaterialResource& matRes, const DynamicMaterialResourceDescriptor& dynamicBindings)
+//     : MaterialSharedResources(id)
+//{
+//     auto* pMaterialMan = MaterialManager::get();
+//     auto* pPipelineMan = PipelineManager::get();
+//
+//     kaMainProgram = pMaterialMan->getShader(matRes, pPipelineMan->getPostProcessConfig());
+//     LEMON_ASSERT(*kaMainProgram, "failed to compile shader program");
+//
+//     kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaMainProgram, kMaterialBindGroupIndex);
+//     uniformData.setLayout(kaLayout);
+//
+//     initBindGroup(matRes, *kaMainProgram);
+// }
+
+DynamicMaterialSharedResources::DynamicMaterialSharedResources(
+    uint64_t id, const MaterialResource& matRes, const DynamicMaterialResourceDescriptor& dynamicBindings,
+    const MaterialConfiguration* pAdditionalConfig)
+    : MaterialSharedResources(id)
 {
+    auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();
     auto* pMaterialMan = MaterialManager::get();
-    auto* pPipelineMan = PipelineManager::get();
 
     {
-        kaMainProgram = pMaterialMan->getShader(matRes, pPipelineMan->getPostProcessConfig());
+        MaterialConfiguration cfg;
+
+        if (pAdditionalConfig) {
+            cfg.merge(*pAdditionalConfig);
+        }
+
+        kaMainProgram = pMaterialMan->getShader(matRes, cfg);
         LEMON_ASSERT(*kaMainProgram, "failed to compile shader program");
     }
 
     kaLayout = pMaterialMan->getMaterialLayout(matRes, *kaMainProgram, kMaterialBindGroupIndex);
     uniformData.setLayout(kaLayout);
 
-    init(matRes, *kaMainProgram);
+    initBindGroup(matRes, *kaMainProgram, &dynamicBindings);
 }
 
 size_t
-folly::hasher<lemon::render::MaterialResourceDescriptor>::operator()(
-    const lemon::render::MaterialResourceDescriptor& data) const
+folly::hasher<MaterialResourceDescriptor>::operator()(const MaterialResourceDescriptor& data) const
 {
     lemon::Hash hash;
     hash.append(data.pResource->getHandle(), data.meshComponents);
+    return hash;
+}
+
+size_t
+folly::hasher<DynamicMaterialResourceDescriptor>::operator()(
+    const DynamicMaterialResourceDescriptor& data) const
+{
+    lemon::Hash hash;
+
+    for (auto& sampler : data.samplers) {
+        hash.append(sampler.first, sampler.second.Get());
+    }
+
+    for (auto& texture : data.textures) {
+        hash.append(texture.first, texture.second.Get());
+    }
+
+    for (auto& buffer : data.buffers) {
+        hash.append(buffer.first, buffer.second.Get());
+    }
+
     return hash;
 }

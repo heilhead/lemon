@@ -7,6 +7,8 @@ MaterialComposer::MaterialComposer(const std::filesystem::path& resourceRootDir)
 tl::expected<MaterialBlueprint, CompositionError>
 MaterialComposer::getBlueprint(const std::filesystem::path& fullPath)
 {
+    OPTICK_EVENT();
+
     auto hash = folly::hash::fnv64(fullPath.string());
     auto tplRef = cache.get(hash, [&]() {
         // TODO: Actually handle errors in shader composition.

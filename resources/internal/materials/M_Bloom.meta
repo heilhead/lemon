@@ -1,16 +1,17 @@
 MaterialResource:
   common:
     references:
-      []
+      - location: internal\textures\T_PostProcess_Bloom
+        type: 339467474955139043
   baseType: Shader
-  basePath: internal\shaders\BasePostProcess.wgsl
+  basePath: internal\shaders\Bloom.wgsl
   domain:
     type: Dynamic
     usage: Unknown
   definitions:
     []
   samplers:
-    - first: sBloomSampler
+    - first: sLinearClamp
       second:
         addressModeU: ClampToEdge
         addressModeV: ClampToEdge

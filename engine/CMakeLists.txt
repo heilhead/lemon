@@ -60,7 +60,7 @@ set(SOURCE_FILES
         "src/lemon/game/state/InputEvent.cpp"
         "src/lemon/platform/windows.cpp"
         "src/lemon/resource/types/material/MaterialComposerEnvironment.cpp"
-        "src/lemon/resource/types/material/MaterialBlueprint.cpp")
+        "src/lemon/resource/types/material/MaterialBlueprint.cpp" "src/lemon/render/pipeline/DynamicPipeline.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 add_library(lemon::core ALIAS ${PROJECT_NAME})
@@ -91,12 +91,14 @@ find_package(yaml-cpp CONFIG REQUIRED)
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
+    # LEMON_FORCE_SINGLE_THREADED
     INJA_NOEXCEPTION
     GLFW_EXPOSE_NATIVE_WIN32)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:LEMON_DEBUG>")
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
+    <lemon/profiling.h>
     <lemon/pch/folly.h>
     <lemon/pch/shared.h>
     <lemon/pch/std.h>
@@ -130,6 +132,16 @@ CPMAddPackage(
 	"BUILD_BENCHMARK OFF"
 	"COVERALLS OFF")
 
+CPMAddPackage(
+	GITHUB_REPOSITORY "bombomby/optick"
+	GIT_TAG 1.3.2.0
+	OPTIONS
+	"OPTICK_ENABLED ON"
+	"OPTICK_INSTALL_TARGETS OFF"
+	"OPTICK_BUILD_CONSOLE_SAMPLE OFF"
+	"OPTICK_BUILD_GUI_APP OFF"
+)
+
 target_link_libraries(${PROJECT_NAME}
         PUBLIC
         lemon::dawn_static
@@ -143,6 +155,7 @@ target_link_libraries(${PROJECT_NAME}
         lodepng
         pantor::inja
         yaml-cpp
+        OptickCore
         PRIVATE
         range-v3
         glfw)

@@ -27,4 +27,11 @@ namespace lemon::utils {
 
     std::wstring
     s2ws(const std::string& str);
+
+    template<class T>
+    inline uint64_t
+    getTypeID()
+    {
+        return typeid(T).hash_code();
+    }
 } // namespace lemon::utils

@@ -17,6 +17,8 @@ BundleResource::~BundleResource() {}
 VoidTask<ResourceLoadingError>
 BundleResource::load(ResourceMetadata&& meta)
 {
+    OPTICK_EVENT();
+
     auto* pMetadata = meta.get<Metadata>();
     logger::log("BundleResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
                 " name: ", meta.name);

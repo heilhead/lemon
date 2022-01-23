@@ -153,9 +153,10 @@ namespace lemon {
             // The last reference, release the data.
             if (refCount == 1) {
                 auto* pData = ptr->get();
-                LEMON_ASSERT(pData != nullptr);
-                delete pData;
-                ptr->set(nullptr);
+                if (pData != nullptr) {
+                    delete pData;
+                    ptr->set(nullptr);
+                }
             }
 
             ptr->unlock();
@@ -227,10 +228,17 @@ namespace lemon {
 
         ~AtomicCache()
         {
+            clear();
+        }
+
+        void
+        clear()
+        {
             for (auto& [k, v] : data) {
                 TData* pData = v.get();
                 if (pData != nullptr) {
                     delete pData;
+                    v.set(nullptr);
                 }
             }
         }

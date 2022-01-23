@@ -1,15 +1,17 @@
 #pragma once
 
-namespace lemon::render {
-    struct PostProcessMaterialSharedResources;
+#include <lemon/render/pipeline/DynamicPipeline.h>
 
-    class PostProcessPipeline {
+namespace lemon::render {
+    struct DynamicMaterialSharedResources;
+
+    class PostProcessPipeline : public DynamicPipeline {
         wgpu::RenderPipeline main;
 
     public:
-        PostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
+        PostProcessPipeline(const DynamicMaterialSharedResources& matShared);
 
-        const wgpu::RenderPipeline&
+        inline const wgpu::RenderPipeline&
         getMainPipeline() const
         {
             return main;

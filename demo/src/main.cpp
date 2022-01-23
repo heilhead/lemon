@@ -3,6 +3,7 @@
 #include "mesh.h"
 
 using namespace lemon;
+using namespace lemon::render;
 
 int
 main(int argc, char* argv[])

@@ -10,7 +10,7 @@ find_package(glfw3 CONFIG REQUIRED)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw dxguid)
 
-set(DAWN_STATIC_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/x64/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
+set(DAWN_STATIC_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/x64/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:MinSizeRel>:Release>)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DAWN_STATIC_LIB_PATH}/dawn_native_static.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DAWN_STATIC_LIB_PATH}/dawn_platform_static.lib)

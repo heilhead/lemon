@@ -4,6 +4,7 @@
 #include <lemon/render/material/MaterialLayout.h>
 #include <lemon/render/material/MaterialInstance.h>
 #include <lemon/render/material/MaterialConfiguration.h>
+#include <lemon/render/PipelineManager.h>
 
 namespace lemon::res {
     class MaterialResource;
@@ -24,10 +25,13 @@ namespace lemon::render {
         AtomicCache<wgpu::Sampler> samplerCache{64};
         AtomicCache<wgpu::Texture> textureCache{512};
         AtomicCache<SurfaceMaterialSharedResources> surfaceSharedResourcesCache{512};
-        AtomicCache<PostProcessMaterialSharedResources> postProcessSharedResourcesCache{16};
+        AtomicCache<DynamicMaterialSharedResources> dynamicSharedResourcesCache{64};
 
     public:
         MaterialManager();
+
+        void
+        releaseResources();
 
         inline ShaderCompiler&
         getShaderCompiler()
@@ -53,8 +57,14 @@ namespace lemon::render {
         getSurfaceMaterialInstance(const res::MaterialResource& material,
                                    const MeshVertexFormat& vertexFormat);
 
-        PostProcessMaterialInstance
-        getPostProcessMaterialInstance(const res::MaterialResource& material);
+        // PostProcessMaterialInstance
+        // getPostProcessMaterialInstance(const res::MaterialResource& material);
+
+        template<DynamicPipelineBase TDynamicPipeline>
+        DynamicMaterialInstance
+        getDynamicMaterialInstance(const res::MaterialResource& material,
+                                   const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                   const MaterialConfiguration* pConfig = nullptr);
 
         KeepAlive<wgpu::Sampler>
         getSampler(const res::material::SamplerDescriptor& desc);
@@ -68,10 +78,34 @@ namespace lemon::render {
         void
         init(wgpu::Device& device);
 
+        uint64_t
+        calculateDynamicMaterialHash(const res::MaterialResource& material,
+                                     const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                     const MaterialConfiguration* pConfig);
+
     private:
         wgpu::Texture
         createTexture(const res::TextureResource& textureRes);
     };
+
+    template<DynamicPipelineBase TDynamicPipeline>
+    DynamicMaterialInstance
+    MaterialManager::getDynamicMaterialInstance(const res::MaterialResource& material,
+                                                const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                                const MaterialConfiguration* pConfig)
+    {
+        const auto id = calculateDynamicMaterialHash(material, dynamicBindings, pConfig);
+        const auto kaSharedResources = dynamicSharedResourcesCache.get(id, [&]() {
+            auto* pMatShared = new DynamicMaterialSharedResources(id, material, dynamicBindings, pConfig);
+
+            pMatShared->kaPipeline =
+                PipelineManager::get()->getDynamicPipeline<TDynamicPipeline>(*pMatShared);
+
+            return pMatShared;
+        });
+
+        return DynamicMaterialInstance(kaSharedResources);
+    }
 } // namespace lemon::render
 
 template<>

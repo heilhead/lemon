@@ -22,7 +22,12 @@ createColorTargetView(const wgpu::Device& device, uint32_t width, uint32_t heigh
     return tex.CreateView();
 }
 
-RenderManager::RenderManager() : pDevice{nullptr}, passes{}, resources{} {}
+RenderManager::RenderManager()
+    : pDevice{nullptr}, passes{}, resources{}, frameCommandBuffers{kNumRenderPasses}
+{
+}
+
+RenderManager::~RenderManager() {}
 
 void
 RenderManager::init(wgpu::Device& device)
@@ -34,45 +39,80 @@ RenderManager::init(wgpu::Device& device)
 
     auto [wndWidth, wndHeight] = Device::get()->getWindow()->getSize();
 
+    renderTargetWidth = wndWidth;
+    renderTargetHeight = wndHeight;
+
     for (auto& res : resources) {
         res.depthStencilView = createDefaultDepthStencilView(device, wndWidth, wndHeight);
         res.colorTargetView = createColorTargetView(device, wndWidth, wndHeight);
-        res.postProcessBindGroup = pipelineManager.createPostProcessBindGroup(res.colorTargetView);
     }
 
     context.pCurrentFrame = &resources[0];
     context.pPreviousFrame = &resources[1];
 }
 
+void
+RenderManager::releaseResources()
+{
+    debugUI.disable();
+
+    for (auto& pass : passes) {
+        pass->releaseResources();
+    }
+
+    passes.clear();
+
+    frameCommandBuffers.clear();
+    materialManager.releaseResources();
+    pipelineManager.releaseResources();
+}
+
+RenderPassResources&
+RenderManager::getFrameResources(uint8_t inFrameIndex)
+{
+    LEMON_ASSERT(inFrameIndex < kMaxRenderFramesInFlight);
+    return resources[inFrameIndex];
+}
+
 VoidTask<FrameRenderError>
 RenderManager::render()
 {
+    OPTICK_EVENT();
+    OPTICK_TAG("NumPasses", passes.size());
+
     auto* pGPU = Device::get()->getGPU();
     auto& swapChain = pGPU->getSwapChain();
     auto& queue = pGPU->getQueue();
 
+    frameIndex = ++frameIndex % kMaxRenderFramesInFlight;
     cbuffer.reset();
-    context.swap(swapChain.GetCurrentTextureView());
+    context.swap(frameIndex, &getFrameResources(frameIndex), swapChain.GetCurrentTextureView());
 
     pipelineManager.getSurfaceUniformData().merge(cbuffer);
     pipelineManager.getPostProcessUniformData().merge(cbuffer);
 
     for (auto& pass : passes) {
+        OPTICK_EVENT("PreparePass");
+        OPTICK_TAG("PassName", pass->getPassName());
+
         pass->prepare(context);
     }
 
-    folly::small_vector<wgpu::CommandBuffer, kNumRenderPasses> commands;
+    frameCommandBuffers.clear();
 
     for (auto& pass : passes) {
-        auto passResult = co_await pass->execute(context);
-        if (passResult) {
-            commands.emplace_back(*passResult);
-        } else {
+        OPTICK_EVENT("ExecutePass");
+        OPTICK_TAG("PassName", pass->getPassName());
+
+        auto passError = co_await pass->execute(context, frameCommandBuffers);
+        if (passError) {
             co_return FrameRenderError::Unknown;
         }
     }
 
-    queue.Submit(commands.size(), commands.data());
+    if (frameCommandBuffers.size() > 0) {
+        queue.Submit(frameCommandBuffers.size(), frameCommandBuffers.data());
+    }
 
     swapChain.Present();
 

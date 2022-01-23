@@ -27,6 +27,8 @@ ModelResource::~ModelResource() {}
 VoidTask<ResourceLoadingError>
 ModelResource::load(ResourceMetadata&& meta)
 {
+    OPTICK_EVENT();
+
     auto* pMetadata = meta.get<Metadata>();
 
     logger::log("ModelResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,

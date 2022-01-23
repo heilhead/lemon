@@ -13,6 +13,17 @@ using namespace magic_enum::bitwise_operators;
 
 MaterialManager::MaterialManager() : pDevice{nullptr} {}
 
+void
+MaterialManager::releaseResources()
+{
+    shaderProgramCache.clear();
+    materialLayoutCache.clear();
+    samplerCache.clear();
+    textureCache.clear();
+    surfaceSharedResourcesCache.clear();
+    dynamicSharedResourcesCache.clear();
+}
+
 uint64_t
 computeMaterialHash(const MaterialBlueprint& blueprint, const render::MaterialConfiguration& config)
 {
@@ -92,7 +103,7 @@ MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
                                           .meshComponents = vertexFormat.getComponents()};
     const auto id = lemon::hash(desc);
     const auto kaSharedResources = surfaceSharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new SurfaceMaterialSharedResources(material, vertexFormat);
+        auto* pMatShared = new SurfaceMaterialSharedResources(id, material, vertexFormat);
         pMatShared->kaPipeline = PipelineManager::get()->getSurfacePipeline(*pMatShared, vertexFormat);
         return pMatShared;
     });
@@ -100,21 +111,21 @@ MaterialManager::getSurfaceMaterialInstance(const MaterialResource& material,
     return SurfaceMaterialInstance(kaSharedResources);
 }
 
-PostProcessMaterialInstance
-MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
-{
-    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
-
-    const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
-    const auto id = lemon::hash(desc);
-    const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
-        auto* pMatShared = new PostProcessMaterialSharedResources(material);
-        pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
-        return pMatShared;
-    });
-
-    return PostProcessMaterialInstance(kaSharedResources);
-}
+// PostProcessMaterialInstance
+// MaterialManager::getPostProcessMaterialInstance(const res::MaterialResource& material)
+//{
+//     LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::PostProcess);
+//
+//     const MaterialResourceDescriptor desc{.pResource = &material, .meshComponents = MeshComponents::None};
+//     const auto id = lemon::hash(desc);
+//     const auto kaSharedResources = postProcessSharedResourcesCache.get(id, [&]() {
+//         auto* pMatShared = new PostProcessMaterialSharedResources(id, material);
+//         pMatShared->kaPipeline = PipelineManager::get()->getPostProcessPipeline(*pMatShared);
+//         return pMatShared;
+//     });
+//
+//     return PostProcessMaterialInstance(kaSharedResources);
+// }
 
 wgpu::Texture
 MaterialManager::createTexture(const TextureResource& textureRes)
@@ -190,8 +201,7 @@ MaterialManager::getSampler(const SamplerDescriptor& inDesc)
 KeepAlive<wgpu::Sampler>
 MaterialManager::getSampler(const wgpu::SamplerDescriptor& desc)
 {
-    uint64_t id = lemon::hash(desc);
-
+    const auto id = lemon::hash(desc);
     return samplerCache.get(id, [&]() { return new wgpu::Sampler(pDevice->CreateSampler(&desc)); });
 }
 
@@ -199,4 +209,20 @@ void
 MaterialManager::init(wgpu::Device& device)
 {
     pDevice = &device;
+}
+
+uint64_t
+MaterialManager::calculateDynamicMaterialHash(const res::MaterialResource& material,
+                                              const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                              const MaterialConfiguration* pConfig)
+{
+    LEMON_ASSERT(material.getDomainDescriptor().type == MaterialResource::Domain::Dynamic);
+
+    Hash h(material.getHandle(), dynamicBindings);
+
+    if (pConfig) {
+        h.append(*pConfig);
+    }
+
+    return h.value();
 }

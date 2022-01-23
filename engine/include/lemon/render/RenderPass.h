@@ -9,11 +9,22 @@ namespace lemon::render {
         virtual ~RenderPass() = default;
 
         virtual void
+        releaseResources()
+        {
+        }
+
+        virtual gsl::czstring<>
+        getPassName() const
+        {
+            return "Unknown";
+        }
+
+        virtual void
         prepare(const RenderPassContext& context)
         {
         }
 
-        virtual scheduler::Task<wgpu::CommandBuffer, RenderPassError>
-        execute(const RenderPassContext& context) = 0;
+        virtual scheduler::VoidTask<RenderPassError>
+        execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) = 0;
     };
 } // namespace lemon::render

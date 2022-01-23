@@ -39,15 +39,15 @@ namespace lemon::res {
         using UniformValue = std::variant<int32_t, glm::i32vec2, glm::i32vec4, uint32_t, glm::u32vec2,
                                           glm::u32vec4, float, glm::f32vec2, glm::f32vec4, glm::f32mat4x4>;
 
-        template<typename T>
-        using ResourceList = std::vector<std::pair<StringID, T>>;
-        using SamplerDescriptorList = ResourceList<material::SamplerDescriptor>;
-        using TextureLocationList = ResourceList<ResourceLocation>;
-        using UniformValueList = ResourceList<UniformValue>;
+        template<typename T, size_t Size>
+        using ResourceList = folly::small_vector<std::pair<StringID, T>, Size>;
+        using SamplerDescriptorList = ResourceList<material::SamplerDescriptor, 4>;
+        using TextureLocationList = ResourceList<ResourceLocation, 8>;
+        using UniformValueList = ResourceList<UniformValue, 8>;
 
         enum class BaseType { Shader, Material };
         enum class Usage { Unknown = 1 << 0, StaticMesh = 1 << 1, SkeletalMesh = 1 << 2 };
-        enum class Domain { Surface, PostProcess, UserInterface };
+        enum class Domain { Surface, PostProcess, UserInterface, Dynamic };
         enum class ShadingModel { Lit, Unlit };
         enum class BlendMode { Opaque, Masked, Translucent };
 

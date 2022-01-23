@@ -10,19 +10,27 @@ namespace lemon {
 
     struct Hash {
     private:
-        uint64_t hash;
+        uint64_t hash{0};
 
     public:
+        Hash() = default;
+
+        template<typename... Value>
+        Hash(const Value&... value) : Hash()
+        {
+            append(value...);
+        }
+
         template<typename... Value>
         inline void
-        append(Value const&... value)
+        append(const Value&... value)
         {
             appendHash(folly::hash::commutative_hash_combine(value...));
         }
 
         template<typename T>
         inline void
-        append(std::vector<T> const& data)
+        append(const std::vector<T>& data)
         {
             appendRange(data.begin(), data.end());
         }
@@ -85,7 +93,7 @@ namespace lemon {
 
     template<typename... Value>
     uint64_t
-    hash(Value const&... value)
+    hash(const Value&... value)
     {
         Hash h;
         h.append(value...);

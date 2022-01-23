@@ -19,8 +19,8 @@ DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
     colorAttachments[0].storeOp = wgpu::StoreOp::Store;
 }
 
-Task<wgpu::CommandBuffer, RenderPassError>
-DebugUIRenderPass::execute(const RenderPassContext& context)
+VoidTask<RenderPassError>
+DebugUIRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers)
 {
     colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
 
@@ -36,5 +36,7 @@ DebugUIRenderPass::execute(const RenderPassContext& context)
         pass.EndPass();
     }
 
-    co_return encoder.Finish();
+    commandBuffers.emplace_back(encoder.Finish());
+
+    co_return {};
 }

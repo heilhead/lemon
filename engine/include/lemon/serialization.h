@@ -120,7 +120,7 @@ namespace lemon {
                         }
                         val = *TEnumTraits::template cast<TEnum>(str);
                     } else {
-                        static_assert(false, "TArchive must be either output or input");
+                        // static_assert(false, "TArchive must be either output or input");
                     }
                 } else {
                     if constexpr (isOutputArchive<TArchive>()) {
@@ -131,7 +131,7 @@ namespace lemon {
                         ar(ival);
                         val = *TEnumTraits::template cast<TEnum>(ival);
                     } else {
-                        static_assert(false, "TArchive must be either output or input");
+                        // static_assert(false, "TArchive must be either output or input");
                     }
                 }
             }

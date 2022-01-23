@@ -8,6 +8,8 @@ std::optional<DecodingError>
 lemon::res::texture::decodePNG(const UnalignedMemory& inBytes, InputColorChannels channels, uint8_t depth,
                                ImageData& outData)
 {
+    OPTICK_EVENT();
+
     LodePNGColorType colorType;
     uint8_t stride;
 

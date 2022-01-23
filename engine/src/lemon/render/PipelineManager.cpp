@@ -31,6 +31,13 @@ PipelineManager::init(wgpu::Device& device)
     initPostProcessBindGroup();
 }
 
+void
+PipelineManager::releaseResources()
+{
+    surfacePipelineCache.clear();
+    dynamicPipelineCache.clear();
+}
+
 KeepAlive<SurfacePipeline>
 PipelineManager::getSurfacePipeline(const SurfaceMaterialSharedResources& matShared,
                                     const MeshVertexFormat& vertexFormat)
@@ -131,7 +138,7 @@ PipelineManager::initPostProcessBindGroup()
 }
 
 wgpu::BindGroup
-PipelineManager::createPostProcessBindGroup(const wgpu::TextureView& colorTargetView)
+PipelineManager::createPostProcessBindGroup(const wgpu::TextureView& colorTargetView) const
 {
     auto* pRenderMan = RenderManager::get();
     auto& cbuffer = pRenderMan->getConstantBuffer().getBuffer();
@@ -153,11 +160,4 @@ PipelineManager::createPostProcessBindGroup(const wgpu::TextureView& colorTarget
     descriptor.entries = entries.data();
 
     return pDevice->CreateBindGroup(&descriptor);
-}
-
-KeepAlive<PostProcessPipeline>
-PipelineManager::getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared)
-{
-    auto id = matShared.kaMainProgram->getProgramHash();
-    return postProcessPipelineCache.get(id, [&]() { return new PostProcessPipeline(matShared); });
 }

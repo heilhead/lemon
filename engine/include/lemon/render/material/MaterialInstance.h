@@ -12,13 +12,22 @@ namespace lemon::render {
     class ShaderProgram;
     class SurfacePipeline;
     class PostProcessPipeline;
+    class DynamicPipeline;
 
     struct MaterialResourceDescriptor {
         const res::MaterialResource* pResource;
         MeshComponents meshComponents;
     };
 
+    struct DynamicMaterialResourceDescriptor {
+        folly::small_vector<std::pair<StringID, wgpu::Sampler>, 4> samplers;
+        folly::small_vector<std::pair<StringID, wgpu::TextureView>, 8> textures;
+        folly::small_vector<std::pair<StringID, wgpu::Buffer>, 8> buffers;
+    };
+
     struct MaterialSharedResources : NonMovable {
+        uint64_t id;
+
         // Bind group is the only resource directly owned by `MaterialSharedResources`.
         // The rest are stored elsewhere and reused between materials.
         wgpu::BindGroup bindGroup;
@@ -28,12 +37,21 @@ namespace lemon::render {
 
         // Keep-alive shared references to hold the required resources.
         folly::small_vector<KeepAlive<wgpu::Sampler>, 4> kaSamplers;
+
+        // TODO: Should this store keep-alives to texture views maybe?
         folly::small_vector<KeepAlive<wgpu::Texture>, 8> kaTextures;
+
+        // Storage buffers.
+        folly::small_vector<wgpu::Buffer, 8> buffers;
+
         KeepAlive<MaterialLayout> kaLayout;
+
+        MaterialSharedResources(uint64_t id) : id{id} {}
 
     protected:
         void
-        init(const res::MaterialResource& matRes, const ShaderProgram& program);
+        initBindGroup(const res::MaterialResource& matRes, const ShaderProgram& program,
+                      const DynamicMaterialResourceDescriptor* pDynamicBindings = nullptr);
     };
 
     struct SurfaceMaterialSharedResources : MaterialSharedResources {
@@ -41,7 +59,7 @@ namespace lemon::render {
         KeepAlive<ShaderProgram> kaDepthProgram;
         KeepAlive<SurfacePipeline> kaPipeline;
 
-        SurfaceMaterialSharedResources(const res::MaterialResource& matRes,
+        SurfaceMaterialSharedResources(uint64_t id, const res::MaterialResource& matRes,
                                        const MeshVertexFormat& vertexFormat);
 
         inline const KeepAlive<SurfacePipeline>&
@@ -51,13 +69,29 @@ namespace lemon::render {
         }
     };
 
-    struct PostProcessMaterialSharedResources : MaterialSharedResources {
+    // struct PostProcessMaterialSharedResources : MaterialSharedResources {
+    //     KeepAlive<ShaderProgram> kaMainProgram;
+    //     KeepAlive<PostProcessPipeline> kaPipeline;
+
+    //    PostProcessMaterialSharedResources(uint64_t id, const res::MaterialResource& matRes,
+    //                                       const DynamicMaterialResourceDescriptor& dynamicBindings);
+
+    //    inline const KeepAlive<PostProcessPipeline>&
+    //    getRenderPipeline() const
+    //    {
+    //        return kaPipeline;
+    //    }
+    //};
+
+    struct DynamicMaterialSharedResources : MaterialSharedResources {
         KeepAlive<ShaderProgram> kaMainProgram;
-        KeepAlive<PostProcessPipeline> kaPipeline;
+        KeepAlive<DynamicPipeline> kaPipeline;
 
-        PostProcessMaterialSharedResources(const res::MaterialResource& matRes);
+        DynamicMaterialSharedResources(uint64_t id, const res::MaterialResource& matRes,
+                                       const DynamicMaterialResourceDescriptor& dynamicBindings,
+                                       const MaterialConfiguration* pAdditionalConfig = nullptr);
 
-        inline const KeepAlive<PostProcessPipeline>&
+        inline const KeepAlive<DynamicPipeline>&
         getRenderPipeline() const
         {
             return kaPipeline;
@@ -97,8 +131,7 @@ namespace lemon::render {
             return *kaSharedResources->getRenderPipeline();
         }
 
-        // TODO: Figure out a better interface.
-        template<std::semiregular TData>
+        template<MaterialUniformDataType TData>
         inline void
         setParameter(StringID id, const TData& val)
         {
@@ -126,10 +159,17 @@ namespace lemon::render {
             LEMON_ASSERT(isValid());
             return kaSharedResources->bindGroup;
         }
+
+        inline const KeepAlive<TSharedResources>&
+        getSharedResource() const
+        {
+            return kaSharedResources;
+        }
     };
 
     using SurfaceMaterialInstance = MaterialInstance<SurfaceMaterialSharedResources>;
-    using PostProcessMaterialInstance = MaterialInstance<PostProcessMaterialSharedResources>;
+    // using PostProcessMaterialInstance = MaterialInstance<PostProcessMaterialSharedResources>;
+    using DynamicMaterialInstance = MaterialInstance<DynamicMaterialSharedResources>;
 } // namespace lemon::render
 
 template<>
@@ -138,4 +178,12 @@ struct folly::hasher<lemon::render::MaterialResourceDescriptor> {
 
     size_t
     operator()(const lemon::render::MaterialResourceDescriptor& data) const;
+};
+
+template<>
+struct folly::hasher<lemon::render::DynamicMaterialResourceDescriptor> {
+    using folly_is_avalanching = std::true_type;
+
+    size_t
+    operator()(const lemon::render::DynamicMaterialResourceDescriptor& data) const;
 };

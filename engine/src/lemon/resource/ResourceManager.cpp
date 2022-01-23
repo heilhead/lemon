@@ -131,6 +131,8 @@ FactoryResultType
 lemon::res::res_detail::coResourceFactory(ResourceClassID classID, const std::string& refLocation,
                                           ResourceLifetime lifetime)
 {
+    OPTICK_EVENT();
+
     auto factory = ResourceManager::get()->getFactoryFn(classID);
     if (!factory) {
         co_return tl::make_unexpected(ResourceLoadingError::FactoryMissing);

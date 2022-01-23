@@ -7,7 +7,7 @@ using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::device;
 
-PostProcessPipeline::PostProcessPipeline(const PostProcessMaterialSharedResources& matShared)
+PostProcessPipeline::PostProcessPipeline(const DynamicMaterialSharedResources& matShared)
 {
     using namespace magic_enum::bitwise_operators;
 

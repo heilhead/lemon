@@ -7,6 +7,8 @@
 #include "render/passes/DebugUIRenderPass.h"
 #include "render/passes/PostProcessRenderPass.h"
 
+#include <optick.h>
+
 using namespace lemon;
 using namespace lemon::game;
 using namespace lemon::device;
@@ -293,7 +295,9 @@ private:
     std::unique_ptr<GameStateManager> pGameStateMan;
 
     PostProcessRenderPass* pPostProcessPass;
-    float postProcessExposure = 1.0;
+
+    float postProcessExposure = 1.5;
+    float postProcessBloomStrength = 1.3;
 
 public:
     void
@@ -317,6 +321,9 @@ public:
         auto* pCameraActor = hCameraActor.get();
         pCameraActor->activateCamera();
         pCameraActor->setSensitivity(3.f);
+
+        auto* pCameraRoot = pCameraActor->getRoot();
+        pCameraRoot->setLocalPosition(kVectorForward * -1500.f + kVectorUp * 500.f);
 
         static constexpr float spreadFactor = 100.f;
 
@@ -365,18 +372,33 @@ public:
     void
     renderUI()
     {
+        OPTICK_EVENT();
+
+        auto& bloomParams = pPostProcessPass->getBloomParams();
+
         ImGui::Begin("Post Processing");
-        ImGui::SliderFloat("exposure", &postProcessExposure, 0.0f, 10.0f);
+        ImGui::SliderFloat("Exposure", &postProcessExposure, 0.0f, 10.0f);
+        ImGui::SliderFloat("Bloom Strength", &postProcessBloomStrength, 0.0f, 5.0f);
+        ImGui::SliderFloat("Bloom Threshold", &bloomParams.threshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Bloom Scatter (Inverse)", &bloomParams.scatter, 0.0f, 1.0f);
         ImGui::End();
 
-        constexpr auto exposureParam = lemon::sid("materialParams.toneMappingExposure");
+        {
+            constexpr auto id = lemon::sid("materialParams.toneMappingExposure");
+            pPostProcessPass->setMaterialParameter(id, postProcessExposure);
+        }
 
-        pPostProcessPass->setMaterialParameter(exposureParam, 1.f / postProcessExposure);
+        {
+            constexpr auto id = lemon::sid("materialParams.bloomStrength");
+            pPostProcessPass->setMaterialParameter(id, postProcessBloomStrength);
+        }
     }
 
     void
     render()
     {
+        OPTICK_EVENT();
+
         renderUI();
 
         Scheduler::get()->block(CPUTask(RenderManager::get()->render()));
@@ -393,16 +415,16 @@ testMeshRendering()
     engine.init(R"(C:\git\lemon\resources)");
 
     {
-        auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
-        auto postProcessMaterial =
-            MaterialManager::get()->getPostProcessMaterialInstance(*pPostProcessMaterial);
-
         auto* pRenderMan = RenderManager::get();
-        pRenderMan->addRenderPass(std::make_unique<MainRenderPass>());
-        auto* pPostProcessPass = pRenderMan->addRenderPass<PostProcessRenderPass>(
-            std::make_unique<PostProcessRenderPass>(std::move(postProcessMaterial)));
-        pRenderMan->addRenderPass(std::make_unique<DebugUIRenderPass>());
+        auto* pMaterialMan = MaterialManager::get();
 
+        auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
+        auto* pBloomMaterial = minirender::loadMaterial("internal\\materials\\M_Bloom");
+
+        pRenderMan->addRenderPass<MainRenderPass>();
+        auto* pPostProcessPass =
+            pRenderMan->addRenderPass<PostProcessRenderPass>(pPostProcessMaterial, pBloomMaterial);
+        pRenderMan->addRenderPass<DebugUIRenderPass>();
         auto& ui = pRenderMan->getDebugUI();
 
         MiniRender render;
@@ -412,6 +434,8 @@ testMeshRendering()
         pGameStateMan->init(std::make_unique<DemoRootState>());
 
         engine.loop([&](float dt) {
+            OPTICK_FRAME("MainThread");
+
             if (LoopControl::Abort == pGameStateMan->onInput()) {
                 return LoopControl::Abort;
             }

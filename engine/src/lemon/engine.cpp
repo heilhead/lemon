@@ -49,7 +49,7 @@ Engine::shutdown()
     // Let the resources release any keep-alive handles before the stores are destroyed.
     resMan->getStore().clear();
 
-    RenderManager::get()->getDebugUI().disable();
+    RenderManager::get()->releaseResources();
 
     glfwTerminate();
 }

@@ -43,6 +43,8 @@ GameWorld::getStoreInternal()
 void
 GameWorld::updateInternal(double time)
 {
+    OPTICK_EVENT();
+
     lastUpdateTime = time;
     tickingActors.tick(time);
     tickingComponents.tick(time);
