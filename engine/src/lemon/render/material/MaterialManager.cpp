@@ -13,6 +13,17 @@ using namespace magic_enum::bitwise_operators;
 
 MaterialManager::MaterialManager() : pDevice{nullptr} {}
 
+void
+MaterialManager::releaseResources()
+{
+    shaderProgramCache.clear();
+    materialLayoutCache.clear();
+    samplerCache.clear();
+    textureCache.clear();
+    surfaceSharedResourcesCache.clear();
+    dynamicSharedResourcesCache.clear();
+}
+
 uint64_t
 computeMaterialHash(const MaterialBlueprint& blueprint, const render::MaterialConfiguration& config)
 {

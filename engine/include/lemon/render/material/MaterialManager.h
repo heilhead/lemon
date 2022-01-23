@@ -25,11 +25,13 @@ namespace lemon::render {
         AtomicCache<wgpu::Sampler> samplerCache{64};
         AtomicCache<wgpu::Texture> textureCache{512};
         AtomicCache<SurfaceMaterialSharedResources> surfaceSharedResourcesCache{512};
-        // AtomicCache<PostProcessMaterialSharedResources> postProcessSharedResourcesCache{16};
         AtomicCache<DynamicMaterialSharedResources> dynamicSharedResourcesCache{64};
 
     public:
         MaterialManager();
+
+        void
+        releaseResources();
 
         inline ShaderCompiler&
         getShaderCompiler()

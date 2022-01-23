@@ -83,8 +83,13 @@ namespace lemon::render {
 
         RenderManager();
 
+        ~RenderManager();
+
         void
         init(wgpu::Device& device);
+
+        void
+        releaseResources();
 
         inline MaterialManager&
         getMaterialManager()

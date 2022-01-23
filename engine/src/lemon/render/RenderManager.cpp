@@ -27,6 +27,8 @@ RenderManager::RenderManager()
 {
 }
 
+RenderManager::~RenderManager() {}
+
 void
 RenderManager::init(wgpu::Device& device)
 {
@@ -43,11 +45,20 @@ RenderManager::init(wgpu::Device& device)
     for (auto& res : resources) {
         res.depthStencilView = createDefaultDepthStencilView(device, wndWidth, wndHeight);
         res.colorTargetView = createColorTargetView(device, wndWidth, wndHeight);
-        // res.postProcessBindGroup = pipelineManager.createPostProcessBindGroup(res.colorTargetView);
     }
 
     context.pCurrentFrame = &resources[0];
     context.pPreviousFrame = &resources[1];
+}
+
+void
+RenderManager::releaseResources()
+{
+    debugUI.disable();
+    passes.clear();
+    frameCommandBuffers.clear();
+    materialManager.releaseResources();
+    pipelineManager.releaseResources();
 }
 
 RenderPassResources&
@@ -78,13 +89,15 @@ RenderManager::render()
     frameCommandBuffers.clear();
 
     for (auto& pass : passes) {
-        auto passResult = co_await pass->execute(context, frameCommandBuffers);
-        if (passResult) {
+        auto passError = co_await pass->execute(context, frameCommandBuffers);
+        if (passError) {
             co_return FrameRenderError::Unknown;
         }
     }
 
-    queue.Submit(frameCommandBuffers.size(), frameCommandBuffers.data());
+    if (frameCommandBuffers.size() > 0) {
+        queue.Submit(frameCommandBuffers.size(), frameCommandBuffers.data());
+    }
 
     swapChain.Present();
 

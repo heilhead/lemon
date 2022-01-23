@@ -22,52 +22,52 @@ namespace lemon::render {
         }
     };
 
-    struct BloomUniformParams {
-        float threshold;
-        float scatter;
-        float thresholdKnee;
-        float clampMax;
-        glm::f32vec4 srcTexSize;
-        glm::f32vec4 lowTexSize;
-    };
-
-    struct BloomMipPassData {
-        float width;
-        float height;
-        wgpu::TextureView txDownsample;
-        wgpu::TextureView txUpsample;
-
-        inline glm::f32vec4
-        getTexSize() const
-        {
-            return glm::f32vec4(1.f / width, 1.f / height, width, height);
-        }
-    };
-
-    struct BloomStepData {
-        wgpu::RenderPipeline pipeline;
-        wgpu::BindGroup bindGroup;
-        wgpu::TextureView target;
-        glm::f32vec4 srcTexSize;
-        glm::f32vec4 lowTexSize;
-        MaterialUniformData uniformData;
-    };
-
     class PostProcessRenderPass : public RenderPass {
         static constexpr uint8_t kBloomMipLevels = 7;
 
+    public:
+        struct BloomParams {
+            float threshold;
+            float scatter;
+            float thresholdKnee;
+            float clampMax;
+            glm::f32vec4 srcTexSize;
+            glm::f32vec4 lowTexSize;
+        };
+
+    private:
+        struct BloomPassData {
+            float width;
+            float height;
+            wgpu::TextureView txDownsample;
+            wgpu::TextureView txUpsample;
+
+            inline glm::f32vec4
+            getTexSize() const
+            {
+                return glm::f32vec4(1.f / width, 1.f / height, width, height);
+            }
+        };
+
+        struct BloomStepData {
+            wgpu::RenderPipeline pipeline;
+            wgpu::BindGroup bindGroup;
+            wgpu::TextureView target;
+            glm::f32vec4 srcTexSize;
+            glm::f32vec4 lowTexSize;
+            MaterialUniformData uniformData;
+        };
+
+        BloomParams bloomParams;
+
+        MeshGPUBuffer quadBuffer;
         wgpu::RenderPassDescriptor passDesc;
         std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
-        MeshGPUBuffer quadBuffer;
         DynamicMaterialInstance material;
-
-        uint32_t bloomTargetWidth;
-        uint32_t bloomTargetHeight;
-
-        BloomUniformParams bloomParams;
         RenderFrameResources<wgpu::BindGroup> defaultBindGroup;
+
         MaterialUniformData bloomUniformData;
-        BloomMipPassData bloomMips[kBloomMipLevels];
+        BloomPassData bloomMips[kBloomMipLevels];
         wgpu::TextureView bloomPrefilterTarget;
         RenderFrameResources<BloomStepData> bloomPrefilterStep;
         RenderFrameResources<DynamicMaterialInstance> bloomMaterialResources;
@@ -92,10 +92,14 @@ namespace lemon::render {
         VoidTask<RenderPassError>
         execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
 
-        BloomUniformParams&
+        BloomParams&
         getBloomParams()
         {
             return bloomParams;
         }
+
+    private:
+        void
+        setBloomStepUniformData(BloomStepData& step);
     };
 } // namespace lemon::render

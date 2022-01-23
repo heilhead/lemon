@@ -34,7 +34,6 @@ namespace lemon::render {
         MaterialConfiguration postProcessConfig;
 
         AtomicCache<SurfacePipeline> surfacePipelineCache{512};
-        AtomicCache<PostProcessPipeline> postProcessPipelineCache{512};
         AtomicCache<DynamicPipeline> dynamicPipelineCache{512};
 
     public:
@@ -42,6 +41,9 @@ namespace lemon::render {
 
         void
         init(wgpu::Device& device);
+
+        void
+        releaseResources();
 
         inline const MaterialConfiguration&
         getSurfaceColorConfig()
@@ -97,9 +99,6 @@ namespace lemon::render {
 
         wgpu::BindGroup
         createPostProcessBindGroup(const wgpu::TextureView& colorTargetView) const;
-
-        // KeepAlive<PostProcessPipeline>
-        // getPostProcessPipeline(const PostProcessMaterialSharedResources& matShared);
 
         template<DynamicPipelineBase TDynamicPipeline>
         KeepAlive<DynamicPipeline>

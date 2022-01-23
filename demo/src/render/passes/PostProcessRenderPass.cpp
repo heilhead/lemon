@@ -274,6 +274,7 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
     });
 
     {
+        // Set up the post process material.
         DynamicMaterialResourceDescriptor desc;
         desc.textures.emplace_back(std::make_pair(lemon::sid("tBloom"), bloomMips[0].txUpsample));
         material = pMaterialMan->getDynamicMaterialInstance<PostProcessPipeline>(*pPostProcessMaterial, desc);
@@ -296,11 +297,7 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
     bloomParams.clampMax = 25000.f;
 }
 
-lemon::render::PostProcessRenderPass::~PostProcessRenderPass()
-{
-    bloomPrefilterTarget = nullptr;
-    bloomSteps.clear();
-}
+lemon::render::PostProcessRenderPass::~PostProcessRenderPass() {}
 
 void
 PostProcessRenderPass::prepare(const RenderPassContext& context)
@@ -308,39 +305,21 @@ PostProcessRenderPass::prepare(const RenderPassContext& context)
     auto* pRenderMan = RenderManager::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
+    // Post-process & bloom shaders shared bind group (0) data.
     auto& sharedData = pRenderMan->getPipelineManager().getPostProcessUniformData();
     sharedData.merge(cbuffer);
 
-    {
-        auto& materialData = material.getUniformData();
-        materialData.merge(cbuffer);
-    }
+    // Post-process shader material bind group (1) data.
+    auto& materialData = material.getUniformData();
+    materialData.merge(cbuffer);
 
     bloomParams.thresholdKnee = bloomParams.threshold / 2.f;
 
-    auto setBloomParams = [&](MaterialUniformData& data, const glm::f32vec4& srcTexSize,
-                              const glm::f32vec4& lowTexSize) {
-        bloomParams.srcTexSize = srcTexSize;
-        bloomParams.lowTexSize = lowTexSize;
-        data.setData(lemon::sid("bloomParams"), bloomParams);
-    };
-
-    // Default material uniform.
-    auto& materialData = bloomMaterialResources.getResources(0).getUniformData();
-    setBloomParams(materialData, glm::f32vec4(), glm::f32vec4());
-    materialData.merge(cbuffer);
-
-    {
-        // Prefilter uniform.
-        auto& step = bloomPrefilterStep.getResources(context);
-        setBloomParams(step.uniformData, step.srcTexSize, step.lowTexSize);
-        step.uniformData.merge(cbuffer);
-    }
+    // Bloom shader material bind group (1) data. Unique to each bloom step.
+    setBloomStepUniformData(bloomPrefilterStep.getResources(context));
 
     for (auto& step : bloomSteps) {
-        // Rest of the steps uniform data.
-        setBloomParams(step.uniformData, step.srcTexSize, step.lowTexSize);
-        step.uniformData.merge(cbuffer);
+        setBloomStepUniformData(step);
     }
 }
 
@@ -420,4 +399,17 @@ PostProcessRenderPass::execute(const RenderPassContext& context,
     commandBuffers.emplace_back(encoder.Finish());
 
     co_return {};
+}
+
+void
+PostProcessRenderPass::setBloomStepUniformData(BloomStepData& step)
+{
+    bloomParams.srcTexSize = step.srcTexSize;
+    bloomParams.lowTexSize = step.lowTexSize;
+
+    constexpr auto id = lemon::sid("bloomParams");
+
+    auto& uniform = step.uniformData;
+    uniform.setData(id, bloomParams);
+    uniform.merge(RenderManager::get()->getConstantBuffer());
 }
