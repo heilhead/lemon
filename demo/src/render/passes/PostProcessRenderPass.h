@@ -24,12 +24,11 @@ namespace lemon::render {
 
     struct BloomUniformParams {
         float threshold;
-        float strength;
-        glm::f32vec2 texelSize;
-        glm::f32vec4 lowTexSize; // xy texel size, zw width height
         float scatter;
-        float clampMax;
         float thresholdKnee;
+        float clampMax;
+        glm::f32vec4 srcTexSize;
+        glm::f32vec4 lowTexSize;
     };
 
     struct BloomMipPassData {
@@ -37,20 +36,25 @@ namespace lemon::render {
         float height;
         wgpu::TextureView txDownsample;
         wgpu::TextureView txUpsample;
+
+        inline glm::f32vec4
+        getTexSize() const
+        {
+            return glm::f32vec4(1.f / width, 1.f / height, width, height);
+        }
     };
 
     struct BloomStepData {
         wgpu::RenderPipeline pipeline;
         wgpu::BindGroup bindGroup;
         wgpu::TextureView target;
-        glm::f32vec2 texelSize;
-        glm::f32vec4 lowTexelSize;
+        glm::f32vec4 srcTexSize;
+        glm::f32vec4 lowTexSize;
         MaterialUniformData uniformData;
     };
 
     class PostProcessRenderPass : public RenderPass {
-        static constexpr uint8_t kBloomMipLevels = 6;
-        static constexpr uint8_t kBloomPasses = kBloomMipLevels - 1;
+        static constexpr uint8_t kBloomMipLevels = 7;
 
         wgpu::RenderPassDescriptor passDesc;
         std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
@@ -60,6 +64,7 @@ namespace lemon::render {
         uint32_t bloomTargetWidth;
         uint32_t bloomTargetHeight;
 
+        BloomUniformParams bloomParams;
         RenderFrameResources<wgpu::BindGroup> defaultBindGroup;
         MaterialUniformData bloomUniformData;
         BloomMipPassData bloomMips[kBloomMipLevels];
@@ -86,5 +91,11 @@ namespace lemon::render {
 
         VoidTask<RenderPassError>
         execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
+
+        BloomUniformParams&
+        getBloomParams()
+        {
+            return bloomParams;
+        }
     };
 } // namespace lemon::render

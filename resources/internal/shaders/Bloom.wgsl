@@ -29,12 +29,11 @@ fn VSMain(vertexData: BloomVertexInput) -> BloomFragmentInput {
 [[block]]
 struct BloomParams {
     threshold: f32;
-    strength: f32;
-    texelSize: vec2<f32>;
-    lowTexSize: vec4<f32>; // xy texel size, zw width height
     scatter: f32;
-    clampMax: f32;
     thresholdKnee: f32;
+    clampMax: f32;
+    srcTexSize: vec4<f32>;
+    lowTexSize: vec4<f32>;
 };
 
 [[group(1), binding(0)]]
@@ -52,7 +51,7 @@ var tSrcLow: texture_2d<f32>;
 [[stage(fragment)]]
 fn FSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize;
+  let texelSize = bloomParams.srcTexSize.xy;
 
   let A = textureSample(tSrc, sLinearClamp, uv + texelSize * vec2<f32>(-1.0, -1.0));
   let B = textureSample(tSrc, sLinearClamp, uv + texelSize * vec2<f32>(0.0, -1.0));
@@ -100,7 +99,7 @@ fn FSPrefilterMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 [[stage(fragment)]]
 fn FSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.x * 2.0;
+  let texelSize = bloomParams.srcTexSize.x * 2.0;
 
   // 9-tap gaussian blur on the downsampled source
   let c0 = textureSample(tSrc, sLinearClamp, uv - vec2<f32>(texelSize * 4.0, 0.0)).rgb;
@@ -123,7 +122,7 @@ fn FSBlurHMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 [[stage(fragment)]]
 fn FSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.y;
+  let texelSize = bloomParams.srcTexSize.y;
 
   // Optimized bilinear 5-tap gaussian on the same-sized source (9-tap equivalent)
   let c0 = textureSample(tSrc, sLinearClamp, uv - vec2<f32>(0.0, texelSize * 3.23076923)).rgb;
@@ -142,7 +141,7 @@ fn FSBlurVMain(input: BloomFragmentInput) -> BloomFragmentOutput {
 [[stage(fragment)]]
 fn FSUpsampleMain(input: BloomFragmentInput) -> BloomFragmentOutput {
   let uv = input.uv0;
-  let texelSize = bloomParams.texelSize.y;
+  let texelSize = bloomParams.srcTexSize.y;
 
   let highMip = textureSample(tSrc, sLinearClamp, uv).rgb;
   let lowMip = SampleTexture2DBicubic(tSrcLow, sLinearClamp, uv, bloomParams.lowTexSize, vec2<f32>(1.0)).rgb;

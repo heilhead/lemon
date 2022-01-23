@@ -27,6 +27,7 @@ namespace lemon::render {
     static constexpr uint8_t kPostProcessSharedBindGroupIndex = 0;
     static constexpr uint8_t kMaterialBindGroupIndex = 1;
     static constexpr uint32_t kMinUniformBufferOffsetAlignment = 256;
+    static constexpr uint32_t kUniformBufferDataAlignment = 16;
     static constexpr uint32_t kConstantBufferSize = 4096 * 1024;
 
     static constexpr gsl::czstring<> kShaderSurfaceSharedGroupBlueprint =

@@ -202,8 +202,8 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
                 device, bgLayout,
                 {sharedUniform, sharedSampler, {2, res.colorTargetView}, {3, res.colorTargetView}});
             step.uniformData.setLayout(kaLayout);
-            step.texelSize = glm::f32vec2(1.f / prefilterTargetWidth, 1.f / prefilterTargetHeight);
-            step.lowTexelSize = glm::f32vec4(0.f);
+            step.srcTexSize = bloomMips[0].getTexSize();
+            step.lowTexSize = glm::f32vec4(0.f);
 
             return step;
         });
@@ -221,8 +221,8 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
                 step.bindGroup = makeBindGroup(device, bgLayout,
                                                {sharedUniform, sharedSampler, {2, hBlurSrc}, {3, hBlurSrc}});
                 step.uniformData.setLayout(kaLayout);
-                step.texelSize = glm::f32vec2(1.f / mip.width, 1.f / mip.height);
-                step.lowTexelSize = glm::f32vec4(0.f);
+                step.srcTexSize = mip.getTexSize();
+                step.lowTexSize = glm::f32vec4(0.f);
 
                 bloomSteps.emplace_back(std::move(step));
             }
@@ -236,8 +236,8 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
                     makeBindGroup(device, bgLayout,
                                   {sharedUniform, sharedSampler, {2, mip.txUpsample}, {3, mip.txUpsample}});
                 step.uniformData.setLayout(kaLayout);
-                step.texelSize = glm::f32vec2(1.f / mip.width, 1.f / mip.height);
-                step.lowTexelSize = glm::f32vec4(0.f);
+                step.srcTexSize = mip.getTexSize();
+                step.lowTexSize = glm::f32vec4(0.f);
 
                 bloomSteps.emplace_back(std::move(step));
             }
@@ -258,9 +258,8 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
                 makeBindGroup(device, bgLayout,
                               {sharedUniform, sharedSampler, {2, prevUpsampleTarget}, {3, mip.txDownsample}});
             step.uniformData.setLayout(kaLayout);
-            step.texelSize = glm::f32vec2(1.f / mip.width, 1.f / mip.height);
-            step.lowTexelSize =
-                glm::f32vec4(1.f / prevMip.width, 1.f / prevMip.height, prevMip.width, prevMip.height);
+            step.srcTexSize = mip.getTexSize();
+            step.lowTexSize = prevMip.getTexSize();
 
             bloomSteps.emplace_back(std::move(step));
 
@@ -280,10 +279,7 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
         material = pMaterialMan->getDynamicMaterialInstance<PostProcessPipeline>(*pPostProcessMaterial, desc);
 
         auto& materialData = material.getUniformData();
-        materialData.setData(lemon::sid("materialParams.bloomStrength"), 1.f);
-        materialData.setData(lemon::sid("materialParams.bloomTexSize"),
-                             glm::f32vec4(1.f / bloomMips[0].width, 1.f / bloomMips[0].height,
-                                          bloomMips[0].width, bloomMips[0].height));
+        materialData.setData(lemon::sid("materialParams.bloomTexSize"), bloomMips[0].getTexSize());
     }
 
     passDesc.colorAttachmentCount = colorAttachments.size();
@@ -293,6 +289,11 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
     // Main color attachment.
     colorAttachments[0].loadOp = wgpu::LoadOp::Clear;
     colorAttachments[0].storeOp = wgpu::StoreOp::Store;
+
+    // Bloom defaults.
+    bloomParams.threshold = 0.42f;
+    bloomParams.scatter = 0.6305f;
+    bloomParams.clampMax = 25000.f;
 }
 
 lemon::render::PostProcessRenderPass::~PostProcessRenderPass()
@@ -315,39 +316,30 @@ PostProcessRenderPass::prepare(const RenderPassContext& context)
         materialData.merge(cbuffer);
     }
 
-    BloomUniformParams bloomParams;
-    bloomParams.threshold = 0.42f;
-    bloomParams.strength = 0.14f;
-    bloomParams.scatter = 0.6305f;
-    bloomParams.clampMax = 25000.f;
     bloomParams.thresholdKnee = bloomParams.threshold / 2.f;
 
-    auto setBloomParams = [&](MaterialUniformData& data, const glm::f32vec2& texelSize,
-                              const glm::f32vec4& lowTexelSize) {
-        data.setData(lemon::sid("bloomParams.threshold"), bloomParams.threshold);
-        data.setData(lemon::sid("bloomParams.strength"), bloomParams.strength);
-        data.setData(lemon::sid("bloomParams.texelSize"), texelSize);
-        data.setData(lemon::sid("bloomParams.lowTexSize"), lowTexelSize);
-        data.setData(lemon::sid("bloomParams.scatter"), bloomParams.scatter);
-        data.setData(lemon::sid("bloomParams.clampMax"), bloomParams.clampMax);
-        data.setData(lemon::sid("bloomParams.thresholdKnee"), bloomParams.thresholdKnee);
+    auto setBloomParams = [&](MaterialUniformData& data, const glm::f32vec4& srcTexSize,
+                              const glm::f32vec4& lowTexSize) {
+        bloomParams.srcTexSize = srcTexSize;
+        bloomParams.lowTexSize = lowTexSize;
+        data.setData(lemon::sid("bloomParams"), bloomParams);
     };
 
     // Default material uniform.
     auto& materialData = bloomMaterialResources.getResources(0).getUniformData();
-    setBloomParams(materialData, glm::f32vec2(), glm::f32vec4());
+    setBloomParams(materialData, glm::f32vec4(), glm::f32vec4());
     materialData.merge(cbuffer);
 
     {
         // Prefilter uniform.
         auto& step = bloomPrefilterStep.getResources(context);
-        setBloomParams(step.uniformData, step.texelSize, step.lowTexelSize);
+        setBloomParams(step.uniformData, step.srcTexSize, step.lowTexSize);
         step.uniformData.merge(cbuffer);
     }
 
     for (auto& step : bloomSteps) {
         // Rest of the steps uniform data.
-        setBloomParams(step.uniformData, step.texelSize, step.lowTexelSize);
+        setBloomParams(step.uniformData, step.srcTexSize, step.lowTexSize);
         step.uniformData.merge(cbuffer);
     }
 }
@@ -364,9 +356,9 @@ PostProcessRenderPass::execute(const RenderPassContext& context,
     const auto& sharedData = pPipelineMan->getPostProcessUniformData();
     const auto& sharedBindGroup = defaultBindGroup.getResources(context);
 
-    {
-        wgpu::CommandEncoder encoder = pRenderMan->getDevice().CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = pRenderMan->getDevice().CreateCommandEncoder();
 
+    {
         auto executeBloomStep = [&](const BloomStepData& step) {
             wgpu::RenderPassColorAttachment target;
             target.view = step.target;
@@ -400,13 +392,9 @@ PostProcessRenderPass::execute(const RenderPassContext& context,
         for (const auto& step : bloomSteps) {
             executeBloomStep(step);
         }
-
-        commandBuffers.emplace_back(encoder.Finish());
     }
 
     {
-        wgpu::CommandEncoder encoder = pRenderMan->getDevice().CreateCommandEncoder();
-
         auto& materialData = material.getUniformData();
 
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
@@ -427,9 +415,9 @@ PostProcessRenderPass::execute(const RenderPassContext& context,
         pass.DrawIndexed(quadBuffer.indexCount);
 
         pass.EndPass();
-
-        commandBuffers.emplace_back(encoder.Finish());
     }
+
+    commandBuffers.emplace_back(encoder.Finish());
 
     co_return {};
 }

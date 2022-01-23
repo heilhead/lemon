@@ -293,7 +293,9 @@ private:
     std::unique_ptr<GameStateManager> pGameStateMan;
 
     PostProcessRenderPass* pPostProcessPass;
+
     float postProcessExposure = 1.0;
+    float postProcessBloomStrength = 1.0;
 
 public:
     void
@@ -365,13 +367,24 @@ public:
     void
     renderUI()
     {
+        auto& bloomParams = pPostProcessPass->getBloomParams();
+
         ImGui::Begin("Post Processing");
-        ImGui::SliderFloat("exposure", &postProcessExposure, 0.0f, 10.0f);
+        ImGui::SliderFloat("Exposure", &postProcessExposure, 0.0f, 10.0f);
+        ImGui::SliderFloat("Bloom Strength", &postProcessBloomStrength, 0.0f, 5.0f);
+        ImGui::SliderFloat("Bloom Threshold", &bloomParams.threshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Bloom Scatter (Inverse)", &bloomParams.scatter, 0.0f, 1.0f);
         ImGui::End();
 
-        constexpr auto exposureParam = lemon::sid("materialParams.toneMappingExposure");
+        {
+            constexpr auto id = lemon::sid("materialParams.toneMappingExposure");
+            pPostProcessPass->setMaterialParameter(id, postProcessExposure);
+        }
 
-        pPostProcessPass->setMaterialParameter(exposureParam, postProcessExposure);
+        {
+            constexpr auto id = lemon::sid("materialParams.bloomStrength");
+            pPostProcessPass->setMaterialParameter(id, postProcessBloomStrength);
+        }
     }
 
     void
