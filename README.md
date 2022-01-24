@@ -22,7 +22,7 @@ A very early in development game engine being created mostly for educational pur
 
 # Progress Update
 
-- Post Processing & Bloom:
+- Post Processing & Bloom (video):
   [![Post Processing & Bloom](https://img.youtube.com/vi/_LbhlrNF-N4/maxresdefault.jpg)](https://youtu.be/_LbhlrNF-N4)
 
 # License
