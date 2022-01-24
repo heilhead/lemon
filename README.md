@@ -20,6 +20,11 @@ A very early in development game engine being created mostly for educational pur
 - `test/`: Some unit tests for various parts of the engine and support libraries.
 - `tools/`: Engine CLI tools, such as `fbx2lem` mesh converter.
 
+# Progress Update
+
+- Post Processing & Bloom:
+  [![Post Processing & Bloom](https://img.youtube.com/vi/_LbhlrNF-N4/maxresdefault.jpg)](https://youtu.be/_LbhlrNF-N4)
+
 # License
 
 MIT
