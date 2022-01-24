@@ -10,6 +10,8 @@ Input::Input(WindowHandle inHandle) : keyboardListener{inHandle}, mouseListener{
 void
 Input::update()
 {
+    OPTICK_EVENT()
+
     glfwPollEvents();
     mouseListener.update();
 }

@@ -61,6 +61,8 @@ GPUDevice::GPUDevice(Platform* platform, Window* window)
     desc.forceEnabledToggles.push_back("disable_symbol_renaming");
     desc.forceEnabledToggles.push_back("emit_hlsl_debug_symbols");
     desc.forceEnabledToggles.push_back("turn_off_vsync");
+    // desc.forceEnabledToggles.push_back("skip_validation");
+    // desc.forceEnabledToggles.push_back("use_user_defined_labels_in_backend");
     // desc.forceEnabledToggles.push_back("dump_shaders");
 
     auto backendDevice = backendAdapter.CreateDevice(&desc);

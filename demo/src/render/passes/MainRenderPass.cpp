@@ -44,6 +44,7 @@ MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::Comm
     auto& surfaceSharedData = pPipelineMan->getSurfaceUniformData();
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline currentPipeline;
 
     {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
@@ -66,18 +67,32 @@ MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::Comm
             }
 
             {
-                OPTICK_EVENT("SetUpRenderingPipeline");
+                OPTICK_EVENT("PrepareDrawCall");
 
-                pass.SetPipeline(mat.getRenderPipeline().getColorPipeline());
+                auto newPipeline = mat.getRenderPipeline().getColorPipeline();
+                if (currentPipeline.Get() != newPipeline.Get()) {
+                    OPTICK_EVENT("SetRenderingPipeline");
 
-                pass.SetBindGroup(kSurfaceSharedBindGroupIndex, pPipelineMan->getSurfaceBindGroup(),
-                                  surfaceSharedData.getOffsetCount(), surfaceSharedData.getOffsets());
+                    currentPipeline = newPipeline;
+                    pass.SetPipeline(currentPipeline);
+                }
 
-                pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
-                                  matData.getOffsets());
+                {
+                    OPTICK_EVENT("SetBindGroups");
 
-                pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
-                pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
+                    pass.SetBindGroup(kSurfaceSharedBindGroupIndex, pPipelineMan->getSurfaceBindGroup(),
+                                      surfaceSharedData.getOffsetCount(), surfaceSharedData.getOffsets());
+
+                    pass.SetBindGroup(kMaterialBindGroupIndex, mat.getBindGroup(), matData.getOffsetCount(),
+                                      matData.getOffsets());
+                }
+
+                {
+                    OPTICK_EVENT("SetMeshBuffers");
+
+                    pass.SetVertexBuffer(0, renderProxy.vertexBuffer);
+                    pass.SetIndexBuffer(renderProxy.indexBuffer, renderProxy.indexFormat);
+                }
             }
 
             {

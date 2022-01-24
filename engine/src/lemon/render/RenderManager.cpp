@@ -111,10 +111,17 @@ RenderManager::render()
     }
 
     if (frameCommandBuffers.size() > 0) {
+        OPTICK_EVENT("SubmitCommandBuffers");
+        OPTICK_TAG("NumCommandBuffers", frameCommandBuffers.size());
+
         queue.Submit(frameCommandBuffers.size(), frameCommandBuffers.data());
     }
 
-    swapChain.Present();
+    {
+        OPTICK_EVENT("Present");
+
+        swapChain.Present();
+    }
 
     co_return {};
 }

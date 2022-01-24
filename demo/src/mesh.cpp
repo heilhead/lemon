@@ -355,6 +355,8 @@ public:
     void
     update(float dt)
     {
+        OPTICK_EVENT();
+
         constexpr auto cameraParam = lemon::sid("sceneParams.camera");
         constexpr auto timeParam = lemon::sid("sceneParams.time");
 
