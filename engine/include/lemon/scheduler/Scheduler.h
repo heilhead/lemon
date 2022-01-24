@@ -1,8 +1,40 @@
 #pragma once
 
 #include <lemon/scheduler/common.h>
+#include <lemon/profiling.h>
 
 namespace lemon::scheduler {
+    class ThreadFactory : public folly::ThreadFactory {
+        std::string prefix;
+        std::atomic<uint64_t> suffix;
+
+    public:
+        explicit ThreadFactory(folly::StringPiece inPrefix) : prefix(inPrefix.str()), suffix(0) {}
+
+        std::thread
+        newThread(folly::Func&& func) override
+        {
+            auto name = folly::to<std::string>(prefix, suffix++);
+            return std::thread([func = std::move(func), name = std::move(name)]() mutable {
+                OPTICK_THREAD(name.c_str());
+                folly::setThreadName(name);
+                func();
+            });
+        }
+
+        void
+        setNamePrefix(folly::StringPiece inPrefix)
+        {
+            prefix = inPrefix.str();
+        }
+
+        const std::string&
+        getNamePrefix()
+        {
+            return prefix;
+        }
+    };
+
     class Scheduler : public UnsafeSingleton<Scheduler> {
     public:
         Scheduler(size_t threadsIO = std::thread::hardware_concurrency(),
@@ -11,6 +43,11 @@ namespace lemon::scheduler {
     private:
         folly::IOThreadPoolExecutor poolIO;
         folly::CPUThreadPoolExecutor poolCPU;
+        folly::ManualExecutor gameThreadExecutor;
+        folly::ManualExecutor drawThreadExecutor;
+        folly::ManualExecutor renderThreadExecutor;
+        std::thread drawThread;
+        std::thread renderThread;
 
 #if LEMON_FORCE_SINGLE_THREADED
         folly::ManualExecutor debugExecutor;
@@ -30,15 +67,48 @@ namespace lemon::scheduler {
         }
 
 #if LEMON_FORCE_SINGLE_THREADED
-        folly::ManualExecutor*
+        inline folly::ManualExecutor*
         getDebugExecutor()
         {
             return &debugExecutor;
         }
 #endif
 
+        inline folly::ManualExecutor*
+        getGameThreadExecutor()
+        {
+#if LEMON_FORCE_SINGLE_THREADED
+            return &debugExecutor;
+#else
+            return &gameThreadExecutor;
+#endif
+        }
+
+        inline folly::ManualExecutor*
+        getDrawThreadExecutor()
+        {
+#if LEMON_FORCE_SINGLE_THREADED
+            return &debugExecutor;
+#else
+            return &drawThreadExecutor;
+#endif
+        }
+
+        inline folly::ManualExecutor*
+        getRenderThreadExecutor()
+        {
+#if LEMON_FORCE_SINGLE_THREADED
+            return &debugExecutor;
+#else
+            return &renderThreadExecutor;
+#endif
+        }
+
+        void
+        drainGameThreadQueue();
+
         static std::optional<std::string>
-        getCurrentThreadName();
+        getThreadName();
 
         template<typename TResult>
         inline TResult
@@ -85,6 +155,26 @@ namespace lemon::scheduler {
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
     }
 
+    template<typename TResult, typename TError>
+    TaskFuture<TResult, TError>
+    DrawTask(Task<TResult, TError>&& task)
+    {
+        auto* executor = Scheduler::get()->getDrawThreadExecutor();
+        auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
+        return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, false>(
+            std::move(task), kaExecutor);
+    }
+
+    template<typename TResult, typename TError>
+    TaskFuture<TResult, TError>
+    RenderTask(Task<TResult, TError>&& task)
+    {
+        auto* executor = Scheduler::get()->getRenderThreadExecutor();
+        auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
+        return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, false>(
+            std::move(task), kaExecutor);
+    }
+
     template<typename TError>
     VoidTaskFuture<TError>
     IOTask(VoidTask<TError>&& task)
@@ -99,5 +189,25 @@ namespace lemon::scheduler {
     {
         return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, true>(
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
+    }
+
+    template<typename TError>
+    VoidTaskFuture<TError>
+    DrawTask(VoidTask<TError>&& task)
+    {
+        auto* executor = Scheduler::get()->getDrawThreadExecutor();
+        auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
+        return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, false>(std::move(task),
+                                                                                         kaExecutor);
+    }
+
+    template<typename TError>
+    VoidTaskFuture<TError>
+    RenderTask(VoidTask<TError>&& task)
+    {
+        auto* executor = Scheduler::get()->getRenderThreadExecutor();
+        auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
+        return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, false>(std::move(task),
+                                                                                         kaExecutor);
     }
 } // namespace lemon::scheduler

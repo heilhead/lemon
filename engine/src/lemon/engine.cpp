@@ -35,6 +35,8 @@ Engine::loop(const std::function<LoopControl(float)>& callback)
     logger::log("entering event loop");
 
     device->getWindow()->loop([&](float dt) {
+        OPTICK_FRAME("GameThread");
+
         device->getInput()->update();
 
         return callback(dt);

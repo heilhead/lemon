@@ -403,7 +403,7 @@ public:
 
         renderUI();
 
-        Scheduler::get()->block(CPUTask(RenderManager::get()->render()));
+        Scheduler::get()->block(RenderTask(RenderManager::get()->render()));
     }
 };
 
@@ -436,8 +436,6 @@ testMeshRendering()
         pGameStateMan->init(std::make_unique<DemoRootState>());
 
         engine.loop([&](float dt) {
-            OPTICK_FRAME("MainThread");
-
             if (LoopControl::Abort == pGameStateMan->onInput()) {
                 return LoopControl::Abort;
             }
