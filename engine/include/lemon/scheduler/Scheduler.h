@@ -105,7 +105,7 @@ namespace lemon::scheduler {
         }
 
         void
-        drainGameThreadQueue();
+        processGameThreadTasks();
 
         static std::optional<std::string>
         getThreadName();
@@ -141,7 +141,7 @@ namespace lemon::scheduler {
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    IOTask(Task<TResult, TError>&& task)
+    runIOTask(Task<TResult, TError>&& task)
     {
         return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, false>(
             std::move(task), Scheduler::get()->getIOExecutor()->weakRef());
@@ -149,7 +149,7 @@ namespace lemon::scheduler {
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    CPUTask(Task<TResult, TError>&& task, Priority priority = Priority::Medium)
+    runCPUTask(Task<TResult, TError>&& task, Priority priority = Priority::Medium)
     {
         return detail::ScheduleTaskImpl<Task<TResult, TError>, TaskFuture<TResult, TError>, true>(
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
@@ -157,7 +157,7 @@ namespace lemon::scheduler {
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    DrawTask(Task<TResult, TError>&& task)
+    runDrawTask(Task<TResult, TError>&& task)
     {
         auto* executor = Scheduler::get()->getDrawThreadExecutor();
         auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
@@ -167,7 +167,7 @@ namespace lemon::scheduler {
 
     template<typename TResult, typename TError>
     TaskFuture<TResult, TError>
-    RenderTask(Task<TResult, TError>&& task)
+    runRenderTask(Task<TResult, TError>&& task)
     {
         auto* executor = Scheduler::get()->getRenderThreadExecutor();
         auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
@@ -177,7 +177,7 @@ namespace lemon::scheduler {
 
     template<typename TError>
     VoidTaskFuture<TError>
-    IOTask(VoidTask<TError>&& task)
+    runIOTask(VoidTask<TError>&& task)
     {
         return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, false>(
             std::move(task), Scheduler::get()->getIOExecutor()->weakRef());
@@ -185,7 +185,7 @@ namespace lemon::scheduler {
 
     template<typename TError>
     VoidTaskFuture<TError>
-    CPUTask(VoidTask<TError>&& task, Priority priority = Priority::Medium)
+    runCPUTask(VoidTask<TError>&& task, Priority priority = Priority::Medium)
     {
         return detail::ScheduleTaskImpl<VoidTask<TError>, VoidTaskFuture<TError>, true>(
             std::move(task), Scheduler::get()->getCPUExecutor()->weakRef(), priority);
@@ -193,7 +193,7 @@ namespace lemon::scheduler {
 
     template<typename TError>
     VoidTaskFuture<TError>
-    DrawTask(VoidTask<TError>&& task)
+    runDrawTask(VoidTask<TError>&& task)
     {
         auto* executor = Scheduler::get()->getDrawThreadExecutor();
         auto kaExecutor = folly::Executor::getKeepAliveToken(executor);
@@ -203,7 +203,7 @@ namespace lemon::scheduler {
 
     template<typename TError>
     VoidTaskFuture<TError>
-    RenderTask(VoidTask<TError>&& task)
+    runRenderTask(VoidTask<TError>&& task)
     {
         auto* executor = Scheduler::get()->getRenderThreadExecutor();
         auto kaExecutor = folly::Executor::getKeepAliveToken(executor);

@@ -15,7 +15,7 @@ namespace lemon::render {
         MainRenderPass();
 
         virtual VoidTask<RenderPassError>
-        execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
+        execute(const RenderPassContext& context) override;
 
         virtual gsl::czstring<>
         getPassName() const override

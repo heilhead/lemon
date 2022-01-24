@@ -57,7 +57,8 @@ PipelineManager::initSurfaceBindGroup()
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
     auto blueprint =
-        pScheduler->block(IOTask(MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
+        pScheduler
+            ->block(runIOTask(MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
             .value();
 
     // The program is temporary and should be destroyed once we're done here.
@@ -121,7 +122,7 @@ PipelineManager::initPostProcessBindGroup()
 
     auto blueprint =
         pScheduler
-            ->block(IOTask(MaterialResource::loadShaderBlueprint(kShaderPostProcessSharedGroupBlueprint)))
+            ->block(runIOTask(MaterialResource::loadShaderBlueprint(kShaderPostProcessSharedGroupBlueprint)))
             .value();
 
     // The program is temporary and should be destroyed once we're done here.

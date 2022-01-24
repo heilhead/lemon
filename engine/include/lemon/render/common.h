@@ -54,16 +54,55 @@ namespace lemon::render {
     enum class FrameRenderError { Unknown };
 
     struct RenderPassResources {
+        friend struct RenderPassContext;
+        friend class RenderManager;
+
+    public:
         wgpu::TextureView colorTargetView;
         wgpu::TextureView depthStencilView;
         wgpu::TextureView swapChainBackbufferView;
+
+    private:
+        mutable std::vector<wgpu::CommandBuffer> commandBuffers;
+
+    public:
+        inline void
+        addCommandBuffer(const wgpu::CommandBuffer& commandBuffer) const
+        {
+            commandBuffers.emplace_back(commandBuffer);
+        }
+
+    private:
+        void
+        releaseResources()
+        {
+            colorTargetView = nullptr;
+            depthStencilView = nullptr;
+            swapChainBackbufferView = nullptr;
+            commandBuffers.clear();
+        }
+
+        inline const std::vector<wgpu::CommandBuffer>&
+        getCommandBuffers() const
+        {
+            return commandBuffers;
+        }
     };
 
     struct RenderPassContext {
+        friend class RenderManager;
+
         RenderPassResources* pCurrentFrame{nullptr};
         RenderPassResources* pPreviousFrame{nullptr};
         uint8_t frameIndex{0};
 
+        inline void
+        addCommandBuffer(const wgpu::CommandBuffer& commandBuffer) const
+        {
+            pCurrentFrame->addCommandBuffer(commandBuffer);
+        }
+
+    private:
         inline void
         swap(uint8_t inFrameIndex, RenderPassResources* pNextFrame,
              const wgpu::TextureView& nextFrameBackbufferView)
@@ -71,7 +110,14 @@ namespace lemon::render {
             pPreviousFrame = pCurrentFrame;
             pCurrentFrame = pNextFrame;
             pCurrentFrame->swapChainBackbufferView = nextFrameBackbufferView;
+            pCurrentFrame->commandBuffers.clear();
             frameIndex = inFrameIndex;
+        }
+
+        inline const std::vector<wgpu::CommandBuffer>&
+        getCommandBuffers() const
+        {
+            return pCurrentFrame->getCommandBuffers();
         }
     };
 } // namespace lemon::render

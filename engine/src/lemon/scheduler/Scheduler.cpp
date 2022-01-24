@@ -55,7 +55,7 @@ Scheduler::Scheduler(size_t threadsIO, size_t threadsCPU)
 }
 
 void
-Scheduler::drainGameThreadQueue()
+Scheduler::processGameThreadTasks()
 {
     getGameThreadExecutor()->drain();
 }

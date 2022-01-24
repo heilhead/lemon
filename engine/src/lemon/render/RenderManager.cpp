@@ -1,6 +1,7 @@
 #include <lemon/render/RenderManager.h>
 #include <lemon/render/utils.h>
 #include <lemon/device/Device.h>
+#include <lemon/scheduler.h>
 
 using namespace lemon::render;
 using namespace lemon::device;
@@ -22,10 +23,7 @@ createColorTargetView(const wgpu::Device& device, uint32_t width, uint32_t heigh
     return tex.CreateView();
 }
 
-RenderManager::RenderManager()
-    : pDevice{nullptr}, passes{}, resources{}, frameCommandBuffers{kNumRenderPasses}
-{
-}
+RenderManager::RenderManager() : pDevice{nullptr}, passes{}, resources{} {}
 
 RenderManager::~RenderManager() {}
 
@@ -62,7 +60,10 @@ RenderManager::releaseResources()
 
     passes.clear();
 
-    frameCommandBuffers.clear();
+    for (auto& res : resources) {
+        res.releaseResources();
+    }
+
     materialManager.releaseResources();
     pipelineManager.releaseResources();
 }
@@ -75,7 +76,7 @@ RenderManager::getFrameResources(uint8_t inFrameIndex)
 }
 
 VoidTask<FrameRenderError>
-RenderManager::render()
+RenderManager::renderFrame()
 {
     OPTICK_EVENT();
     OPTICK_TAG("NumPasses", passes.size());
@@ -98,23 +99,22 @@ RenderManager::render()
         pass->prepare(context);
     }
 
-    frameCommandBuffers.clear();
-
     for (auto& pass : passes) {
         OPTICK_EVENT("ExecutePass");
         OPTICK_TAG("PassName", pass->getPassName());
 
-        auto passError = co_await pass->execute(context, frameCommandBuffers);
+        auto passError = co_await pass->execute(context);
         if (passError) {
             co_return FrameRenderError::Unknown;
         }
     }
 
-    if (frameCommandBuffers.size() > 0) {
+    const auto& cmdBuf = context.getCommandBuffers();
+    if (cmdBuf.size() > 0) {
         OPTICK_EVENT("SubmitCommandBuffers");
-        OPTICK_TAG("NumCommandBuffers", frameCommandBuffers.size());
+        OPTICK_TAG("NumCommandBuffers", cmdBuf.size());
 
-        queue.Submit(frameCommandBuffers.size(), frameCommandBuffers.data());
+        queue.Submit(cmdBuf.size(), cmdBuf.data());
     }
 
     {
@@ -123,5 +123,20 @@ RenderManager::render()
         swapChain.Present();
     }
 
+    frameRenderBaton.post();
+
     co_return {};
+}
+
+void
+RenderManager::beginFrame()
+{
+    runRenderTask(renderFrame());
+}
+
+void
+RenderManager::endFrame()
+{
+    frameRenderBaton.wait();
+    frameRenderBaton.reset();
 }

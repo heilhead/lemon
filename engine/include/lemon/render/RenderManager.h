@@ -75,7 +75,7 @@ namespace lemon::render {
         uint32_t renderTargetWidth;
         uint32_t renderTargetHeight;
 
-        std::vector<wgpu::CommandBuffer> frameCommandBuffers;
+        folly::Baton<> frameRenderBaton;
 
     public:
         template<typename TResource>
@@ -146,7 +146,13 @@ namespace lemon::render {
         getFrameResources(uint8_t inFrameIndex);
 
         scheduler::VoidTask<FrameRenderError>
-        render();
+        renderFrame();
+
+        void
+        beginFrame();
+
+        void
+        endFrame();
 
         template<RenderFrameResource TResource>
         RenderFrameResources<TResource>

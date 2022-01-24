@@ -403,7 +403,12 @@ public:
 
         renderUI();
 
-        Scheduler::get()->block(RenderTask(RenderManager::get()->render()));
+        auto* pRenderMan = RenderManager::get();
+        auto* pScheduler = Scheduler::get();
+
+        pRenderMan->beginFrame();
+        pScheduler->processGameThreadTasks();
+        pRenderMan->endFrame();
     }
 };
 

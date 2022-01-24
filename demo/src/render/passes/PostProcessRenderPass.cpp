@@ -340,8 +340,7 @@ PostProcessRenderPass::prepare(const RenderPassContext& context)
 }
 
 VoidTask<RenderPassError>
-PostProcessRenderPass::execute(const RenderPassContext& context,
-                               std::vector<wgpu::CommandBuffer>& commandBuffers)
+PostProcessRenderPass::execute(const RenderPassContext& context)
 {
     OPTICK_EVENT();
 
@@ -421,7 +420,7 @@ PostProcessRenderPass::execute(const RenderPassContext& context,
         pass.EndPass();
     }
 
-    commandBuffers.emplace_back(encoder.Finish());
+    context.addCommandBuffer(encoder.Finish());
 
     co_return {};
 }

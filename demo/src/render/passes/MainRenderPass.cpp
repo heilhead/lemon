@@ -28,7 +28,7 @@ MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilA
 }
 
 VoidTask<RenderPassError>
-MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers)
+MainRenderPass::execute(const RenderPassContext& context)
 {
     OPTICK_EVENT();
 
@@ -107,7 +107,7 @@ MainRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::Comm
 
     cbuffer.upload(device);
 
-    commandBuffers.emplace_back(encoder.Finish());
+    context.addCommandBuffer(encoder.Finish());
 
     co_return {};
 }

@@ -20,7 +20,7 @@ DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
 }
 
 VoidTask<RenderPassError>
-DebugUIRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers)
+DebugUIRenderPass::execute(const RenderPassContext& context)
 {
     colorAttachments[0].view = context.pCurrentFrame->swapChainBackbufferView;
 
@@ -36,7 +36,7 @@ DebugUIRenderPass::execute(const RenderPassContext& context, std::vector<wgpu::C
         pass.EndPass();
     }
 
-    commandBuffers.emplace_back(encoder.Finish());
+    context.addCommandBuffer(encoder.Finish());
 
     co_return {};
 }

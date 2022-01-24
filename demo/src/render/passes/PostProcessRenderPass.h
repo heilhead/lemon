@@ -108,7 +108,7 @@ namespace lemon::render {
         prepare(const RenderPassContext& context) override;
 
         virtual VoidTask<RenderPassError>
-        execute(const RenderPassContext& context, std::vector<wgpu::CommandBuffer>& commandBuffers) override;
+        execute(const RenderPassContext& context) override;
 
         BloomParams&
         getBloomParams()
