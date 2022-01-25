@@ -1,9 +1,8 @@
-#include "mesh.h"
+#include "demo.h"
 #include "common/DemoModelActor.h"
 #include <lemon/game.h>
 #include <lemon/render.h>
 #include <lemon/render/passes/PostProcessRenderPass.h>
-#include <optick.h>
 
 using namespace lemon;
 using namespace lemon::game;
@@ -12,7 +11,7 @@ using namespace lemon::res;
 using namespace lemon::render;
 using namespace demo;
 
-namespace minirender {
+namespace {
     const ModelResource::Model*
     loadModel(const std::string& path)
     {
@@ -38,7 +37,7 @@ namespace minirender {
 
         return *result;
     }
-} // namespace minirender
+} // namespace
 
 glm::f32vec3
 hsv2rgb(glm::f32vec3 hsv)
@@ -160,8 +159,6 @@ public:
     virtual void
     onInitialize() override
     {
-        using namespace minirender;
-
         pPostProcessPass = RenderManager::get()->getRenderPass<PostProcessRenderPass>();
 
         auto model = loadModel("ozz-sample\\MannequinSkeleton.lem:SK_Mannequin");
@@ -271,7 +268,7 @@ public:
 };
 
 void
-testMeshRendering()
+startDemo()
 {
     lemon::Engine engine;
 

@@ -4,7 +4,7 @@ add_executable(${PROJECT_NAME}
     "src/main.cpp"
     "src/metadata.cpp"
     "src/bundles.cpp"
-    "src/mesh.cpp"
+    "src/demo.cpp"
     "src/common/DemoModelActor.cpp")
 
 target_compile_definitions(${PROJECT_NAME}
