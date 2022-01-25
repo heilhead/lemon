@@ -2,11 +2,7 @@
 #include "common/DemoModelActor.h"
 #include <lemon/game.h>
 #include <lemon/render.h>
-
-#include "render/passes/MainRenderPass.h"
-#include "render/passes/DebugUIRenderPass.h"
-#include "render/passes/PostProcessRenderPass.h"
-
+#include <lemon/render/passes/PostProcessRenderPass.h>
 #include <optick.h>
 
 using namespace lemon;
@@ -301,11 +297,11 @@ private:
 
 public:
     void
-    init(Window* window, PostProcessRenderPass* pInPostProcessPass)
+    init(Window* window)
     {
         using namespace minirender;
 
-        pPostProcessPass = pInPostProcessPass;
+        pPostProcessPass = RenderManager::get()->getRenderPass<PostProcessRenderPass>();
 
         auto model = loadModel("ozz-sample\\MannequinSkeleton.lem:SK_Mannequin");
         auto& meshData = model->getMeshes()[0];
@@ -425,17 +421,8 @@ testMeshRendering()
         auto* pRenderMan = RenderManager::get();
         auto* pMaterialMan = MaterialManager::get();
 
-        auto* pPostProcessMaterial = minirender::loadMaterial("internal\\materials\\M_PostProcess");
-        auto* pBloomMaterial = minirender::loadMaterial("internal\\materials\\M_Bloom");
-
-        pRenderMan->addRenderPass<MainRenderPass>();
-        auto* pPostProcessPass =
-            pRenderMan->addRenderPass<PostProcessRenderPass>(pPostProcessMaterial, pBloomMaterial);
-        pRenderMan->addRenderPass<DebugUIRenderPass>();
-        auto& ui = pRenderMan->getDebugUI();
-
         MiniRender render;
-        render.init(Device::get()->getWindow(), pPostProcessPass);
+        render.init(Device::get()->getWindow());
 
         auto pGameStateMan = std::make_unique<GameStateManager>();
         pGameStateMan->init(std::make_unique<DemoRootState>());
@@ -453,6 +440,7 @@ testMeshRendering()
                 return LoopControl::Abort;
             }
 
+            auto& ui = pRenderMan->getDebugUI();
             if (ui.isEnabled()) {
                 ui.update();
 

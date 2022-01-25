@@ -13,6 +13,10 @@ namespace lemon::scheduler {
     template<typename TError>
     using VoidTaskFuture = folly::Future<std::optional<TError>>;
 
+    using UnitTask = folly::coro::Task<folly::Unit>;
+
+    using UnitTaskFuture = folly::Future<folly::Unit>;
+
     enum class Priority {
         Low = folly::Executor::LO_PRI,
         Medium = folly::Executor::MID_PRI,

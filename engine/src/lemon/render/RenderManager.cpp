@@ -2,6 +2,9 @@
 #include <lemon/render/utils.h>
 #include <lemon/device/Device.h>
 #include <lemon/scheduler.h>
+#include <lemon/render/passes/DebugUIRenderPass.h>
+#include <lemon/render/passes/MainRenderPass.h>
+#include <lemon/render/passes/PostProcessRenderPass.h>
 
 using namespace lemon::render;
 using namespace lemon::device;
@@ -47,6 +50,17 @@ RenderManager::init(wgpu::Device& device)
 
     context.pCurrentFrame = &resources[0];
     context.pPreviousFrame = &resources[1];
+
+    // Initialize render passes.
+    addRenderPass<MainRenderPass>();
+    addRenderPass<PostProcessRenderPass>();
+    addRenderPass<DebugUIRenderPass>();
+
+    // Some render passes may want to load additional materials/shaders, which should be done asynchronously.
+    auto initRenderPassesTask =
+        coForEach<std::unique_ptr<RenderPass>, folly::Unit>(passes, [](auto& pass) { return pass->init(); });
+
+    scheduleTask(std::move(initRenderPassesTask), TaskExecutorType::CPUThreadPool).wait();
 }
 
 void

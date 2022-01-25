@@ -1,10 +1,20 @@
-#include "PostProcessRenderPass.h"
+#include <lemon/render/passes/PostProcessRenderPass.h>
 #include <lemon/device/Device.h>
 #include <lemon/game/actor/GameWorld.h>
+#include <lemon/render/utils.h>
+#include <lemon/resource/ResourceManager.h>
+#include <lemon/resource/types/MaterialResource.h>
 
 using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::device;
+using namespace lemon::scheduler;
+using namespace lemon::res;
+
+namespace {
+    static constexpr gsl::czstring<> kDefaultPostProcessMaterial = "internal/materials/M_PostProcess";
+    static constexpr gsl::czstring<> kDefaultBloomMaterial = "internal/materials/M_Bloom";
+} // namespace
 
 struct QuadVertex {
     glm::f32vec3 pos;
@@ -143,15 +153,32 @@ createQuadGPUBuffer()
     return data;
 }
 
-PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostProcessMaterial,
-                                             const res::MaterialResource* pBloomMaterial)
-{
-    mainResources = std::make_unique<MainResources>(createQuadGPUBuffer());
-    bloomResources = std::make_unique<BloomResources>();
+PostProcessRenderPass::PostProcessRenderPass() {}
 
+PostProcessRenderPass::~PostProcessRenderPass() {}
+
+scheduler::UnitTask
+PostProcessRenderPass::init()
+{
+    auto* pResourceMan = ResourceManager::get();
     auto* pRenderMan = RenderManager::get();
     auto* pMaterialMan = MaterialManager::get();
     auto& device = pRenderMan->getDevice();
+
+    auto [postProcessMat, bloomMat] = co_await folly::coro::collectAll(
+        pResourceMan->loadResource<MaterialResource>(ResourceLocation(kDefaultPostProcessMaterial),
+                                                     ResourceLifetime::Static),
+        pResourceMan->loadResource<MaterialResource>(ResourceLocation(kDefaultBloomMaterial),
+                                                     ResourceLifetime::Static));
+
+    LEMON_ASSERT(postProcessMat);
+    LEMON_ASSERT(bloomMat);
+
+    auto* pPostProcessMaterial = *postProcessMat;
+    auto* pBloomMaterial = *bloomMat;
+
+    mainResources = std::make_unique<MainResources>(createQuadGPUBuffer());
+    bloomResources = std::make_unique<BloomResources>();
 
     // This creates the prefilter bind group.
     pRenderMan->createFrameResources<DynamicMaterialInstance>(
@@ -304,12 +331,12 @@ PostProcessRenderPass::PostProcessRenderPass(const res::MaterialResource* pPostP
     bloomParams.threshold = 0.4f;
     bloomParams.scatter = 0.25f;
     bloomParams.clampMax = 25000.f;
+
+    co_return {};
 }
 
-lemon::render::PostProcessRenderPass::~PostProcessRenderPass() {}
-
 void
-lemon::render::PostProcessRenderPass::releaseResources()
+PostProcessRenderPass::releaseResources()
 {
     mainResources = nullptr;
     bloomResources = nullptr;

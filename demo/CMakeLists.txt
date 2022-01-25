@@ -1,14 +1,11 @@
 project(demo)
 
 add_executable(${PROJECT_NAME}
-	"src/main.cpp"
-	"src/metadata.cpp"
-	"src/bundles.cpp"
-	"src/mesh.cpp"
-    "src/common/DemoModelActor.cpp"
-    "src/render/passes/MainRenderPass.cpp"
-    "src/render/passes/DebugUIRenderPass.cpp"
-    "src/render/passes/PostProcessRenderPass.cpp")
+    "src/main.cpp"
+    "src/metadata.cpp"
+    "src/bundles.cpp"
+    "src/mesh.cpp"
+    "src/common/DemoModelActor.cpp")
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC

@@ -2,6 +2,10 @@
 
 #include <lemon/render/common.h>
 #include <lemon/render/RenderPass.h>
+#include <lemon/render/MeshGPUBuffer.h>
+#include <lemon/render/pipeline/DynamicPipeline.h>
+#include <lemon/render/material/MaterialInstance.h>
+#include <lemon/render/RenderFrameResources.h>
 
 namespace lemon::render {
     class BloomPipeline : public DynamicPipeline {
@@ -83,10 +87,12 @@ namespace lemon::render {
         std::unique_ptr<BloomResources> bloomResources;
 
     public:
-        PostProcessRenderPass(const res::MaterialResource* pPostProcessMaterial,
-                              const res::MaterialResource* pBloomMaterial);
+        PostProcessRenderPass();
 
         virtual ~PostProcessRenderPass() override;
+
+        virtual scheduler::UnitTask
+        init() override;
 
         template<std::semiregular TData>
         inline void
@@ -107,7 +113,7 @@ namespace lemon::render {
         virtual void
         prepare(const RenderPassContext& context) override;
 
-        virtual VoidTask<RenderPassError>
+        virtual scheduler::VoidTask<RenderPassError>
         execute(const RenderPassContext& context) override;
 
         BloomParams&

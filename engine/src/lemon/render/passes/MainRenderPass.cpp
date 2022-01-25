@@ -1,4 +1,4 @@
-#include "MainRenderPass.h"
+#include <lemon/render/passes/MainRenderPass.h>
 #include <lemon/device/Device.h>
 #include <lemon/game/actor/GameWorld.h>
 
@@ -6,6 +6,7 @@ using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::device;
 using namespace lemon::game;
+using namespace lemon::scheduler;
 
 MainRenderPass::MainRenderPass() : passDesc{}, colorAttachments{}, depthStencilAttachmentInfo{}
 {

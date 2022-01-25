@@ -8,6 +8,12 @@ namespace lemon::render {
     public:
         virtual ~RenderPass() = default;
 
+        virtual scheduler::UnitTask
+        init()
+        {
+            co_return {};
+        }
+
         virtual void
         releaseResources()
         {

@@ -1,5 +1,4 @@
-#include "DebugUIRenderPass.h"
-
+#include <lemon/render/passes/DebugUIRenderPass.h>
 #include <lemon/device/Device.h>
 #include <lemon/game/actor/GameWorld.h>
 
@@ -7,6 +6,7 @@ using namespace lemon;
 using namespace lemon::render;
 using namespace lemon::device;
 using namespace lemon::game;
+using namespace lemon::scheduler;
 
 DebugUIRenderPass::DebugUIRenderPass() : passDesc{}, colorAttachments{}
 {

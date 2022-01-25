@@ -4,22 +4,23 @@
 #include <lemon/render/RenderPass.h>
 
 namespace lemon::render {
-    class DebugUIRenderPass : public RenderPass {
+    class MainRenderPass : public RenderPass {
+        static constexpr wgpu::Color kMainClearColor = {0.2f, 0.2f, 0.2f, 0.0f};
+
         wgpu::RenderPassDescriptor passDesc;
         std::array<wgpu::RenderPassColorAttachment, 1> colorAttachments;
-
-        bool bShowDemoWindow = true;
+        wgpu::RenderPassDepthStencilAttachment depthStencilAttachmentInfo;
 
     public:
-        DebugUIRenderPass();
+        MainRenderPass();
 
-        virtual VoidTask<RenderPassError>
+        virtual scheduler::VoidTask<RenderPassError>
         execute(const RenderPassContext& context) override;
 
         virtual gsl::czstring<>
         getPassName() const override
         {
-            return "DebugUI";
+            return "MainColor";
         }
     };
 } // namespace lemon::render

@@ -6,57 +6,9 @@
 #include <lemon/render/RenderPass.h>
 #include <lemon/render/DebugUI.h>
 #include <lemon/scheduler/common.h>
+#include <lemon/render/RenderFrameResources.h>
 
 namespace lemon::render {
-    template<typename T>
-    concept RenderFrameResource = std::default_initializable<T>;
-
-    template<RenderFrameResource TResource>
-    class RenderFrameResources {
-        friend class RenderManager;
-
-        std::array<TResource, kMaxRenderFramesInFlight> resources;
-
-    public:
-        RenderFrameResources() = default;
-
-        RenderFrameResources(RenderFrameResources&&) = default;
-
-        RenderFrameResources(const RenderFrameResources&) = default;
-
-        RenderFrameResources&
-        operator=(RenderFrameResources&&) = default;
-
-        RenderFrameResources&
-        operator=(const RenderFrameResources&) = default;
-
-        const TResource&
-        getResources(const RenderPassContext& ctx) const
-        {
-            return resources[ctx.frameIndex];
-        }
-
-        TResource&
-        getResources(const RenderPassContext& ctx)
-        {
-            return resources[ctx.frameIndex];
-        }
-
-        const TResource&
-        getResources(uint8_t index) const
-        {
-            LEMON_ASSERT(index < kMaxRenderFramesInFlight);
-            return resources[index];
-        }
-
-        TResource&
-        getResources(uint8_t index)
-        {
-            LEMON_ASSERT(index < kMaxRenderFramesInFlight);
-            return resources[index];
-        }
-    };
-
     class RenderManager : public UnsafeSingleton<RenderManager> {
         // Adjust when more passes are introduced.
         static constexpr size_t kNumRenderPasses = 8;
@@ -128,6 +80,19 @@ namespace lemon::render {
         {
             passes.emplace_back(std::make_unique<TRenderPass>(std::forward<TArgs>(args)...));
             return static_cast<TRenderPass*>(passes.back().get());
+        }
+
+        template<Base<RenderPass> TRenderPass>
+        inline TRenderPass*
+        getRenderPass()
+        {
+            for (const auto& pass : passes) {
+                if (auto* pPass = dynamic_cast<TRenderPass*>(pass.get())) {
+                    return pPass;
+                }
+            }
+
+            return nullptr;
         }
 
         inline uint8_t
