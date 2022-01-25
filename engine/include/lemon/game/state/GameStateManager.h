@@ -24,7 +24,7 @@ namespace lemon::game {
         ~GameStateManager();
 
         void
-        init(std::unique_ptr<GameState> rootState);
+        init(std::unique_ptr<RootGameState> rootState);
 
         void
         onPreUpdate(float dt);

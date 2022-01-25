@@ -90,7 +90,7 @@ RenderManager::getFrameResources(uint8_t inFrameIndex)
 }
 
 VoidTask<FrameRenderError>
-RenderManager::renderFrame()
+RenderManager::renderFrame(const FrameWorldContext worldContext)
 {
     OPTICK_EVENT();
     OPTICK_TAG("NumPasses", passes.size());
@@ -103,7 +103,18 @@ RenderManager::renderFrame()
     cbuffer.reset();
     context.swap(frameIndex, &getFrameResources(frameIndex), swapChain.GetCurrentTextureView());
 
-    pipelineManager.getSurfaceUniformData().merge(cbuffer);
+    constexpr auto cameraParam = lemon::sid("sceneParams.camera");
+    constexpr auto timeParam = lemon::sid("sceneParams.time");
+
+    double dt = worldContext.dt;
+    float fTime = static_cast<float>(dt);                     // time in seconds, float
+    float fTimeFrac = static_cast<float>(std::fmod(dt, 1.f)); // fractional part
+
+    auto& sharedSurfaceUniform = pipelineManager.getSurfaceUniformData();
+    sharedSurfaceUniform.setData(cameraParam, worldContext.camera);
+    sharedSurfaceUniform.setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
+    sharedSurfaceUniform.merge(cbuffer);
+
     pipelineManager.getPostProcessUniformData().merge(cbuffer);
 
     for (auto& pass : passes) {
@@ -143,9 +154,9 @@ RenderManager::renderFrame()
 }
 
 void
-RenderManager::beginFrame()
+RenderManager::beginFrame(const FrameWorldContext& worldContext)
 {
-    runRenderThreadTask(renderFrame());
+    runRenderThreadTask(renderFrame(worldContext));
 }
 
 void

@@ -23,8 +23,9 @@ GameStateManager::~GameStateManager()
 }
 
 void
-GameStateManager::init(std::unique_ptr<GameState> rootState)
+GameStateManager::init(std::unique_ptr<RootGameState> rootState)
 {
+    rootState->onInitialize();
     clear(std::move(rootState));
 }
 

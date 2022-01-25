@@ -7,6 +7,7 @@
 #include <lemon/render/DebugUI.h>
 #include <lemon/scheduler/common.h>
 #include <lemon/render/RenderFrameResources.h>
+#include <lemon/game/Camera.h>
 
 namespace lemon::render {
     class RenderManager : public UnsafeSingleton<RenderManager> {
@@ -30,6 +31,11 @@ namespace lemon::render {
         folly::Baton<> frameRenderBaton;
 
     public:
+        struct FrameWorldContext {
+            game::Camera::UniformData camera;
+            double dt;
+        };
+
         template<typename TResource>
         using CustomResourceInitFn = std::function<TResource(const RenderPassResources&, uint8_t)>;
 
@@ -111,10 +117,10 @@ namespace lemon::render {
         getFrameResources(uint8_t inFrameIndex);
 
         scheduler::VoidTask<FrameRenderError>
-        renderFrame();
+        renderFrame(const FrameWorldContext worldContext);
 
         void
-        beginFrame();
+        beginFrame(const FrameWorldContext& worldContext);
 
         void
         endFrame();

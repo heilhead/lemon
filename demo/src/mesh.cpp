@@ -8,210 +8,37 @@
 using namespace lemon;
 using namespace lemon::game;
 using namespace lemon::device;
-using namespace lemon::utils;
 using namespace lemon::res;
-using namespace lemon::scheduler;
 using namespace lemon::render;
 using namespace demo;
 
-class DemoGameState : public GameState {
-public:
-    void
-    onStart() override
+namespace minirender {
+    const ModelResource::Model*
+    loadModel(const std::string& path)
     {
-        LEMON_TRACE_FN();
+        ResourceLocation location(path);
+
+        auto result = Scheduler::get()->block(
+            ResourceManager::get()->loadResource<ModelResource>(location, ResourceLifetime::Static));
+
+        LEMON_ASSERT(result.has_value());
+
+        return (*result)->getObject<ModelResource::Model>(location.object);
     }
 
-    void
-    onStop() override
+    const MaterialResource*
+    loadMaterial(const std::string& path)
     {
-        LEMON_TRACE_FN();
+        ResourceLocation location(path);
+
+        auto result = Scheduler::get()->block(
+            ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
+
+        LEMON_ASSERT(result.has_value());
+
+        return *result;
     }
-
-    void
-    onPause() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onResume() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    Transition
-    onInput(const InputEvent& evt) override
-    {
-        if (evt.isKeyPress(KeyCode::Enter)) {
-            logger::trace("GAME STATE ENTER!");
-        }
-
-        if (evt.isKeyPress(KeyCode::Escape)) {
-            return Transition::pop();
-        }
-
-        return std::nullopt;
-    }
-
-    Transition
-    onUI() override
-    {
-        Transition trans;
-
-        ImGui::Begin("DemoGameState");
-
-        ImGui::Text("Game state!");
-
-        if (ImGui::Button("<- DemoMenuState")) {
-            trans = Transition::pop();
-        }
-
-        ImGui::End();
-
-        return trans;
-    }
-};
-
-class DemoMenuState : public GameState {
-public:
-    void
-    onStart() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onStop() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onPause() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onResume() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    Transition
-    onInput(const InputEvent& evt) override
-    {
-        if (evt.isKeyPress(KeyCode::Enter)) {
-            return Transition::push<DemoGameState>();
-        }
-
-        if (evt.isKeyPress(KeyCode::Escape)) {
-            return Transition::pop();
-        }
-
-        return std::nullopt;
-    }
-
-    Transition
-    onUI() override
-    {
-        Transition trans;
-
-        ImGui::Begin("DemoMenuState");
-
-        ImGui::Text("Menu state!");
-
-        if (ImGui::Button("-> DemoGameState")) {
-            trans = Transition::push<DemoGameState>();
-        }
-
-        if (ImGui::Button("<- DemoRootState")) {
-            trans = Transition::pop();
-        }
-
-        ImGui::End();
-
-        return trans;
-    }
-};
-
-class DemoRootState : public GameState {
-    bool bShowDemoWindow = true;
-
-public:
-    void
-    onStart() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onStop() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onPause() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    void
-    onResume() override
-    {
-        LEMON_TRACE_FN();
-    }
-
-    Transition
-    onInput(const InputEvent& evt) override
-    {
-        if (evt.isKeyPress(KeyCode::Enter)) {
-            return Transition::push<DemoMenuState>();
-        }
-
-        if (evt.isKeyPress(KeyCode::Escape)) {
-            return Transition::shutdown();
-        }
-
-        return std::nullopt;
-    }
-
-    void
-    onShadowUpdate(float dt) override
-    {
-    }
-
-    Transition
-    onUI() override
-    {
-        Transition trans;
-
-        ImGui::Begin("DemoRootState");
-
-        ImGui::Text("Root state!");
-
-        if (ImGui::Button("-> DemoMenuState")) {
-            trans = Transition::push<DemoMenuState>();
-        }
-
-        if (ImGui::Button("<- Quit")) {
-            trans = Transition::shutdown();
-        }
-
-        ImGui::End();
-
-        return trans;
-    }
-
-    void
-    onShadowUI() override
-    {
-        // if (bShowDemoWindow)
-        //     ImGui::ShowDemoWindow(&bShowDemoWindow);
-    }
-};
+} // namespace minirender
 
 glm::f32vec3
 hsv2rgb(glm::f32vec3 hsv)
@@ -246,58 +73,92 @@ hsv2rgb(glm::f32vec3 hsv)
         return {0.f, 0.f, 0.f};
 }
 
-namespace minirender {
-    const ModelResource::Model*
-    loadModel(const std::string& path)
-    {
-        ResourceLocation location(path);
-
-        auto result = Scheduler::get()->block(
-            ResourceManager::get()->loadResource<ModelResource>(location, ResourceLifetime::Static));
-
-        LEMON_ASSERT(result.has_value());
-
-        return (*result)->getObject<ModelResource::Model>(location.object);
-    }
-
-    const MaterialResource*
-    loadMaterial(const std::string& path)
-    {
-        ResourceLocation location(path);
-
-        auto result = Scheduler::get()->block(
-            ResourceManager::get()->loadResource<MaterialResource>(location, ResourceLifetime::Static));
-
-        LEMON_ASSERT(result.has_value());
-
-        return *result;
-    }
-} // namespace minirender
-
-class MiniRender {
+class DemoGameState : public GameState {
 public:
-    MiniRender() {}
+    virtual Transition
+    onInput(const InputEvent& evt) override
+    {
+        if (evt.isKeyPress(KeyCode::Enter)) {
+            logger::trace("GAME STATE ENTER!");
+        }
 
-private:
+        if (evt.isKeyPress(KeyCode::Escape)) {
+            return Transition::pop();
+        }
+
+        return std::nullopt;
+    }
+
+    virtual Transition
+    onUI() override
+    {
+        Transition trans;
+
+        ImGui::Begin("DemoGameState");
+        ImGui::Text("Game state!");
+
+        if (ImGui::Button("<- DemoMenuState")) {
+            trans = Transition::pop();
+        }
+
+        ImGui::End();
+
+        return trans;
+    }
+};
+
+class DemoMenuState : public GameState {
+public:
+    virtual Transition
+    onInput(const InputEvent& evt) override
+    {
+        if (evt.isKeyPress(KeyCode::Enter)) {
+            return Transition::push<DemoGameState>();
+        }
+
+        if (evt.isKeyPress(KeyCode::Escape)) {
+            return Transition::pop();
+        }
+
+        return std::nullopt;
+    }
+
+    virtual Transition
+    onUI() override
+    {
+        Transition trans;
+
+        ImGui::Begin("DemoMenuState");
+        ImGui::Text("Menu state!");
+
+        if (ImGui::Button("-> DemoGameState")) {
+            trans = Transition::push<DemoGameState>();
+        }
+
+        if (ImGui::Button("<- DemoRootState")) {
+            trans = Transition::pop();
+        }
+
+        ImGui::End();
+
+        return trans;
+    }
+};
+
+class DemoRootState : public RootGameState {
     MaterialUniformData* pSharedData;
+    GameWorld* pWorld;
 
-    std::chrono::time_point<std::chrono::steady_clock> timeStart = std::chrono::steady_clock::now();
-
-    std::unique_ptr<GameWorld> pWorld;
     GameObjectHandle<FlyingCameraActor> hCameraActor;
-
     std::vector<GameObjectHandle<DemoModelActor>> demoActorHandles;
 
-    std::unique_ptr<GameStateManager> pGameStateMan;
-
     PostProcessRenderPass* pPostProcessPass;
-
     float postProcessExposure = 1.5;
     float postProcessBloomStrength = 1.3;
 
 public:
-    void
-    init(Window* window)
+    virtual void
+    onInitialize() override
     {
         using namespace minirender;
 
@@ -310,7 +171,7 @@ public:
             MaterialManager::get()->getSurfaceMaterialInstance(*pMaterial, meshData.pMesh->vertexFormat);
 
         pSharedData = &PipelineManager::get()->getSurfaceUniformData();
-        pWorld = std::make_unique<GameWorld>();
+        pWorld = GameWorld::get();
 
         hCameraActor = pWorld->createActor<FlyingCameraActor>(kVectorZAxis * -1500.f);
 
@@ -348,27 +209,43 @@ public:
         }
     }
 
-    void
-    update(float dt)
+    virtual Transition
+    onInput(const InputEvent& evt) override
     {
-        OPTICK_EVENT();
+        if (evt.isKeyPress(KeyCode::Enter)) {
+            return Transition::push<DemoMenuState>();
+        }
 
-        constexpr auto cameraParam = lemon::sid("sceneParams.camera");
-        constexpr auto timeParam = lemon::sid("sceneParams.time");
+        if (evt.isKeyPress(KeyCode::Escape)) {
+            return Transition::shutdown();
+        }
 
-        std::chrono::duration<double> dur = std::chrono::steady_clock::now() - timeStart;
-        double dTime = dur.count();                                  // time in seconds
-        float fTime = static_cast<float>(dTime);                     // time in seconds, float
-        float fTimeFrac = static_cast<float>(std::fmod(dTime, 1.f)); // fractional part
-
-        pWorld->updateInternal(dTime);
-
-        pSharedData->setData(cameraParam, pWorld->getCamera().getUniformData());
-        pSharedData->setData(timeParam, glm::f32vec2(fTime, fTimeFrac));
+        return std::nullopt;
     }
 
-    void
-    renderUI()
+    virtual Transition
+    onUI() override
+    {
+        Transition trans;
+
+        ImGui::Begin("DemoRootState");
+        ImGui::Text("Root state!");
+
+        if (ImGui::Button("-> DemoMenuState")) {
+            trans = Transition::push<DemoMenuState>();
+        }
+
+        if (ImGui::Button("<- Quit")) {
+            trans = Transition::shutdown();
+        }
+
+        ImGui::End();
+
+        return trans;
+    }
+
+    virtual void
+    onShadowUI() override
     {
         OPTICK_EVENT();
 
@@ -391,69 +268,14 @@ public:
             pPostProcessPass->setMaterialParameter(id, postProcessBloomStrength);
         }
     }
-
-    void
-    render()
-    {
-        OPTICK_EVENT();
-
-        renderUI();
-
-        auto* pRenderMan = RenderManager::get();
-        auto* pScheduler = Scheduler::get();
-
-        pRenderMan->beginFrame();
-        pScheduler->processGameThreadTasks();
-        pRenderMan->endFrame();
-    }
 };
 
 void
 testMeshRendering()
 {
-    using namespace std::chrono_literals;
-
     lemon::Engine engine;
 
-    engine.init(R"(C:\git\lemon\resources)");
-
-    {
-        auto* pRenderMan = RenderManager::get();
-        auto* pMaterialMan = MaterialManager::get();
-
-        MiniRender render;
-        render.init(Device::get()->getWindow());
-
-        auto pGameStateMan = std::make_unique<GameStateManager>();
-        pGameStateMan->init(std::make_unique<DemoRootState>());
-
-        engine.loop([&](float dt) {
-            if (LoopControl::Abort == pGameStateMan->onInput()) {
-                return LoopControl::Abort;
-            }
-
-            pGameStateMan->onPreUpdate(dt);
-
-            render.update(dt);
-
-            if (LoopControl::Abort == pGameStateMan->onPostUpdate(dt)) {
-                return LoopControl::Abort;
-            }
-
-            auto& ui = pRenderMan->getDebugUI();
-            if (ui.isEnabled()) {
-                ui.update();
-
-                if (LoopControl::Abort == pGameStateMan->onUI()) {
-                    return LoopControl::Abort;
-                }
-            }
-
-            render.render();
-
-            return LoopControl::Continue;
-        });
-    }
-
+    engine.init(R"(C:\git\lemon\resources)", std::make_unique<DemoRootState>());
+    engine.loop();
     engine.shutdown();
 }

@@ -147,4 +147,12 @@ namespace lemon::game {
         {
         }
     };
+
+    class RootGameState : public GameState {
+    public:
+        virtual void
+        onInitialize()
+        {
+        }
+    };
 } // namespace lemon::game
