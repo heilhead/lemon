@@ -42,16 +42,8 @@ ResourceStore::findOrInsert(ResourceHandle handle)
     auto [iter, bInserted] = map.insert({handle, pNewContract});
     auto& pContract = iter->second;
     if (bInserted) {
-        folly::Executor* executor;
-
-#if LEMON_FORCE_SINGLE_THREADED
-        executor = Scheduler::get()->getDebugExecutor();
-#else
-        executor = Scheduler::get()->getCPUExecutor();
-#endif
-
-        auto executorToken = folly::Executor::getKeepAliveToken(executor);
-        auto contract = folly::makePromiseContract<void*>(executorToken);
+        auto contract = folly::makePromiseContract<void*>(
+            Scheduler::get()->getExecutorToken(TaskExecutorType::CPUThreadPool));
         pContract.set(new ResourceContract());
         pContract.unlock();
         return {iter->second.get(), true};

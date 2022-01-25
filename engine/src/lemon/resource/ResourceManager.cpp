@@ -76,7 +76,7 @@ ResourceManager::getResourceState(ResourceHandle handle, ResourceObjectHandle ob
 ResourceContract::FutureType<ResourceInstance>
 ResourceManager::loadResource(ResourceClassID id, const ResourceLocation& location, ResourceLifetime lifetime)
 {
-    return runCPUTask(res_detail::coResourceFactory(id, location.getFileName(), lifetime));
+    return runCPUThreadTask(res_detail::coResourceFactory(id, location.getFileName(), lifetime));
 }
 
 bool

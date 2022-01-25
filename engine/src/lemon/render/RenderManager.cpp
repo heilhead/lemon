@@ -131,7 +131,7 @@ RenderManager::renderFrame()
 void
 RenderManager::beginFrame()
 {
-    runRenderTask(renderFrame());
+    runRenderThreadTask(renderFrame());
 }
 
 void

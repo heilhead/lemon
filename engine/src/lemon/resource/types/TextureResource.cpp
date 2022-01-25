@@ -14,7 +14,7 @@ VoidTask<ResourceLoadingError>
 loadTexture(const std::filesystem::path& filePath, TextureResource::Decoder decoder,
             InputColorChannels channels, uint8_t depth, ImageData& outData)
 {
-    auto bytes = co_await runIOTask(coReadBinaryFile(filePath));
+    auto bytes = co_await runIOThreadTask(coReadBinaryFile(filePath));
     if (!bytes) {
         co_return ResourceLoadingError::DataMissing;
     }

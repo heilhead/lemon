@@ -56,10 +56,10 @@ PipelineManager::initSurfaceBindGroup()
     auto* pScheduler = Scheduler::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
-    auto blueprint =
-        pScheduler
-            ->block(runIOTask(MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
-            .value();
+    auto blueprint = pScheduler
+                         ->block(runIOThreadTask(
+                             MaterialResource::loadShaderBlueprint(kShaderSurfaceSharedGroupBlueprint)))
+                         .value();
 
     // The program is temporary and should be destroyed once we're done here.
     KeepAlive<ShaderProgram> kaProgram;
@@ -120,10 +120,10 @@ PipelineManager::initPostProcessBindGroup()
     auto* pScheduler = Scheduler::get();
     auto& cbuffer = pRenderMan->getConstantBuffer();
 
-    auto blueprint =
-        pScheduler
-            ->block(runIOTask(MaterialResource::loadShaderBlueprint(kShaderPostProcessSharedGroupBlueprint)))
-            .value();
+    auto blueprint = pScheduler
+                         ->block(runIOThreadTask(
+                             MaterialResource::loadShaderBlueprint(kShaderPostProcessSharedGroupBlueprint)))
+                         .value();
 
     // The program is temporary and should be destroyed once we're done here.
     KeepAlive<ShaderProgram> kaProgram = pMaterialMan->getShader(blueprint, postProcessConfig);

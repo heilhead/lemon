@@ -63,7 +63,7 @@ MaterialResource::load(ResourceMetadata&& md)
     }
 
     if (pMeta->baseType == BaseType::Shader) {
-        auto result = co_await runIOTask(loadShaderBlueprint(pMeta->basePath));
+        auto result = co_await runIOThreadTask(loadShaderBlueprint(pMeta->basePath));
         if (result) {
             blueprint = std::move(*result);
         } else {

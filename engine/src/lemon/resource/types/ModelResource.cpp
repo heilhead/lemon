@@ -34,7 +34,7 @@ ModelResource::load(ResourceMetadata&& meta)
     logger::log("ModelResource::Metadata ptr: ", (uintptr_t)pMetadata, " fullPath: ", meta.fullPath,
                 " name: ", meta.name);
     auto dataFile = ResourceManager::get()->resolvePath(meta.name);
-    auto result = co_await runIOTask(loadData(dataFile));
+    auto result = co_await runIOThreadTask(loadData(dataFile));
     if (result) {
         data = std::move(*result);
 

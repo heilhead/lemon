@@ -6,16 +6,8 @@ using namespace lemon::scheduler;
 
 ResourceContract::ResourceContract()
 {
-    folly::Executor* executor;
-
-#if LEMON_FORCE_SINGLE_THREADED
-    executor = Scheduler::get()->getDebugExecutor();
-#else
-    executor = Scheduler::get()->getCPUExecutor();
-#endif
-
-    auto executorToken = folly::Executor::getKeepAliveToken(executor);
-    auto [tmpPromise, tmpFuture] = folly::makePromiseContract<ResolutionType<void>>(executorToken);
+    auto [tmpPromise, tmpFuture] = folly::makePromiseContract<ResolutionType<void>>(
+        Scheduler::get()->getExecutorToken(TaskExecutorType::CPUThreadPool));
     promise = std::move(tmpPromise);
     future = std::move(tmpFuture);
 }

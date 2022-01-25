@@ -37,7 +37,7 @@ namespace lemon::res {
         Task<ResourceMetadata, ResourceLoadingError>
         coReadMetadata(const std::filesystem::path&& fullPath, const std::string& name)
         {
-            auto result = co_await runIOTask(lemon::io::coReadTextFile(fullPath));
+            auto result = co_await runIOThreadTask(lemon::io::coReadTextFile(fullPath));
             co_return parseMetadata<TResource>(std::move(result), std::move(fullPath), name);
         }
 
@@ -164,7 +164,7 @@ namespace lemon::res {
     {
         static_assert(std::is_base_of_v<ResourceInstance, TResource>,
                       "TResource must be a subclass of ResourceInstance");
-        return runCPUTask(res_detail::coLoadResourceImpl<TResource>(location, lifetime));
+        return runCPUThreadTask(res_detail::coLoadResourceImpl<TResource>(location, lifetime));
     }
 
     template<class TResource>

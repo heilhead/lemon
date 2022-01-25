@@ -91,7 +91,6 @@ find_package(yaml-cpp CONFIG REQUIRED)
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-    # LEMON_FORCE_SINGLE_THREADED
     INJA_NOEXCEPTION
     GLFW_EXPOSE_NATIVE_WIN32)
 
