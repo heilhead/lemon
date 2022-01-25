@@ -72,7 +72,7 @@ namespace lemon::logger {
 } // namespace lemon::logger
 
 #ifdef NDEBUG
-#define LEMON_ASSERT(expression) ((void)0)
+#define LEMON_ASSERT(...) ((void)0)
 #else
 #define LEMON_ASSERT(expression, ...)                                                                        \
     (void)((!!(expression)) || (::lemon::logger::detail::Logger::get().assertionError(                       \
@@ -83,7 +83,7 @@ namespace lemon::logger {
 #ifdef LEMON_ENABLE_SLOW_ASSERT
 #define LEMON_SLOW_ASSERT(expression, ...) LEMON_ASSERT(expression, __VA_ARGS__)
 #else
-#define LEMON_SLOW_ASSERT(expression) ((void)0)
+#define LEMON_SLOW_ASSERT(...) ((void)0)
 #endif
 
 #define LEMON_TODO(...) ::lemon::logger::detail::Logger::get().unreachable(__FILE__, __LINE__, __VA_ARGS__)
